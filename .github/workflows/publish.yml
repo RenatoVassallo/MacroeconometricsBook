@@ -20,13 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Habilita GitHub Pages con origen "GitHub Actions" en el primer
-      # despliegue, para no tener que activarlo a mano en los ajustes.
-      - name: Configurar Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - uses: quarto-dev/quarto-actions/setup@v2
         with:
           tinytex: true
@@ -43,12 +36,22 @@ jobs:
       # limpia el directorio de salida, de modo que renderizar por separado
       # borraria el resultado anterior.
       - name: Renderizar (HTML y PDF)
+        id: render
+        continue-on-error: true
         run: uv run quarto render
 
-      - name: Comprobar que salieron las dos versiones
+      # Red de seguridad: si LaTeX falla, se publica al menos la version web
+      # en lugar de dejar el sitio sin actualizar. El paso anterior queda
+      # marcado como fallido, asi que el problema sigue siendo visible.
+      - name: Si el PDF fallo, publicar solo la web
+        if: steps.render.outcome == 'failure'
+        run: uv run quarto render --to html
+
+      - name: Comprobar el resultado
         run: |
           test -f _book/index.html
-          ls _book/*.pdf
+          ls _book/*.pdf \
+            || echo "::warning::El PDF no se genero; se publica solo la web."
 
       - uses: actions/upload-pages-artifact@v3
         with:
