@@ -9,6 +9,9 @@ lang: es
 
 book:
   title: "Macroeconometría aplicada con Python"
+  # Nombre del PDF sin acentos: se enlaza desde la web y una tilde en la URL
+  # obliga a codificarla y se rompe con facilidad.
+  output-file: "macroeconometria-aplicada-con-python"
   subtitle: "De los datos macro a la inferencia estructural y el pronóstico"
   author:
     - name: "Renato Vassallo"
