@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..600&family=Source+Sans+3:ital,wght@0,400..700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #E8E4DE; }
+  a { color: #B0472A; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  details > summary { cursor: pointer; }
+</style>
+</helmet>
+
+<section style="display:flex; flex-direction:column; gap:26px; padding:48px; width:1180px; font-family:'Source Sans 3',sans-serif;">
+
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <div style="font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:#6B5F52;">Step 2 · Deliverable 1 &amp; 3 · Direction 1a Warm Folio</div>
+    <div style="font-family:'EB Garamond',serif; font-size:32px; font-weight:600; color:#2A231D;">Design tokens and content blocks</div>
+    <div style="font-size:14px; line-height:1.55; color:#4A423B; max-width:70ch;">Every colour below passes the stated contrast ratio against the surface it is used on. Ratios are computed against cream background <span style="font-family:'JetBrains Mono',monospace; font-size:12px;">#FDFBF7</span> unless a second surface is named.</div>
+  </div>
+
+  <!-- ============ COLOR ============ -->
+  <div style="background:#FDFBF7; border:1px solid #DED0C4; padding:26px 28px 30px;">
+    <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:16px;">1.1 Colour — core</div>
+    <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px;">
+      <sc-for list="{{ core }}" as="c" hint-placeholder-count="8">
+        <div style="border:1px solid #E7DAD0;">
+          <div style="height:46px; background:{{ c.hex }};"></div>
+          <div style="padding:8px 10px 10px; display:flex; flex-direction:column; gap:2px;">
+            <div style="font-size:12.5px; font-weight:600; color:#2A231D;">{{ c.name }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52;">{{ c.hex }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52;">{{ c.token }}</div>
+            <div style="font-size:11.5px; color:#4A423B; margin-top:3px; line-height:1.4;">{{ c.use }}</div>
+            <div style="font-size:11px; color:#4E6E38; font-weight:600;">{{ c.ratio }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin:28px 0 14px;">1.2 Colour — one semantic per content block</div>
+    <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px;">
+      <sc-for list="{{ semantic }}" as="c" hint-placeholder-count="8">
+        <div style="display:flex; align-items:center; gap:10px; border:1px solid #E7DAD0; padding:8px 10px;">
+          <div style="width:26px; height:26px; background:{{ c.hex }}; flex:none;"></div>
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#2A231D;">{{ c.name }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6B5F52;">{{ c.hex }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin:28px 0 14px;">1.3 Chart palettes (a–g)</div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <sc-for list="{{ ramps }}" as="r" hint-placeholder-count="7">
+        <div style="display:grid; grid-template-columns:230px minmax(0,1fr) 250px; gap:16px; align-items:center; border-top:1px solid #E7DAD0; padding-top:12px;">
+          <div>
+            <div style="font-size:12.5px; font-weight:600; color:#2A231D;">{{ r.name }}</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6B5F52;">{{ r.token }}</div>
+          </div>
+          <div style="display:flex; gap:0;">
+            <sc-for list="{{ r.colors }}" as="h" hint-placeholder-count="6">
+              <div style="flex:1;">
+                <div style="height:30px; background:{{ h.hex }};"></div>
+                <div style="height:14px; background:{{ h.gray }};"></div>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#6B5F52; padding-top:3px; text-align:center;">{{ h.hex }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11.5px; line-height:1.45; color:#4A423B;">{{ r.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size:11.5px; color:#6B5F52; margin-top:14px; line-height:1.5;">Lower strip in each row is the luminance-matched grayscale rendering. Ordered categorical (e) additionally carries a fixed line-style and marker order, so shock identity never rests on hue: solid ● / dashed ■ / dash-dot ▲ / dotted ◆ / long-dash ▼ / solid-thin ○. Deuteranopia and protanopia were checked by collapsing the red–green channel; the surviving separation in every palette is lightness, which both conditions retain.</div>
+  </div>
+
+  <!-- ============ TYPOGRAPHY ============ -->
+  <div style="background:#FDFBF7; border:1px solid #DED0C4; padding:26px 28px 30px;">
+    <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:16px;">2. Typography — all faces SIL OFL, web + OTF, LuaLaTeX- and matplotlib-loadable</div>
+
+    <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:22px;">
+      <div style="border:1px solid #E7DAD0; padding:16px 18px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52; margin-bottom:8px;">body serif · EB Garamond · OFL</div>
+        <div style="font-family:'EB Garamond',serif; font-size:19px; line-height:1.6; color:#2A231D;">The prior shrinks each equation toward a univariate process, so the data only has to overturn a belief.</div>
+      </div>
+      <div style="border:1px solid #E7DAD0; padding:16px 18px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52; margin-bottom:8px;">math · Garamond-Math · OFL · x-height and stroke matched to EB Garamond</div>
+        <div style="font-family:'EB Garamond',serif; font-size:19px; line-height:1.6; color:#2A231D;"><em>Σ</em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1′</sup>, &ensp;<em>ν</em><sub style="font-size:0.7em;">0</sub> + <em>T</em></div>
+      </div>
+      <div style="border:1px solid #E7DAD0; padding:16px 18px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52; margin-bottom:8px;">headings &amp; UI · Source Sans 3 · OFL</div>
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:21px; font-weight:600; color:#2A231D;">5.3 The Minnesota prior</div>
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700; color:#6B5F52; margin-top:6px;">Assumption · Definition · Result</div>
+      </div>
+      <div style="border:1px solid #E7DAD0; padding:16px 18px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52; margin-bottom:8px;">code · JetBrains Mono · OFL</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13.5px; color:#2A231D;">B_ols = np.linalg.solve(X.T @ X, X.T @ Y)</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:22px; margin-top:24px;">
+      <div>
+        <div style="font-size:12px; font-weight:700; color:#2A231D; margin-bottom:8px;">Web scale — root 17px</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <sc-for list="{{ webScale }}" as="r" hint-placeholder-count="10">
+            <tr style="border-bottom:1px solid #EFE6DE;">
+              <td style="padding:5px 0; color:#2A231D;">{{ r.k }}</td>
+              <td style="padding:5px 0; font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B5F52; text-align:right;">{{ r.v }}</td>
+            </tr>
+          </sc-for>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:12px; font-weight:700; color:#2A231D; margin-bottom:8px;">Print scale — 7 × 10 in trim</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <sc-for list="{{ printScale }}" as="r" hint-placeholder-count="10">
+            <tr style="border-bottom:1px solid #EFE6DE;">
+              <td style="padding:5px 0; color:#2A231D;">{{ r.k }}</td>
+              <td style="padding:5px 0; font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B5F52; text-align:right;">{{ r.v }}</td>
+            </tr>
+          </sc-for>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LAYOUT ============ -->
+  <div style="background:#FDFBF7; border:1px solid #DED0C4; padding:26px 28px 30px;">
+    <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:16px;">3. Layout and spacing</div>
+    <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:24px;">
+      <div>
+        <div style="font-size:12px; font-weight:700; color:#2A231D; margin-bottom:8px;">Measure and columns</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <sc-for list="{{ layout }}" as="r" hint-placeholder-count="7">
+            <tr style="border-bottom:1px solid #EFE6DE;"><td style="padding:5px 0; color:#2A231D;">{{ r.k }}</td><td style="padding:5px 0; font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B5F52; text-align:right;">{{ r.v }}</td></tr>
+          </sc-for>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:12px; font-weight:700; color:#2A231D; margin-bottom:8px;">Spacing scale (4 px base)</div>
+        <div style="display:flex; flex-direction:column; gap:5px;">
+          <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="8">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="height:9px; background:#B0472A; width:{{ s.px }};"></div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52;">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; font-weight:700; color:#2A231D; margin-bottom:8px;">Three figure widths</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div><div style="height:22px; background:#F0E0D6; border:1px solid #DED0C4; width:100%;"></div><div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6B5F52; padding-top:3px;">full · 960 px web / 6.0 in print</div></div>
+          <div><div style="height:22px; background:#F0E0D6; border:1px solid #DED0C4; width:67%;"></div><div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6B5F52; padding-top:3px;">text · 640 px web / 4.5 in print</div></div>
+          <div><div style="height:22px; background:#F0E0D6; border:1px solid #DED0C4; width:21%;"></div><div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#6B5F52; padding-top:3px;">margin · 200 px web / 1.15 in print</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CODE ============ -->
+  <div style="background:#FDFBF7; border:1px solid #DED0C4; padding:26px 28px 30px;">
+    <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:16px;">4. Code — highlighting, cells, output, inline</div>
+    <div style="display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:24px; align-items:start;">
+      <div>
+        <div style="background:#FBF6F1; border:1px solid #E7DAD0; border-left:3px solid #DED0C4; padding:14px 16px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.62; color:#2A231D; white-space:pre;"><span style="color:#857A6D; font-style:italic;"># posterior mean of the VAR coefficients</span>
+<span style="color:#9E3F26; font-weight:600;">def</span> <span style="font-weight:600;">gibbs_step</span>(Y, X, Sigma, V0, b0):
+    V_bar = np.linalg.inv(V0_inv + np.<span style="color:#7E6325;">kron</span>(Sigma_inv, XtX))
+    b_bar = V_bar @ (V0_inv @ b0 + rhs)
+    <span style="color:#9E3F26; font-weight:600;">return</span> b_bar, V_bar   <span style="color:#857A6D; font-style:italic;"># draws: </span><span style="color:#3D647F;">5000</span>
+</div>
+        <div style="border-left:2px solid #DED0C4; padding:10px 14px; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; color:#4A423B; white-space:pre;">Posterior draws: 5000 (burn-in 2500)
+Acceptance rate: 1.000    Elapsed: 4.31 s</div>
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:13px; color:#4A423B; margin-top:12px;">Inline code reads as <code style="font-family:'JetBrains Mono',monospace; font-size:0.88em; background:#F4EAE2; border:1px solid #E7DAD0; padding:1px 4px; color:#2A231D;">lamda1 = 0.2</code> inside running prose — tinted, never coloured by token type.</div>
+      </div>
+      <div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <sc-for list="{{ tokensCode }}" as="t" hint-placeholder-count="9">
+            <tr style="border-bottom:1px solid #EFE6DE;">
+              <td style="padding:5px 0;"><span style="display:inline-block; width:12px; height:12px; background:{{ t.hex }}; vertical-align:-2px; margin-right:7px;"></span><span style="color:#2A231D;">{{ t.k }}</span></td>
+              <td style="padding:5px 0; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52; text-align:right;">{{ t.hex }} {{ t.style }}</td>
+            </tr>
+          </sc-for>
+        </table>
+        <div style="font-size:11.5px; line-height:1.5; color:#6B5F52; margin-top:10px;">Six token colours only. Quarto's Pandoc highlighter maps them through a custom <span style="font-family:'JetBrains Mono',monospace; font-size:11px;">.theme</span> file; everything else inherits ink.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BLOCKS ============ -->
+  <div style="background:#FDFBF7; border:1px solid #DED0C4; padding:26px 28px 32px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700;">Deliverable 3 · Eight content blocks</div>
+      <div style="font-size:11.5px; color:#6B5F52;">each a single styled div · no icon fonts · label + rule carry the identity</div>
+    </div>
+    <div style="font-size:13px; line-height:1.55; color:#4A423B; max-width:74ch; margin-bottom:22px;">Assumption is the loudest treatment in the system: full tint, 4 px terracotta bar, terracotta uppercase label. Nothing else in a chapter uses that combination, so a reader skimming for identification restrictions cannot miss one.</div>
+
+    <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:22px; font-family:'EB Garamond',serif;">
+
+      <!-- Assumption -->
+      <div style="background:#F0E0D6; border-left:4px solid #B0472A; border-top:1px solid #DCC4B5; border-right:1px solid #DCC4B5; border-bottom:1px solid #DCC4B5; padding:14px 18px 16px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#8E3620; margin-bottom:7px;">Assumption 5.1 · Recursive identification</div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D;"><em>u<sub style="font-size:0.7em;">t</sub></em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>ε<sub style="font-size:0.7em;">t</sub></em>, with <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> lower triangular and 𝔼[<em>ε<sub style="font-size:0.7em;">t</sub>ε</em>′<sub style="font-size:0.7em;">t</sub>] = <em>I<sub style="font-size:0.7em;">n</sub></em>, so that Σ = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1′</sup>.</div>
+      </div>
+
+      <!-- Definition -->
+      <div style="background:#F7EDE5; border:1px solid #E0D0C2; padding:14px 18px 16px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#2A231D; margin-bottom:7px;">Definition 5.1 · Minnesota prior</div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D;">Prior mean <em>δ<sub style="font-size:0.7em;">i</sub></em> on the own first lag of variable <em>i</em> and zero on all other lag coefficients, with prior variance Var[(<em>A<sub style="font-size:0.7em;">ℓ</sub></em>)<sub style="font-size:0.7em;">ij</sub>] = (<em>λ</em><sub style="font-size:0.7em;">1</sub>/<em>ℓ</em><sup style="font-size:0.7em;">λ₃</sup>)² for <em>i</em> = <em>j</em>.</div>
+      </div>
+
+      <!-- Result -->
+      <div style="border-top:2.5px solid #2A231D; border-bottom:1px solid #2A231D; padding:12px 0 13px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#2A231D; margin-bottom:6px;">Result 5.2 <span style="font-weight:400; color:#6B5F52; letter-spacing:0.06em;">Proposition</span></div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D; font-style:italic;">When every equation has the same regressors, equation-by-equation OLS coincides with GLS on the stacked system <em>Y</em> = <em>XB</em> + <em>U</em>.</div>
+      </div>
+
+      <!-- Algorithm -->
+      <div style="background:#FBF6F1; border:1px solid #E7DAD0; border-left:3px double #6B5F52; padding:14px 18px 16px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#2A231D; margin-bottom:8px;">Algorithm 5.1 · Gibbs sampler</div>
+        <div style="display:flex; flex-direction:column; gap:7px; font-size:16.5px; line-height:1.5; color:#2A231D;">
+          <div style="display:flex; gap:10px;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:3px;">01</span><span>Draw vec(<em>B</em>) | Σ, <em>Y</em> ~ <em>N</em>(<em>b̄</em>, <em>V̄</em>), with <em>V̄</em> = (<em>V</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> + Σ<sup style="font-size:0.7em;">−1</sup> ⊗ <em>X</em>′<em>X</em>)<sup style="font-size:0.7em;">−1</sup>.</span></div>
+          <div style="display:flex; gap:10px;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:3px;">02</span><span>Draw Σ | <em>B</em>, <em>Y</em> ~ 𝒥𝒲(<em>S</em><sub style="font-size:0.7em;">0</sub> + (<em>Y</em> − <em>XB</em>)′(<em>Y</em> − <em>XB</em>), <em>ν</em><sub style="font-size:0.7em;">0</sub> + <em>T</em>).</span></div>
+          <div style="display:flex; gap:10px;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:3px;">03</span><span>Discard the first <em>S</em><sub style="font-size:0.7em;">burn</sub> draws.</span></div>
+        </div>
+      </div>
+
+      <!-- Example -->
+      <div style="background:#FFFFFF; border:1px solid #CFC2B6; padding:14px 18px 16px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#3D647F; margin-bottom:7px;"><span style="display:inline-block; width:8px; height:8px; background:#3D647F; margin-right:7px; vertical-align:1px;"></span>Empirical application 5.2</div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D;">A seven-variable BVAR on Peruvian quarterly data, 1995Q1–2019Q4, forecasting real GDP growth and fiscal revenue eight quarters ahead against a random-walk benchmark.</div>
+      </div>
+
+      <!-- Intuition -->
+      <div style="border-left:2px dotted #4E6E38; padding:4px 0 4px 16px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#4E6E38; margin-bottom:6px;">Intuition</div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D;">The prior shrinks each equation toward a univariate process: <em>λ</em><sub style="font-size:0.7em;">1</sub> sets overall tightness, <em>λ</em><sub style="font-size:0.7em;">2</sub> how much other variables' lags may matter, <em>λ</em><sub style="font-size:0.7em;">3</sub> how fast distant lags are switched off.</div>
+      </div>
+
+      <!-- Pitfall -->
+      <div style="border-top:1px solid #8E3620; border-left:4px double #8E3620; padding:11px 0 4px 15px;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#8E3620; margin-bottom:6px;">Pitfall</div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D;"><em>δ<sub style="font-size:0.7em;">i</sub></em> = 1 (random walk) suits variables in log levels. For growth rates, set <em>δ<sub style="font-size:0.7em;">i</sub></em> to 0 or a small value.</div>
+      </div>
+
+      <!-- Exercise -->
+      <div style="border-top:1px solid #DED0C4; border-bottom:1px solid #DED0C4; padding:12px 0 13px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:#6B5F52; margin-bottom:6px;">Exercise 5.1</div>
+        <div style="font-size:17px; line-height:1.55; color:#2A231D;">Show that when every equation has the same regressors, equation-by-equation OLS equals GLS on the stacked system.</div>
+        <details style="margin-top:9px;">
+          <summary style="font-family:'Source Sans 3',sans-serif; font-size:12.5px; font-weight:600; color:#B0472A; list-style:none;">Show solution</summary>
+          <div style="font-size:16px; line-height:1.55; color:#4A423B; padding-top:8px;">GLS on <em>Y</em> = <em>XB</em> + <em>U</em> weights by Σ<sup style="font-size:0.7em;">−1</sup> ⊗ <em>I<sub style="font-size:0.7em;">T</sub></em>. With a common regressor matrix the Kronecker structure factors out of the normal equations and the Σ terms cancel.</div>
+        </details>
+      </div>
+    </div>
+
+    <div style="margin-top:26px; border-top:1px solid #E7DAD0; padding-top:16px;">
+      <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#6B5F52; font-weight:700; margin-bottom:12px;">Grayscale print check — same eight blocks, ink only</div>
+      <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px; filter:grayscale(1) contrast(1.05); font-family:'EB Garamond',serif;">
+        <div style="background:#F0E0D6; border-left:4px solid #B0472A; border-top:1px solid #DCC4B5; border-right:1px solid #DCC4B5; border-bottom:1px solid #DCC4B5; padding:10px 12px;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#8E3620;">Assumption 5.1</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">Recursive identification.</div></div>
+        <div style="background:#F7EDE5; border:1px solid #E0D0C2; padding:10px 12px;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#2A231D;">Definition 5.1</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">Minnesota prior.</div></div>
+        <div style="border-top:2.5px solid #2A231D; border-bottom:1px solid #2A231D; padding:9px 0;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#2A231D;">Result 5.2</div><div style="font-size:13px; color:#2A231D; padding-top:4px; font-style:italic;">OLS equals GLS.</div></div>
+        <div style="background:#FBF6F1; border:1px solid #E7DAD0; border-left:3px double #6B5F52; padding:10px 12px;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#2A231D;">Algorithm 5.1</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">Gibbs sampler.</div></div>
+        <div style="background:#FFFFFF; border:1px solid #CFC2B6; padding:10px 12px;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#3D647F;"><span style="display:inline-block; width:7px; height:7px; background:#3D647F; margin-right:6px;"></span>Application 5.2</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">Peru, 1995–2019.</div></div>
+        <div style="border-left:2px dotted #4E6E38; padding:4px 0 4px 12px;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#4E6E38;">Intuition</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">Shrink toward AR(1).</div></div>
+        <div style="border-top:1px solid #8E3620; border-left:4px double #8E3620; padding:9px 0 4px 12px;"><div style="font-family:'Source Sans 3',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#8E3620;">Pitfall</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">δ = 1 in log levels only.</div></div>
+        <div style="border-top:1px solid #DED0C4; border-bottom:1px solid #DED0C4; padding:9px 0;"><div style="font-family:'JetBrains Mono',monospace; font-size:9.5px; text-transform:uppercase; color:#6B5F52;">Exercise 5.1</div><div style="font-size:13px; color:#2A231D; padding-top:4px;">Prove OLS = GLS.</div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px; background:#F7EDE5; border-left:4px solid #6B5F52; padding:12px 16px; font-size:12.5px; line-height:1.55; color:#3A322B;">
+      <span style="font-weight:700;">Needs custom HTML.</span> Quarto callouts cannot produce these eight treatments natively. Each block ships as a <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">::: {.assumption}</span> style div with a Lua filter for automatic numbering and cross-references; the collapsible solution uses a plain <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">&lt;details&gt;</span>, which is HTML but not JavaScript. Everything else stays inside the Bootstrap book template.
+    </div>
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    const gray = hex => {
+      const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+      const l = Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b);
+      const h = l.toString(16).padStart(2, "0");
+      return `#${h}${h}${h}`;
+    };
+    const ramp = (name, token, note, hexes) => ({
+      name, token, note, colors: hexes.map(hex => ({ hex, gray: gray(hex) }))
+    });
+
+    return {
+      core: [
+        { name: "Text", hex: "#2A231D", token: "color.text", use: "Body, headings, math", ratio: "13.1 : 1" },
+        { name: "Background", hex: "#FDFBF7", token: "color.bg", use: "Page", ratio: "—" },
+        { name: "Surface", hex: "#F7EDE5", token: "color.surface", use: "Blocks, code wells", ratio: "—" },
+        { name: "Surface strong", hex: "#F0E0D6", token: "color.surface-2", use: "Assumption block", ratio: "—" },
+        { name: "Border", hex: "#DED0C4", token: "color.border", use: "Rules, table lines", ratio: "3.1 : 1 UI" },
+        { name: "Link / primary", hex: "#B0472A", token: "color.primary", use: "Links, block accents", ratio: "5.7 : 1" },
+        { name: "Accent", hex: "#4E6E38", token: "color.accent", use: "Intuition, chart (c)", ratio: "4.8 : 1" },
+        { name: "Muted text", hex: "#6B5F52", token: "color.muted", use: "Captions, margin notes", ratio: "5.5 : 1" }
+      ],
+      semantic: [
+        { name: "Assumption", hex: "#B0472A" },
+        { name: "Definition", hex: "#2A231D" },
+        { name: "Result", hex: "#2A231D" },
+        { name: "Algorithm", hex: "#6B5F52" },
+        { name: "Application", hex: "#3D647F" },
+        { name: "Intuition", hex: "#4E6E38" },
+        { name: "Pitfall", hex: "#8E3620" },
+        { name: "Exercise", hex: "#6B5F52" }
+      ],
+      ramps: [
+        ramp("(a) Observed data — neutral", "chart.observed", "Two greys: actuals and a second observed series. Solid and long-dash.", ["#2A231D", "#6B5F52", "#9A9086"]),
+        ramp("(b) Model estimates — primary", "chart.estimate", "Median / point estimate. Dashed when a forecast, solid in sample.", ["#B0472A", "#8E3620"]),
+        ramp("(c) Realized values — highlight", "chart.realized", "Markers only, never a line, so it reads over any band.", ["#1F3D5C"]),
+        ramp("(d) Credible and confidence bands — 4-step", "chart.band.1–4", "Outer to inner: 95, 90, 80, 68 per cent. Lightness monotone, so the nesting survives grayscale.", ["#F4DCD1", "#E6BCA8", "#D4907A", "#BF6244"]),
+        ramp("(e) Structural shocks — 6 ordered", "chart.shock.1–6", "Lightness-ordered, each with a fixed line style and marker.", ["#2A231D", "#3D647F", "#B0472A", "#5A7D43", "#9A7B2E", "#C9A98A"]),
+        ramp("(f) Diverging — heatmaps", "chart.div.1–7", "Terracotta to slate through cream. Zero sits on the cream midpoint.", ["#8E3620", "#C06A4A", "#E2AC93", "#F0E0D6", "#9DB6C6", "#5B87A3", "#23435A"]),
+        ramp("(g) Episode shadings", "chart.episode.rec / .fcst", "Recession bands 10 % muted; forecast window 6 % primary. Behind the grid, no borders.", ["#EDE9E4", "#FBF0EA"])
+      ],
+      webScale: [
+        { k: "body", v: "17 / 27.5 px · 1.62" },
+        { k: "h1 chapter title", v: "38 / 44 px · 600" },
+        { k: "h2 section", v: "27 / 33 px · 600" },
+        { k: "h3 subsection", v: "20 / 27 px · 600" },
+        { k: "h4 run-in", v: "17 px · 700 · 0.12 em caps" },
+        { k: "block label", v: "11.5 px · 700 caps" },
+        { k: "display math", v: "19 px · 1.5" },
+        { k: "code", v: "13.5 / 22 px" },
+        { k: "caption / source", v: "12.5 / 19 px" },
+        { k: "margin note", v: "12 / 18.5 px" }
+      ],
+      printScale: [
+        { k: "body", v: "10.5 / 14.5 pt" },
+        { k: "h1 chapter title", v: "26 / 29 pt" },
+        { k: "h2 section", v: "14 / 17 pt" },
+        { k: "h3 subsection", v: "11.5 pt" },
+        { k: "h4 run-in", v: "10.5 pt caps" },
+        { k: "block label", v: "8.5 pt caps" },
+        { k: "display math", v: "10.5 pt · 1.45" },
+        { k: "code", v: "8.5 / 11 pt" },
+        { k: "caption / source", v: "9 / 12 pt" },
+        { k: "margin note", v: "8 / 10.5 pt" }
+      ],
+      layout: [
+        { k: "measure", v: "68 ch (max 40 rem)" },
+        { k: "web content column", v: "640 px" },
+        { k: "web margin column", v: "200 px, gap 32 px" },
+        { k: "sidebar", v: "270 px" },
+        { k: "print text block", v: "4.5 × 7.6 in" },
+        { k: "print margins", v: "top 0.9 · inner 0.85 · outer 1.65 · foot 1.0 in" },
+        { k: "print margin column", v: "1.15 in, gutter 0.3 in" }
+      ],
+      spacing: [
+        { px: "4px", label: "space-1 · 4 px / 3 pt" },
+        { px: "8px", label: "space-2 · 8 px / 6 pt" },
+        { px: "12px", label: "space-3 · 12 px / 9 pt" },
+        { px: "16px", label: "space-4 · 16 px / 12 pt" },
+        { px: "24px", label: "space-5 · 24 px / 18 pt" },
+        { px: "32px", label: "space-6 · 32 px / 24 pt" },
+        { px: "48px", label: "space-7 · 48 px / 36 pt" },
+        { px: "64px", label: "space-8 · 64 px / 48 pt" }
+      ],
+      tokensCode: [
+        { k: "keyword, control flow", hex: "#9E3F26", style: "600" },
+        { k: "function, class name", hex: "#2A231D", style: "600" },
+        { k: "builtin, attribute", hex: "#7E6325", style: "400" },
+        { k: "string, docstring", hex: "#4E6E38", style: "400" },
+        { k: "number, constant", hex: "#3D647F", style: "400" },
+        { k: "comment", hex: "#857A6D", style: "italic" },
+        { k: "operator, punctuation", hex: "#2A231D", style: "400" },
+        { k: "cell background", hex: "#FBF6F1", style: "1px #E7DAD0" },
+        { k: "output text", hex: "#4A423B", style: "2px left rule" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

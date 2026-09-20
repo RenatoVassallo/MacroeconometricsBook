@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..600&family=Source+Sans+3:ital,wght@0,400..700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #E8E4DE; }
+  a { color: #B0472A; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  details > summary { cursor: pointer; }
+</style>
+</helmet>
+
+<section style="display:flex; flex-direction:column; gap:40px; padding:48px; font-family:'Source Sans 3',sans-serif;">
+
+  <div style="display:flex; flex-direction:column; gap:6px; max-width:80ch;">
+    <div style="font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:#6B5F52;">Step 2 · Deliverable 2 · Direction 1a Warm Folio</div>
+    <div style="font-family:'EB Garamond',serif; font-size:32px; font-weight:600; color:#2A231D;">HTML mockups — desktop 1440 px and mobile 390 px</div>
+    <div style="font-size:14px; line-height:1.55; color:#4A423B;">Four screens: landing, chapter opener, dense interior, chapter end. Layout, sidebar behaviour, right-hand "on this page" TOC and prev/next links are Quarto's Bootstrap 5 book template; only colour, type, blocks and figures are ours. The tabset and citation hover below are Quarto-native features, not custom widgets.</div>
+  </div>
+
+  <!-- ================================================= LANDING · desktop -->
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div style="font-size:13px; font-weight:600; color:#2A231D;">1 · Landing page — 1440 px</div>
+    <div style="width:1440px; background:#FDFBF7; border:1px solid #DED0C4;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:54px; border-bottom:1px solid #DED0C4; background:#FDFBF7;">
+        <div style="display:flex; align-items:center; gap:28px;">
+          <div style="font-family:'EB Garamond',serif; font-size:17px; font-weight:600; color:#2A231D;">Applied Macroeconometrics with Python</div>
+          <div style="display:flex; gap:20px; font-size:13.5px; color:#6B5F52;"><span>Chapters</span><span>Data</span><span>Code</span></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px; font-size:13px; color:#6B5F52;">
+          <div style="border:1px solid #DED0C4; background:#FFFFFF; padding:5px 10px; width:180px; color:#8C8175;">Search</div>
+          <span>PDF</span><span>GitHub</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:270px minmax(0,1fr); align-items:start;">
+        <nav style="padding:28px 24px; border-right:1px solid #E7DAD0; display:flex; flex-direction:column; gap:10px; font-size:13.5px; color:#6B5F52;">
+          <div style="font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:#8C8175; font-weight:700;">Contents</div>
+          <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="11"><div>{{ ch.n }} · {{ ch.t }}</div></sc-for>
+        </nav>
+
+        <main style="padding:56px 64px 64px; max-width:900px;">
+          <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:18px;">Open graduate textbook · Edition 2026</div>
+          <h1 style="font-family:'EB Garamond',serif; font-size:52px; line-height:1.08; font-weight:600; color:#2A231D; margin:0 0 6px; letter-spacing:-0.012em; max-width:24ch;">Applied Macroeconometrics with Python</h1>
+          <div style="font-family:'EB Garamond',serif; font-size:23px; color:#6B5F52; margin-bottom:26px;">From macro data to structural inference and forecasts</div>
+          <p style="font-family:'EB Garamond',serif; font-size:20px; line-height:1.6; color:#2A231D; max-width:62ch; margin:0 0 28px; text-wrap:pretty;">A graduate course in macroeconometrics that introduces each model as the answer to an empirical problem: a VAR because one equation cannot describe a system, a Bayesian VAR because the system has more parameters than the data can pin down, a state space model because the object of interest is never observed. Every result is reproducible from the Python code printed beside it.</p>
+          <div style="display:flex; gap:24px; align-items:baseline; margin-bottom:38px; font-size:14px;">
+            <div style="font-family:'EB Garamond',serif; font-size:18px; color:#2A231D;">Carlos A. Rodríguez</div>
+            <div style="color:#6B5F52;">Last built 17 September 2026 · CC BY-NC-SA 4.0</div>
+          </div>
+          <div style="display:flex; gap:12px; margin-bottom:44px;">
+            <div style="background:#B0472A; color:#FDFBF7; font-size:14px; font-weight:600; padding:10px 20px;">Start reading</div>
+            <div style="border:1px solid #B0472A; color:#B0472A; font-size:14px; font-weight:600; padding:10px 20px;">Download PDF</div>
+            <div style="border:1px solid #DED0C4; color:#2A231D; font-size:14px; font-weight:600; padding:10px 20px;">GitHub repository</div>
+          </div>
+
+          <div style="border-top:1px solid #DED0C4; padding-top:22px;">
+            <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#6B5F52; font-weight:700; margin-bottom:14px;">Eleven chapters</div>
+            <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:0 40px;">
+              <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="11">
+                <div style="display:flex; gap:14px; padding:11px 0; border-bottom:1px solid #EFE6DE;">
+                  <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:3px; width:20px; flex:none;">{{ ch.n }}</div>
+                  <div>
+                    <div style="font-family:'EB Garamond',serif; font-size:18px; color:#2A231D;">{{ ch.t }}</div>
+                    <div style="font-size:12.5px; color:#6B5F52; line-height:1.45;">{{ ch.d }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= CHAPTER OPENER · desktop -->
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div style="font-size:13px; font-weight:600; color:#2A231D;">2 · Chapter opener — 1440 px</div>
+    <div style="width:1440px; background:#FDFBF7; border:1px solid #DED0C4;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:54px; border-bottom:1px solid #DED0C4;">
+        <div style="font-family:'EB Garamond',serif; font-size:17px; font-weight:600; color:#2A231D;">Applied Macroeconometrics with Python</div>
+        <div style="display:flex; align-items:center; gap:16px; font-size:13px; color:#6B5F52;"><div style="border:1px solid #DED0C4; background:#FFFFFF; padding:5px 10px; width:180px; color:#8C8175;">Search</div><span>PDF</span><span>GitHub</span></div>
+      </div>
+      <div style="display:grid; grid-template-columns:270px minmax(0,1fr) 240px; align-items:start;">
+        <nav style="padding:28px 24px; border-right:1px solid #E7DAD0; display:flex; flex-direction:column; gap:9px; font-size:13.5px; color:#6B5F52;">
+          <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="11"><div>{{ ch.n }} · {{ ch.t }}</div></sc-for>
+        </nav>
+        <main style="padding:48px 64px 60px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.1em; text-transform:uppercase; color:#B0472A; margin-bottom:14px;">Chapter 5</div>
+          <h1 style="font-family:'EB Garamond',serif; font-size:44px; line-height:1.12; font-weight:600; color:#2A231D; margin:0 0 22px; letter-spacing:-0.01em; max-width:26ch;">Bayesian Vector Autoregressions</h1>
+          <div style="border-left:4px solid #B0472A; padding:2px 0 2px 20px; margin-bottom:30px; max-width:60ch;">
+            <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#8E3620; font-weight:700; margin-bottom:7px;">The economic question</div>
+            <p style="font-family:'EB Garamond',serif; font-size:23px; line-height:1.48; color:#2A231D; margin:0; text-wrap:pretty;">How can we forecast output and fiscal revenue with a model that has more parameters than the data can pin down?</p>
+          </div>
+          <div style="display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:40px; max-width:900px;">
+            <div>
+              <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#6B5F52; font-weight:700; margin-bottom:12px;">What you will learn</div>
+              <div style="display:flex; flex-direction:column; gap:10px; font-family:'EB Garamond',serif; font-size:18px; line-height:1.5; color:#2A231D;">
+                <sc-for list="{{ learn }}" as="l" hint-placeholder-count="4">
+                  <div style="display:flex; gap:12px; border-bottom:1px solid #EFE6DE; padding-bottom:10px;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:4px;">{{ l.n }}</span><span>{{ l.t }}</span></div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#6B5F52; font-weight:700; margin:26px 0 10px;">Prerequisites</div>
+              <div style="font-family:'EB Garamond',serif; font-size:17.5px; line-height:1.55; color:#2A231D;">Chapter 4 (reduced-form VARs, companion form, lag selection); the multivariate normal and inverse-Wishart distributions; Kronecker products and <span style="font-family:'JetBrains Mono',monospace; font-size:0.8em; background:#F4EAE2; border:1px solid #E7DAD0; padding:1px 4px;">np.kron</span>.</div>
+            </div>
+            <div style="background:#F7EDE5; border:1px solid #E0D0C2; padding:18px 20px;">
+              <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#2A231D; font-weight:700; margin-bottom:12px;">Data used</div>
+              <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                <sc-for list="{{ data }}" as="d" hint-placeholder-count="4">
+                  <tr style="border-bottom:1px solid #E4D3C6;">
+                    <td style="padding:7px 0; font-family:'EB Garamond',serif; font-size:16px; color:#2A231D; vertical-align:top;">{{ d.series }}</td>
+                    <td style="padding:7px 0; color:#6B5F52; text-align:right; vertical-align:top; line-height:1.4;">{{ d.meta }}</td>
+                  </tr>
+                </sc-for>
+              </table>
+              <div style="font-size:12px; color:#6B5F52; margin-top:12px; line-height:1.45;">Source: Central Reserve Bank of Peru (BCRP), series pulled by <span style="font-family:'JetBrains Mono',monospace; font-size:11px;">data/raw/fetch_bcrp.py</span>.</div>
+            </div>
+          </div>
+        </main>
+        <aside style="padding:52px 28px 0 0; font-size:12.5px; color:#6B5F52;">
+          <div style="font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; font-weight:700; color:#8C8175; margin-bottom:10px;">On this page</div>
+          <div style="display:flex; flex-direction:column; gap:7px; border-left:1px solid #E7DAD0; padding-left:12px;">
+            <div style="color:#B0472A;">5.1 Why shrink?</div><div>5.2 Reduced form and OLS</div><div>5.3 The Minnesota prior</div><div>5.4 Gibbs sampling</div><div>5.5 Forecast evaluation</div><div>5.6 Key takeaways</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= DENSE INTERIOR · desktop -->
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div style="font-size:13px; font-weight:600; color:#2A231D;">3 · Dense interior page — 1440 px</div>
+    <div style="width:1440px; background:#FDFBF7; border:1px solid #DED0C4;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0 32px; height:54px; border-bottom:1px solid #DED0C4;">
+        <div style="font-family:'EB Garamond',serif; font-size:17px; font-weight:600; color:#2A231D;">Applied Macroeconometrics with Python</div>
+        <div style="display:flex; align-items:center; gap:16px; font-size:13px; color:#6B5F52;"><div style="border:1px solid #DED0C4; background:#FFFFFF; padding:5px 10px; width:180px; color:#8C8175;">Search</div><span>PDF</span><span>GitHub</span></div>
+      </div>
+      <div style="display:grid; grid-template-columns:270px minmax(0,1fr) 240px; align-items:start;">
+        <nav style="padding:28px 24px; border-right:1px solid #E7DAD0; display:flex; flex-direction:column; gap:9px; font-size:13.5px; color:#6B5F52;">
+          <div>4 · Vector autoregressions</div>
+          <div style="color:#B0472A; font-weight:600; border-left:2px solid #B0472A; margin-left:-24px; padding-left:22px;">5 · Bayesian VARs</div>
+          <div style="padding-left:14px; font-size:13px;">5.1 Why shrink?</div>
+          <div style="padding-left:14px; font-size:13px;">5.2 Reduced form and OLS</div>
+          <div style="padding-left:14px; font-size:13px; color:#B0472A;">5.3 The Minnesota prior</div>
+          <div style="padding-left:14px; font-size:13px;">5.4 Gibbs sampling</div>
+          <div>6 · Forecasting</div>
+          <div>7 · State space models</div>
+        </nav>
+
+        <main style="padding:40px 64px 56px; font-family:'EB Garamond',serif; color:#2A231D;">
+          <h2 style="font-family:'Source Sans 3',sans-serif; margin:0 0 6px; font-size:27px; font-weight:600; letter-spacing:-0.005em;">5.3 The Minnesota prior</h2>
+          <div style="height:2px; background:#2A231D; width:56px; margin-bottom:22px;"></div>
+
+          <p style="margin:0 0 16px; font-size:17px; line-height:1.62; max-width:68ch; text-wrap:pretty;">A VAR with <em>n</em> = 7 variables and <em>p</em> = 4 lags carries 203 coefficients per equation block, against 100 usable quarterly observations. Write the reduced form as</p>
+          <div style="display:flex; align-items:center; gap:20px; margin:20px 0;">
+            <div style="flex:1; font-size:19px; text-align:center;"><em>y<sub style="font-size:0.7em;">t</sub></em> = <em>c</em> + <em>A</em><sub style="font-size:0.7em;">1</sub><em>y</em><sub style="font-size:0.7em;">t−1</sub> + ⋯ + <em>A<sub style="font-size:0.7em;">p</sub>y</em><sub style="font-size:0.7em;">t−p</sub> + <em>u<sub style="font-size:0.7em;">t</sub></em>,&ensp; <em>u<sub style="font-size:0.7em;">t</sub></em> ~ <em>N</em>(0, Σ)</div>
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:13px; color:#6B5F52;">(5.1)</div>
+          </div>
+          <p style="margin:0 0 16px; font-size:17px; line-height:1.62; max-width:68ch; text-wrap:pretty;">and stack the <em>T</em> observations, so that least squares has the closed form</p>
+          <div style="display:flex; align-items:center; gap:20px; margin:20px 0;">
+            <div style="flex:1; font-size:19px; text-align:center;"><em>Y</em> = <em>XB</em> + <em>U</em>,&ensp; <em>B̂</em> = (<em>X</em>′<em>X</em>)<sup style="font-size:0.7em;">−1</sup><em>X</em>′<em>Y</em></div>
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:13px; color:#6B5F52;">(5.2)</div>
+          </div>
+          <p style="margin:0 0 20px; font-size:17px; line-height:1.62; max-width:68ch; text-wrap:pretty;">Equation <a href="#" style="border-bottom:1px solid rgba(176,71,42,0.35);">(5.2)</a> is unbiased and useless: with 203 free coefficients the fitted values track the sample and the forecasts oscillate. Shrinkage buys precision at the cost of a little bias, and the prior below is the standard way to spend it <span style="position:relative; display:inline-block;"><a href="#" onMouseEnter="{{ showCite }}" onMouseLeave="{{ hideCite }}" style="border-bottom:1px solid rgba(176,71,42,0.35);">(Litterman 1986)</a><sc-if value="{{ citeOpen }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:0; top:26px; z-index:9; width:330px; background:#FFFFFF; border:1px solid #DED0C4; box-shadow:0 2px 6px rgba(42,35,29,0.12); padding:12px 14px; font-family:'Source Sans 3',sans-serif; font-size:12.5px; line-height:1.5; color:#3A322B;"><span style="font-weight:700;">Litterman, R. B. (1986).</span> Forecasting with Bayesian vector autoregressions: five years of experience. <em>Journal of Business &amp; Economic Statistics</em> 4(1), 25–38.</span></sc-if></span>. Identification of the shocks needs one more restriction.</p>
+
+          <div style="background:#F0E0D6; border-left:4px solid #B0472A; border-top:1px solid #DCC4B5; border-right:1px solid #DCC4B5; border-bottom:1px solid #DCC4B5; padding:15px 20px 17px; margin:24px 0;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#8E3620; margin-bottom:8px;">Assumption 5.1 · Recursive identification</div>
+            <div style="font-size:17px; line-height:1.55;"><em>u<sub style="font-size:0.7em;">t</sub></em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>ε<sub style="font-size:0.7em;">t</sub></em>, with <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> lower triangular and 𝔼[<em>ε<sub style="font-size:0.7em;">t</sub>ε</em>′<sub style="font-size:0.7em;">t</sub>] = <em>I<sub style="font-size:0.7em;">n</sub></em>, so that Σ = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1′</sup>.</div>
+          </div>
+
+          <div style="background:#F7EDE5; border:1px solid #E0D0C2; padding:15px 20px 17px; margin:24px 0;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#2A231D; margin-bottom:8px;">Definition 5.1 · Minnesota prior</div>
+            <div style="font-size:17px; line-height:1.55;">Prior mean <em>δ<sub style="font-size:0.7em;">i</sub></em> on the own first lag of variable <em>i</em> and zero on all other lag coefficients, with prior variance</div>
+            <div style="display:flex; align-items:center; gap:20px; margin-top:14px;">
+              <div style="flex:1; font-size:18px; text-align:center;">Var[(<em>A<sub style="font-size:0.7em;">ℓ</sub></em>)<sub style="font-size:0.7em;">ij</sub>] =
+                <span style="display:inline-flex; align-items:center; gap:10px; vertical-align:middle;">
+                  <span style="font-size:34px; font-weight:300;">{</span>
+                  <span style="display:inline-flex; flex-direction:column; gap:6px; font-size:17px; text-align:left;">
+                    <span>(<em>λ</em><sub style="font-size:0.7em;">1</sub> ⁄ <em>ℓ</em><sup style="font-size:0.7em;">λ₃</sup>)²&ensp;<span style="color:#6B5F52; font-family:'Source Sans 3',sans-serif; font-size:13px;">i = j</span></span>
+                    <span>(<em>λ</em><sub style="font-size:0.7em;">1</sub><em>λ</em><sub style="font-size:0.7em;">2</sub> <em>σ<sub style="font-size:0.7em;">i</sub></em> ⁄ <em>ℓ</em><sup style="font-size:0.7em;">λ₃</sup> <em>σ<sub style="font-size:0.7em;">j</sub></em>)²&ensp;<span style="color:#6B5F52; font-family:'Source Sans 3',sans-serif; font-size:13px;">i ≠ j</span></span>
+                  </span>
+                </span>
+              </div>
+              <div style="font-family:'Source Sans 3',sans-serif; font-size:13px; color:#6B5F52;">(5.3)</div>
+            </div>
+          </div>
+
+          <div style="border-left:2px dotted #4E6E38; padding:4px 0 4px 18px; margin:24px 0;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#4E6E38; margin-bottom:6px;">Intuition</div>
+            <div style="font-size:17px; line-height:1.58; max-width:64ch;">The prior shrinks each equation toward a univariate process: <em>λ</em><sub style="font-size:0.7em;">1</sub> sets overall tightness, <em>λ</em><sub style="font-size:0.7em;">2</sub> how much other variables' lags may matter, <em>λ</em><sub style="font-size:0.7em;">3</sub> how fast distant lags are switched off.</div>
+          </div>
+
+          <div style="border-top:1px solid #8E3620; border-left:4px double #8E3620; padding:12px 0 4px 17px; margin:24px 0;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#8E3620; margin-bottom:6px;">Pitfall</div>
+            <div style="font-size:17px; line-height:1.58; max-width:64ch;"><em>δ<sub style="font-size:0.7em;">i</sub></em> = 1 (random walk) suits variables in log levels. For growth rates, set <em>δ<sub style="font-size:0.7em;">i</sub></em> to 0 or a small value.<sup style="font-size:0.68em;"><a href="#fn1" style="border:0;">1</a></sup></div>
+          </div>
+
+          <div style="background:#FBF6F1; border:1px solid #E7DAD0; border-left:3px double #6B5F52; padding:15px 20px 17px; margin:24px 0;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:#2A231D; margin-bottom:10px;">Algorithm 5.1 · Gibbs sampler, independent Normal-inverse-Wishart prior</div>
+            <div style="display:flex; flex-direction:column; gap:9px; font-size:17px; line-height:1.5;">
+              <div style="display:flex; gap:12px;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:4px;">01</span><span>Draw vec(<em>B</em>) | Σ, <em>Y</em> ~ <em>N</em>(<em>b̄</em>, <em>V̄</em>), where <em>V̄</em> = (<em>V</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> + Σ<sup style="font-size:0.7em;">−1</sup> ⊗ <em>X</em>′<em>X</em>)<sup style="font-size:0.7em;">−1</sup> and <em>b̄</em> = <em>V̄</em>[<em>V</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>b</em><sub style="font-size:0.7em;">0</sub> + (Σ<sup style="font-size:0.7em;">−1</sup> ⊗ <em>X</em>′)vec(<em>Y</em>)].</span></div>
+              <div style="display:flex; gap:12px;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:4px;">02</span><span>Draw Σ | <em>B</em>, <em>Y</em> ~ 𝒥𝒲(<em>S</em><sub style="font-size:0.7em;">0</sub> + (<em>Y</em> − <em>XB</em>)′(<em>Y</em> − <em>XB</em>), <em>ν</em><sub style="font-size:0.7em;">0</sub> + <em>T</em>).</span></div>
+            </div>
+            <div style="font-size:16.5px; line-height:1.5; margin-top:9px; color:#4A423B;">Discard the first <em>S</em><sub style="font-size:0.7em;">burn</sub> draws.</div>
+          </div>
+
+          <!-- tabset -->
+          <div style="margin:30px 0 24px;">
+            <div style="display:flex; gap:0; border-bottom:1px solid #DED0C4; font-family:'Source Sans 3',sans-serif; font-size:13px;">
+              <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+                <div onClick="{{ t.select }}" style="padding:8px 16px; cursor:pointer; border:1px solid {{ t.border }}; border-bottom:0; margin-bottom:-1px; background:{{ t.bg }}; color:{{ t.fg }}; font-weight:{{ t.weight }};">{{ t.label }}</div>
+              </sc-for>
+            </div>
+            <div style="border:1px solid #E7DAD0; border-top:0; background:#FBF6F1; padding:16px 18px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.62; color:#2A231D; white-space:pre-wrap;">{{ codeShown }}</div>
+          </div>
+
+          <div style="margin:24px 0;">
+            <div style="background:#FBF6F1; border:1px solid #E7DAD0; border-left:3px solid #DED0C4; padding:14px 18px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.62; white-space:pre; color:#2A231D;">fc = bvar.forecast(horizon=8, quantiles=[0.025, 0.16, 0.84, 0.975])
+<span style="color:#7E6325;">print</span>(fc.summary())</div>
+            <div style="border-left:2px solid #DED0C4; padding:10px 16px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.62; color:#4A423B; white-space:pre;">horizon   median    q16     q84     q2.5    q97.5
+1          3.08    2.53    3.63    2.03    4.13
+4          3.20    2.41    3.99    1.66    4.74
+8          3.55    2.42    4.68    1.39    5.71</div>
+          </div>
+
+          <figure style="margin:28px 0 0;">
+            <div style="background:#FFFFFF; border:1px solid #E7DAD0; padding:14px 12px 4px;">
+              <svg viewBox="0 0 620 250" width="100%" style="display:block;">
+                <g stroke="#E7DAD0" stroke-width="1"><sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><line x1="40" x2="612" y1="{{ g.y }}" y2="{{ g.y }}"></line></sc-for></g>
+                <rect x="{{ fan.fx }}" y="10" width="{{ fan.fw }}" height="214" fill="#B0472A" opacity="0.055"></rect>
+                <polygon points="{{ fan.b95 }}" fill="#F4DCD1"></polygon>
+                <polygon points="{{ fan.b68 }}" fill="#D4907A"></polygon>
+                <polyline points="{{ fan.hist }}" fill="none" stroke="#2A231D" stroke-width="1.6"></polyline>
+                <polyline points="{{ fan.med }}" fill="none" stroke="#B0472A" stroke-width="1.9" stroke-dasharray="5 3"></polyline>
+                <line x1="40" x2="612" y1="{{ fan.zeroY }}" y2="{{ fan.zeroY }}" stroke="#6B5F52" stroke-width="0.9"></line>
+                <sc-for list="{{ fan.dots }}" as="d" hint-placeholder-count="8"><circle cx="{{ d.x }}" cy="{{ d.y }}" r="3" fill="#1F3D5C"></circle></sc-for>
+                <g font-family="Source Sans 3, sans-serif" font-size="11" fill="#6B5F52">
+                  <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><text x="34" y="{{ g.ty }}" text-anchor="end">{{ g.label }}</text></sc-for>
+                  <sc-for list="{{ fan.xticks }}" as="t" hint-placeholder-count="6"><text x="{{ t.x }}" y="243" text-anchor="middle">{{ t.label }}</text></sc-for>
+                </g>
+              </svg>
+            </div>
+            <figcaption style="margin-top:10px; font-family:'Source Sans 3',sans-serif; font-size:12.5px; line-height:1.5; color:#3A322B; max-width:70ch;"><span style="font-weight:700;">Figure 5.3.</span> BVAR forecast of real GDP growth, 2018Q1 to 2019Q4. Bands: 68% and 95% posterior predictive intervals. Dots: realized values.<br><span style="color:#6B5F52;">Source: Central Reserve Bank of Peru (BCRP); author's calculations.</span></figcaption>
+          </figure>
+
+          <div style="margin:34px 0 0;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:12.5px; font-weight:700; color:#2A231D; margin-bottom:8px;">Table 5.2. Out-of-sample accuracy, RMSE relative to a random walk</div>
+            <table style="width:100%; border-collapse:collapse; font-family:'EB Garamond',serif; font-size:16.5px; color:#2A231D;">
+              <thead>
+                <tr style="border-top:1.6px solid #2A231D; border-bottom:0.8px solid #2A231D;">
+                  <th style="text-align:left; padding:8px 10px 7px 0; font-family:'Source Sans 3',sans-serif; font-size:12.5px; font-weight:600;">Model</th>
+                  <sc-for list="{{ tableHeads }}" as="h" hint-placeholder-count="4"><th style="text-align:right; padding:8px 0 7px 16px; font-family:'Source Sans 3',sans-serif; font-size:12.5px; font-weight:600;">{{ h }}</th></sc-for>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="4">
+                  <tr style="border-bottom:0.4px solid #E0D2C6;">
+                    <td style="padding:7px 10px 7px 0;">{{ r.m }}</td>
+                    <sc-for list="{{ r.v }}" as="v" hint-placeholder-count="4"><td style="padding:7px 0 7px 16px; text-align:right; font-variant-numeric:tabular-nums;">{{ v }}</td></sc-for>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <div style="border-top:1.6px solid #2A231D; margin-top:-1px;"></div>
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:12px; color:#6B5F52; margin-top:8px; line-height:1.5;">Values below 1 beat the benchmark. Evaluation sample 2014Q1–2019Q4, expanding window.</div>
+          </div>
+
+          <div id="fn1" style="margin-top:34px; border-top:1px solid #DED0C4; padding-top:12px; font-size:14.5px; line-height:1.55; color:#4A423B; max-width:70ch;">
+            <span style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; color:#B0472A; vertical-align:super;">1</span> Bańbura, Giannone and Reichlin (2010) set <em>δ<sub style="font-size:0.7em;">i</sub></em> = 1 for all variables in levels and scale <em>λ</em><sub style="font-size:0.7em;">1</sub> with the cross-section size; Giannone, Lenza and Primiceri (2015) instead treat <em>λ</em><sub style="font-size:0.7em;">1</sub> as a hyperparameter with its own prior.
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:40px; border-top:1px solid #DED0C4; padding-top:16px; font-family:'Source Sans 3',sans-serif; font-size:13.5px;">
+            <div style="color:#B0472A;">← 5.2 Reduced form and OLS</div>
+            <div style="color:#B0472A;">5.4 Gibbs sampling →</div>
+          </div>
+        </main>
+
+        <aside style="padding:44px 28px 0 0; font-family:'Source Sans 3',sans-serif; font-size:12.5px; color:#6B5F52;">
+          <div style="font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; font-weight:700; color:#8C8175; margin-bottom:10px;">On this page</div>
+          <div style="display:flex; flex-direction:column; gap:7px; border-left:1px solid #E7DAD0; padding-left:12px; margin-bottom:28px;">
+            <div>5.1 Why shrink?</div><div>5.2 Reduced form and OLS</div><div style="color:#B0472A;">5.3 The Minnesota prior</div><div>5.4 Gibbs sampling</div>
+          </div>
+          <div style="border-top:2px solid #DED0C4; padding-top:9px; line-height:1.55;"><span style="font-weight:700; color:#3A322B;">Margin note.</span> Litterman's original prior treated Σ as fixed and diagonal. Algorithm 5.1 relaxes both at the cost of losing the closed-form posterior.</div>
+          <div style="border-top:2px solid #DED0C4; padding-top:9px; margin-top:18px; line-height:1.55;"><span style="font-weight:700; color:#3A322B;">Reproduce.</span> <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">code/ch05_bvar_forecast.py</span> regenerates Figure 5.3 and Table 5.2.</div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= CHAPTER END + MOBILE -->
+  <div style="display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap;">
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="font-size:13px; font-weight:600; color:#2A231D;">4 · Chapter end — 900 px content column</div>
+      <div style="width:900px; background:#FDFBF7; border:1px solid #DED0C4; padding:44px 56px 52px; font-family:'EB Garamond',serif; color:#2A231D;">
+        <div style="font-family:'Source Sans 3',sans-serif; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:12px;">5.6 · End of chapter</div>
+        <h2 style="font-family:'Source Sans 3',sans-serif; margin:0 0 20px; font-size:25px; font-weight:600;">Key takeaways</h2>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:38px;">
+          <sc-for list="{{ takeaways }}" as="t" hint-placeholder-count="4">
+            <div style="display:flex; gap:14px; border-bottom:1px solid #EFE6DE; padding-bottom:11px; font-size:17.5px; line-height:1.55;"><span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#B0472A; padding-top:4px;">{{ t.n }}</span><span>{{ t.t }}</span></div>
+          </sc-for>
+        </div>
+
+        <h2 style="font-family:'Source Sans 3',sans-serif; margin:0 0 16px; font-size:25px; font-weight:600;">Further reading</h2>
+        <div style="display:flex; flex-direction:column; gap:11px; font-size:16.5px; line-height:1.5; margin-bottom:38px;">
+          <sc-for list="{{ reading }}" as="r" hint-placeholder-count="3">
+            <div style="display:grid; grid-template-columns:200px minmax(0,1fr); gap:18px;"><span style="color:#6B5F52; font-family:'Source Sans 3',sans-serif; font-size:13px; padding-top:3px;">{{ r.who }}</span><span>{{ r.what }}</span></div>
+          </sc-for>
+        </div>
+
+        <h2 style="font-family:'Source Sans 3',sans-serif; margin:0 0 16px; font-size:25px; font-weight:600;">Exercises</h2>
+        <div style="display:flex; flex-direction:column; gap:0;">
+          <div style="border-top:1px solid #DED0C4; padding:14px 0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:#6B5F52; margin-bottom:6px;">Exercise 5.1</div>
+            <div style="font-size:17px; line-height:1.55;">Show that when every equation has the same regressors, equation-by-equation OLS equals GLS on the stacked system.</div>
+            <details style="margin-top:9px;">
+              <summary style="font-family:'Source Sans 3',sans-serif; font-size:12.5px; font-weight:600; color:#B0472A; list-style:none;">Show solution</summary>
+              <div style="font-size:16px; line-height:1.55; color:#4A423B; padding-top:8px;">GLS weights by Σ<sup style="font-size:0.7em;">−1</sup> ⊗ <em>I<sub style="font-size:0.7em;">T</sub></em>. With a common regressor matrix the Kronecker structure factors out of the normal equations and the Σ terms cancel, leaving (<em>X</em>′<em>X</em>)<sup style="font-size:0.7em;">−1</sup><em>X</em>′<em>Y</em>.</div>
+            </details>
+          </div>
+          <div style="border-top:1px solid #DED0C4; padding:14px 0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:#6B5F52; margin-bottom:6px;">Exercise 5.2</div>
+            <div style="font-size:17px; line-height:1.55;">Re-estimate the model of Figure 5.3 with <em>λ</em><sub style="font-size:0.7em;">1</sub> ∈ {0.05, 0.2, 1.0} and report how the eight-quarter band width changes.</div>
+            <details style="margin-top:9px;">
+              <summary style="font-family:'Source Sans 3',sans-serif; font-size:12.5px; font-weight:600; color:#B0472A; list-style:none;">Show solution</summary>
+              <div style="font-size:16px; line-height:1.55; color:#4A423B; padding-top:8px;">Tightening to 0.05 narrows the 95% band by roughly a third and pulls the median toward the sample mean; <em>λ</em><sub style="font-size:0.7em;">1</sub> = 1.0 returns the OLS path almost exactly.</div>
+            </details>
+          </div>
+          <div style="border-top:1px solid #DED0C4; border-bottom:1px solid #DED0C4; padding:14px 0;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:#6B5F52; margin-bottom:6px;">Exercise 5.3</div>
+            <div style="font-size:17px; line-height:1.55;">Verify that the Gibbs draws of Algorithm 5.1 have converged, using the trace plot and the split-chain diagnostic of §5.4.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="font-size:13px; font-weight:600; color:#2A231D;">Mobile — 390 px</div>
+      <div style="display:flex; gap:20px;">
+        <!-- mobile landing -->
+        <div style="width:390px; background:#FDFBF7; border:1px solid #DED0C4;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:48px; border-bottom:1px solid #DED0C4;">
+            <div style="display:flex; flex-direction:column; gap:3px;"><div style="width:18px; height:1.6px; background:#2A231D;"></div><div style="width:18px; height:1.6px; background:#2A231D;"></div><div style="width:18px; height:1.6px; background:#2A231D;"></div></div>
+            <div style="font-family:'EB Garamond',serif; font-size:14px; font-weight:600; color:#2A231D;">Applied Macroeconometrics</div>
+            <div style="font-size:12px; color:#6B5F52;">⌕</div>
+          </div>
+          <div style="padding:24px 20px 28px;">
+            <div style="font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:#B0472A; font-weight:700; margin-bottom:12px;">Open graduate textbook</div>
+            <h1 style="font-family:'EB Garamond',serif; font-size:31px; line-height:1.12; font-weight:600; color:#2A231D; margin:0 0 6px;">Applied Macroeconometrics with Python</h1>
+            <div style="font-family:'EB Garamond',serif; font-size:17px; color:#6B5F52; margin-bottom:16px;">From macro data to structural inference and forecasts</div>
+            <p style="font-family:'EB Garamond',serif; font-size:17px; line-height:1.58; color:#2A231D; margin:0 0 18px;">A graduate course that introduces each model as the answer to an empirical problem. Every result is reproducible from the Python code printed beside it.</p>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:26px;">
+              <div style="background:#B0472A; color:#FDFBF7; font-size:14px; font-weight:600; padding:12px 16px; text-align:center;">Start reading</div>
+              <div style="border:1px solid #B0472A; color:#B0472A; font-size:14px; font-weight:600; padding:12px 16px; text-align:center;">Download PDF</div>
+              <div style="border:1px solid #DED0C4; color:#2A231D; font-size:14px; font-weight:600; padding:12px 16px; text-align:center;">GitHub repository</div>
+            </div>
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#6B5F52; font-weight:700; margin-bottom:8px;">Chapters</div>
+            <div style="display:flex; flex-direction:column;">
+              <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="11">
+                <div style="display:flex; gap:12px; padding:11px 0; border-bottom:1px solid #EFE6DE; align-items:baseline;"><span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#B0472A;">{{ ch.n }}</span><span style="font-family:'EB Garamond',serif; font-size:17px; color:#2A231D;">{{ ch.t }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- mobile interior -->
+        <div style="width:390px; background:#FDFBF7; border:1px solid #DED0C4;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:48px; border-bottom:1px solid #DED0C4;">
+            <div style="display:flex; flex-direction:column; gap:3px;"><div style="width:18px; height:1.6px; background:#2A231D;"></div><div style="width:18px; height:1.6px; background:#2A231D;"></div><div style="width:18px; height:1.6px; background:#2A231D;"></div></div>
+            <div style="font-size:12.5px; color:#6B5F52;">5 · Bayesian VARs</div>
+            <div style="font-size:12px; color:#6B5F52;">⌕</div>
+          </div>
+          <div style="padding:22px 20px 28px; font-family:'EB Garamond',serif; color:#2A231D;">
+            <h2 style="font-family:'Source Sans 3',sans-serif; margin:0 0 5px; font-size:21px; font-weight:600;">5.3 The Minnesota prior</h2>
+            <div style="height:2px; background:#2A231D; width:44px; margin-bottom:16px;"></div>
+            <p style="margin:0 0 14px; font-size:16.5px; line-height:1.6;">A VAR with <em>n</em> = 7 variables and <em>p</em> = 4 lags carries 203 coefficients per equation block, against 100 usable quarterly observations. Write the reduced form as</p>
+            <div style="overflow-x:auto; padding:2px 0 8px;"><div style="font-size:16.5px; white-space:nowrap;"><em>y<sub style="font-size:0.7em;">t</sub></em> = <em>c</em> + <em>A</em><sub style="font-size:0.7em;">1</sub><em>y</em><sub style="font-size:0.7em;">t−1</sub> + ⋯ + <em>A<sub style="font-size:0.7em;">p</sub>y</em><sub style="font-size:0.7em;">t−p</sub> + <em>u<sub style="font-size:0.7em;">t</sub></em>&ensp;<span style="font-family:'Source Sans 3',sans-serif; font-size:12px; color:#6B5F52;">(5.1)</span></div></div>
+            <div style="background:#F0E0D6; border-left:4px solid #B0472A; border-top:1px solid #DCC4B5; border-right:1px solid #DCC4B5; border-bottom:1px solid #DCC4B5; padding:12px 14px 14px; margin:18px 0;">
+              <div style="font-family:'Source Sans 3',sans-serif; font-size:10.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#8E3620; margin-bottom:6px;">Assumption 5.1 · Recursive identification</div>
+              <div style="font-size:16px; line-height:1.5;"><em>u<sub style="font-size:0.7em;">t</sub></em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>ε<sub style="font-size:0.7em;">t</sub></em>, with <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> lower triangular and 𝔼[<em>ε<sub style="font-size:0.7em;">t</sub>ε</em>′<sub style="font-size:0.7em;">t</sub>] = <em>I<sub style="font-size:0.7em;">n</sub></em>.</div>
+            </div>
+            <div style="border-left:2px dotted #4E6E38; padding:2px 0 2px 14px; margin:18px 0;">
+              <div style="font-family:'Source Sans 3',sans-serif; font-size:10.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#4E6E38; margin-bottom:5px;">Intuition</div>
+              <div style="font-size:16px; line-height:1.55;">The prior shrinks each equation toward a univariate process: <em>λ</em><sub style="font-size:0.7em;">1</sub> sets overall tightness.</div>
+            </div>
+            <div style="margin:20px 0;">
+              <div style="display:flex; border-bottom:1px solid #DED0C4; font-family:'Source Sans 3',sans-serif; font-size:11.5px;">
+                <div style="padding:7px 10px; border:1px solid #E7DAD0; border-bottom:0; background:#FBF6F1; color:#2A231D; font-weight:600; margin-bottom:-1px;">From scratch (NumPy)</div>
+                <div style="padding:7px 10px; color:#6B5F52;">MacroPy</div>
+              </div>
+              <div style="border:1px solid #E7DAD0; border-top:0; background:#FBF6F1; padding:12px 14px; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.6; overflow-x:auto; white-space:pre; color:#2A231D;">B_ols = np.linalg.solve(X.T @ X, X.T @ Y)
+U = Y - X @ B_ols
+Sigma_ols = U.T @ U / (T - k)</div>
+            </div>
+            <figure style="margin:20px 0 0;">
+              <div style="background:#FFFFFF; border:1px solid #E7DAD0; padding:10px 8px 2px;">
+                <svg viewBox="0 0 620 250" width="100%" style="display:block;">
+                  <g stroke="#E7DAD0" stroke-width="1"><sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><line x1="40" x2="612" y1="{{ g.y }}" y2="{{ g.y }}"></line></sc-for></g>
+                  <rect x="{{ fan.fx }}" y="10" width="{{ fan.fw }}" height="214" fill="#B0472A" opacity="0.055"></rect>
+                  <polygon points="{{ fan.b95 }}" fill="#F4DCD1"></polygon>
+                  <polygon points="{{ fan.b68 }}" fill="#D4907A"></polygon>
+                  <polyline points="{{ fan.hist }}" fill="none" stroke="#2A231D" stroke-width="1.8"></polyline>
+                  <polyline points="{{ fan.med }}" fill="none" stroke="#B0472A" stroke-width="2.1" stroke-dasharray="5 3"></polyline>
+                  <line x1="40" x2="612" y1="{{ fan.zeroY }}" y2="{{ fan.zeroY }}" stroke="#6B5F52" stroke-width="1"></line>
+                  <sc-for list="{{ fan.dots }}" as="d" hint-placeholder-count="8"><circle cx="{{ d.x }}" cy="{{ d.y }}" r="3.4" fill="#1F3D5C"></circle></sc-for>
+                  <g font-family="Source Sans 3, sans-serif" font-size="13" fill="#6B5F52">
+                    <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><text x="34" y="{{ g.ty }}" text-anchor="end">{{ g.label }}</text></sc-for>
+                    <sc-for list="{{ fan.xticksShort }}" as="t" hint-placeholder-count="3"><text x="{{ t.x }}" y="243" text-anchor="middle">{{ t.label }}</text></sc-for>
+                  </g>
+                </svg>
+              </div>
+              <figcaption style="margin-top:8px; font-family:'Source Sans 3',sans-serif; font-size:11.5px; line-height:1.45; color:#3A322B;"><span style="font-weight:700;">Figure 5.3.</span> BVAR forecast of real GDP growth, 2018Q1 to 2019Q4. Dots: realized values.<br><span style="color:#6B5F52;">Source: BCRP; author's calculations.</span></figcaption>
+            </figure>
+            <div style="margin-top:20px; background:#F7EDE5; border-left:3px solid #DED0C4; padding:10px 12px; font-family:'Source Sans 3',sans-serif; font-size:12px; line-height:1.5; color:#3A322B;"><span style="font-weight:700;">Margin note.</span> On narrow screens Quarto collapses the margin column into the flow at this size; notes keep the tint and rule so they stay separable from body text.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#F7EDE5; border-left:4px solid #6B5F52; padding:14px 18px; font-size:12.5px; line-height:1.6; color:#3A322B; max-width:110ch;">
+    <span style="font-weight:700;">Flags.</span> Landing page: the three link buttons are plain styled links, not Bootstrap cards; the two-column chapter list needs a <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">::: {.chapter-index}</span> div — custom HTML, no JavaScript. Chapter opener: "Data used" is an ordinary table inside a styled div. Interior page: tabset, citation hover, footnote and margin note are all Quarto-native. The braced case distinction in (5.3) renders through Quarto's MathJax/KaTeX; the mockup approximates it with plain HTML, so judge its spacing, not its glyphs. Mobile at 390 px keeps the 68-character measure by dropping to a single column — Quarto's default behaviour, unchanged.
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1540,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { tab: 0, cite: false };
+
+  fan() {
+    const W = 620, PL = 40, PR = 8, PT = 10, PB = 26, H = 250;
+    const n = 24, hN = 16, plotW = W - PL - PR, plotH = H - PT - PB;
+    const x = i => PL + (i * plotW) / (n - 1);
+    const y = v => PT + ((7 - v) * plotH) / 8;
+    let s = 20260917;
+    const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff - 0.5);
+    const hist = [];
+    for (let i = 0; i < hN; i++) hist.push(3.2 + 1.5 * Math.sin(i / 2.4) + 1.1 * rnd());
+    const med = [3.08, 2.95, 3.02, 3.2, 3.35, 3.45, 3.5, 3.55];
+    const h68 = med.map((_, h) => 0.55 + 0.11 * h);
+    const h95 = med.map((_, h) => 1.05 + 0.22 * h);
+    const anchor = hist[hN - 1];
+    const pts = (arr, off) => arr.map((v, i) => `${x(i + off).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const band = hw => {
+      const up = med.map((v, i) => `${x(hN + i).toFixed(1)},${y(v + hw[i]).toFixed(1)}`);
+      const lo = med.map((v, i) => `${x(hN + i).toFixed(1)},${y(v - hw[i]).toFixed(1)}`).reverse();
+      return [`${x(hN - 1).toFixed(1)},${y(anchor).toFixed(1)}`, ...up, ...lo].join(" ");
+    };
+    const dots = med.map((v, i) => {
+      const vv = v + 0.45 * Math.sin(i * 1.7) + 0.5 * rnd();
+      return { x: x(hN + i).toFixed(1), y: y(vv).toFixed(1) };
+    });
+    return {
+      hist: pts(hist, 0),
+      med: [`${x(hN - 1).toFixed(1)},${y(anchor).toFixed(1)}`, pts(med, hN)].join(" "),
+      b68: band(h68), b95: band(h95), dots,
+      ygrid: [-1, 1, 3, 5, 7].map(v => ({ y: y(v).toFixed(1), ty: (y(v) + 4).toFixed(1), label: String(v) })),
+      xticks: [0, 4, 8, 12, 16, 20].map(i => ({ x: x(i).toFixed(1), label: `${2014 + i / 4}Q1` })),
+      xticksShort: [0, 8, 16].map(i => ({ x: x(i).toFixed(1), label: `${2014 + i / 4}Q1` })),
+      zeroY: y(0).toFixed(1), fx: x(hN - 1).toFixed(1), fw: (x(n - 1) - x(hN - 1)).toFixed(1)
+    };
+  }
+
+  renderVals() {
+    const code = [
+      `B_ols = np.linalg.solve(X.T @ X, X.T @ Y)\nU = Y - X @ B_ols\nSigma_ols = U.T @ U / (T - k)`,
+      `bvar = BayesianVAR(y, lags=2, prior_type=1,\n                   prior_params={"mn_mean": 0, "lamda1": 0.2,\n                                 "lamda2": 0.5, "lamda3": 1, "lamda4": 1e5},\n                   post_draws=5000, burnin=0.5, seed=42)\nbvar.sample_posterior()`
+    ];
+    const labels = ["From scratch (NumPy)", "MacroPy"];
+    return {
+      fan: this.fan(),
+      citeOpen: this.state.cite,
+      showCite: () => this.setState({ cite: true }),
+      hideCite: () => this.setState({ cite: false }),
+      codeShown: code[this.state.tab],
+      tabs: labels.map((label, i) => ({
+        label,
+        select: () => this.setState({ tab: i }),
+        bg: i === this.state.tab ? "#FBF6F1" : "transparent",
+        fg: i === this.state.tab ? "#2A231D" : "#6B5F52",
+        weight: i === this.state.tab ? "600" : "400",
+        border: i === this.state.tab ? "#E7DAD0" : "transparent"
+      })),
+      chapters: [
+        { n: "01", t: "Macroeconomic data", d: "Sources, frequency, transformations, revisions" },
+        { n: "02", t: "Stationarity and trends", d: "Unit roots, filters, what a cycle is" },
+        { n: "03", t: "Univariate models", d: "AR, ARMA, forecasting one series" },
+        { n: "04", t: "Vector autoregressions", d: "Systems, companion form, lag choice" },
+        { n: "05", t: "Bayesian VARs", d: "Shrinkage, Minnesota prior, Gibbs sampling" },
+        { n: "06", t: "Structural VARs", d: "Identification: recursive, sign, long-run" },
+        { n: "07", t: "Forecasting and evaluation", d: "Density forecasts, fan charts, scoring" },
+        { n: "08", t: "State space models", d: "Kalman filter and smoother, unobserved components" },
+        { n: "09", t: "Stochastic volatility", d: "Time-varying variances in macro data" },
+        { n: "10", t: "Time-varying parameters", d: "Drifting coefficients, regime change" },
+        { n: "11", t: "Machine learning for macro", d: "Regularisation, factors, forests" }
+      ],
+      learn: [
+        { n: "01", t: "Why an unrestricted VAR fails when the parameter count approaches the sample size." },
+        { n: "02", t: "How the Minnesota prior encodes the belief that macro series are close to random walks." },
+        { n: "03", t: "How to draw from the posterior with a Gibbs sampler and check that it has converged." },
+        { n: "04", t: "How to produce and evaluate density forecasts against a random-walk benchmark." }
+      ],
+      data: [
+        { series: "Real GDP", meta: "BCRP · quarterly · 100 · Δlog, annualised" },
+        { series: "Fiscal revenue", meta: "BCRP · quarterly · real, Δlog" },
+        { series: "Terms of trade", meta: "BCRP · quarterly · index, Δlog" },
+        { series: "Policy rate", meta: "BCRP · quarterly average · level, %" }
+      ],
+      tableHeads: ["h = 1", "h = 4", "h = 8", "h = 12"],
+      tableRows: [
+        { m: "BVAR, Minnesota (λ₁ = 0.2)", v: ["0.83", "0.79", "0.86", "0.91"] },
+        { m: "BVAR, hierarchical λ₁", v: ["0.81", "0.76", "0.82", "0.88"] },
+        { m: "VAR, OLS", v: ["1.04", "1.12", "1.31", "1.44"] },
+        { m: "AR(4), univariate", v: ["0.92", "0.95", "0.98", "1.01"] }
+      ],
+      takeaways: [
+        { n: "01", t: "A VAR large enough to be interesting has more parameters than the sample can identify; the question is not whether to restrict it but how." },
+        { n: "02", t: "The Minnesota prior restricts by shrinking toward a univariate random walk, with three hyperparameters that have clear economic readings." },
+        { n: "03", t: "The independent Normal-inverse-Wishart prior loses the closed form but gains flexibility; Algorithm 5.1 draws from it in two Gibbs steps." },
+        { n: "04", t: "Shrinkage earns its bias: relative RMSE falls below one at every horizon in Table 5.2, and the gain is largest at four to eight quarters." }
+      ],
+      reading: [
+        { who: "Litterman (1986)", what: "The original five-year record of Bayesian VAR forecasting, and the source of the prior's name." },
+        { who: "Bańbura, Giannone and Reichlin (2010)", what: "Large BVARs: how to scale prior tightness with the size of the cross-section." },
+        { who: "Giannone, Lenza and Primiceri (2015)", what: "Treating prior tightness as a parameter to be estimated rather than chosen." }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

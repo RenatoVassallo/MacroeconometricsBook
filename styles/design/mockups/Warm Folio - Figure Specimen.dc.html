@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700&family=Source+Sans+3:ital,wght@0,400..700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #E8E4DE; }
+  a { color: #B0472A; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</helmet>
+
+<section style="display:flex; flex-direction:column; gap:26px; padding:48px; width:1120px; font-family:'Source Sans 3',sans-serif;">
+
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <div style="font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:#6B5F52;">Step 2 · Deliverable 5 · Direction 1a Warm Folio</div>
+    <div style="font-family:'EB Garamond',serif; font-size:32px; font-weight:600; color:#2A231D;">Figure specimen sheet</div>
+    <div style="font-size:14px; line-height:1.55; color:#4A423B; max-width:74ch;">Every figure is drawn in point units at its real output width — text figures 324 pt (4.5 in), full-width figures 432 pt (6.0 in) — then displayed enlarged, so all type you see is between 8 and 9 pt at print size. White ground, top and right spines off, grid 0.5 pt, frameless legends, no titles inside the axes. Data is synthetic but plausible: quarterly Peruvian-style series, a seven-variable BVAR, 5000 draws.</div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:22px;">
+    <sc-for list="{{ figs }}" as="f" hint-placeholder-count="11">
+      <div style="background:#FDFBF7; border:1px solid #DED0C4; padding:20px 24px 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; gap:20px;">
+          <div style="font-family:'Source Sans 3',sans-serif; font-size:13px; font-weight:700; color:#2A231D;">{{ f.title }}</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6B5F52;">{{ f.spec }}</div>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid #E7DAD0; padding:10px;">
+          <svg viewBox="{{ f.vb }}" width="100%" style="display:block;" font-family="Source Sans 3, sans-serif">
+            <sc-for list="{{ f.rects }}" as="r" hint-placeholder-count="2"><rect x="{{ r.x }}" y="{{ r.y }}" width="{{ r.w }}" height="{{ r.h }}" fill="{{ r.fill }}" stroke="{{ r.stroke }}" stroke-width="{{ r.sw }}"></rect></sc-for>
+            <sc-for list="{{ f.polys }}" as="p" hint-placeholder-count="3"><polygon points="{{ p.points }}" fill="{{ p.fill }}" opacity="{{ p.opacity }}"></polygon></sc-for>
+            <sc-for list="{{ f.lines }}" as="l" hint-placeholder-count="4"><polyline points="{{ l.points }}" fill="none" stroke="{{ l.stroke }}" stroke-width="{{ l.w }}" stroke-dasharray="{{ l.dash }}" stroke-linejoin="round"></polyline></sc-for>
+            <sc-for list="{{ f.dots }}" as="d" hint-placeholder-count="8"><circle cx="{{ d.x }}" cy="{{ d.y }}" r="{{ d.r }}" fill="{{ d.fill }}" stroke="{{ d.stroke }}" stroke-width="0.5"></circle></sc-for>
+            <sc-for list="{{ f.marks }}" as="m" hint-placeholder-count="4"><path d="{{ m.d }}" fill="{{ m.fill }}" stroke="{{ m.stroke }}" stroke-width="{{ m.w }}"></path></sc-for>
+            <sc-for list="{{ f.texts }}" as="t" hint-placeholder-count="10"><text x="{{ t.x }}" y="{{ t.y }}" font-size="{{ t.size }}" fill="{{ t.fill }}" text-anchor="{{ t.anchor }}" transform="{{ t.rot }}" font-weight="{{ t.weight }}">{{ t.s }}</text></sc-for>
+          </svg>
+        </div>
+        <div style="margin-top:10px; font-family:'Source Sans 3',sans-serif; font-size:12.5px; line-height:1.5; color:#3A322B; max-width:78ch;">{{ f.caption }}<span style="color:#6B5F52;"> {{ f.source }}</span></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background:#F7EDE5; border-left:4px solid #6B5F52; padding:14px 18px; font-size:12.5px; line-height:1.6; color:#3A322B;">
+    <span style="font-weight:700;">Grayscale and CVD.</span> Line identity is carried by style order (solid, dashed, dash-dot, dotted, long-dash, thin-solid) and marker order (circle, square, triangle, diamond) before colour, so every panel above survives a monochrome print and a red–green channel collapse. Band nesting is monotone in lightness. The heatmap is the one figure that depends on hue direction; in grayscale it reads as magnitude only, which is why the colourbar carries signed numbers.
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1220,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    const C = {
+      ink: "#2A231D", mute: "#6B5F52", grey: "#9A9086", grid: "#E7DAD0",
+      est: "#B0472A", real: "#1F3D5C", accent: "#4E6E38",
+      band: ["#F4DCD1", "#E6BCA8", "#D4907A", "#BF6244"],
+      shock: ["#2A231D", "#3D647F", "#B0472A", "#5A7D43", "#9A7B2E", "#C9A98A"],
+      div: ["#8E3620", "#C06A4A", "#E2AC93", "#F0E0D6", "#9DB6C6", "#5B87A3", "#23435A"],
+      rec: "#EDE9E4", fcst: "#FBF0EA"
+    };
+    const DASH = ["0", "3 2", "4 1.5 1 1.5", "1 1.5", "6 2", "0"];
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff - 0.5);
+
+    const figs = [];
+    const F = (title, spec, caption, source, w, h) => {
+      const f = { title, spec, caption, source, vb: `0 0 ${w} ${h}`, rects: [], polys: [], lines: [], dots: [], marks: [], texts: [] };
+      figs.push(f); return f;
+    };
+    const txt = (f, s, x, y, o = {}) => f.texts.push({
+      s, x: +x.toFixed(1), y: +y.toFixed(1), size: o.size || 8, fill: o.fill || C.mute,
+      anchor: o.anchor || "middle", rot: o.rot || "", weight: o.weight || "400"
+    });
+    // axes helper: returns scales + draws spines, grid, ticks
+    const ax = (f, box, xd, yd, opt = {}) => {
+      const [x0, y0, w, h] = box;
+      const X = v => x0 + ((v - xd[0]) / (xd[1] - xd[0])) * w;
+      const Y = v => y0 + h - ((v - yd[0]) / (yd[1] - yd[0])) * h;
+      (opt.yticks || []).forEach(v => {
+        f.lines.push({ points: `${X(xd[0]).toFixed(1)},${Y(v).toFixed(1)} ${X(xd[1]).toFixed(1)},${Y(v).toFixed(1)}`, stroke: C.grid, w: 0.5, dash: "0" });
+        if (opt.ylab !== false) txt(f, opt.yfmt ? opt.yfmt(v) : String(v), x0 - 3, Y(v) + 2.8, { anchor: "end" });
+      });
+      (opt.xticks || []).forEach(t => {
+        if (opt.xlab !== false) txt(f, t.l, X(t.v), y0 + h + 9);
+      });
+      f.lines.push({ points: `${x0},${y0} ${x0},${(y0 + h).toFixed(1)} ${(x0 + w).toFixed(1)},${(y0 + h).toFixed(1)}`, stroke: C.mute, w: 0.7, dash: "0" });
+      return { X, Y, x0, y0, w, h };
+    };
+    const poly = (a, X, Y, xs) => a.map((v, i) => `${X(xs ? xs[i] : i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
+    const bandPoly = (lo, hi, X, Y, xs) => [...hi.map((v, i) => `${X(xs ? xs[i] : i).toFixed(1)},${Y(v).toFixed(1)}`),
+      ...lo.map((v, i) => `${X(xs ? xs[i] : i).toFixed(1)},${Y(v).toFixed(1)}`).reverse()].join(" ");
+    const legend = (f, items, x, y, gap = 46) => items.forEach((it, i) => {
+      const xx = x + i * gap;
+      if (it.marker === "dot") f.dots.push({ x: +(xx + 4).toFixed(1), y: +y.toFixed(1), r: 1.8, fill: it.c, stroke: "none" });
+      else if (it.swatch) f.rects.push({ x: +xx.toFixed(1), y: +(y - 3).toFixed(1), w: 8, h: 5, fill: it.c, stroke: "none", sw: 0 });
+      else f.lines.push({ points: `${xx},${y} ${xx + 9},${y}`, stroke: it.c, w: 1, dash: it.dash || "0" });
+      txt(f, it.t, xx + 12, y + 2.6, { anchor: "start", size: 7.5 });
+    });
+
+    /* ---------- 1. three-panel time series ---------- */
+    {
+      const f = F("1 · Three-panel time series with episode shading and zero line", "324 × 300 pt · text width · 3 stacked axes, shared x",
+        "Figure 2.1. Output growth, fiscal revenue growth and the terms of trade, 2000Q1–2019Q4. Shaded: contraction episodes.", "Source: synthetic.", 324, 300);
+      const names = ["Real GDP growth", "Fiscal revenue growth", "Terms of trade (Δlog)"];
+      const T = 80, xt = [0, 16, 32, 48, 64, 79].map(v => ({ v, l: `${2000 + Math.round(v / 4)}` }));
+      names.forEach((nm, k) => {
+        const box = [34, 10 + k * 92, 282, 66];
+        const a = ax(f, box, [0, T - 1], [-8, 10], { yticks: [-8, -4, 0, 4, 8], xticks: k === 2 ? xt : [], xlab: k === 2 });
+        [[26, 32], [58, 63]].forEach(([s, e]) => f.rects.push({ x: +a.X(s).toFixed(1), y: box[1], w: +(a.X(e) - a.X(s)).toFixed(1), h: box[3], fill: C.rec, stroke: "none", sw: 0 }));
+        const v = []; let p = 3;
+        for (let i = 0; i < T; i++) { p = 0.78 * p + (k === 2 ? 3.4 : 1.6) * rnd() + (k ? 0.4 : 0.8); v.push(p); }
+        f.lines.push({ points: `${a.X(0)},${a.Y(0)} ${a.X(T - 1)},${a.Y(0)}`, stroke: C.ink, w: 0.6, dash: "0" });
+        f.lines.push({ points: poly(v, a.X, a.Y), stroke: [C.ink, C.mute, C.grey][k], w: 0.9, dash: DASH[k], });
+        txt(f, nm, 34, box[1] - 2, { anchor: "start", size: 8.5, fill: C.ink, weight: "600" });
+        txt(f, "per cent", 12, box[1] + 36, { rot: `rotate(-90 12 ${(box[1] + 36).toFixed(1)})`, size: 8 });
+      });
+      legend(f, [{ t: "series", c: C.ink }, { t: "contraction episode", c: C.rec, swatch: true }], 200, 292, 74);
+    }
+
+    /* ---------- 2. IRF grid ---------- */
+    {
+      const f = F("2 · Impulse-response grid, 3 × 3", "324 × 300 pt · text width · median with 68 % and 90 % bands",
+        "Figure 6.4. Responses to a one-standard-deviation shock, horizons 0–20 quarters. Bands: 68 % and 90 % posterior.", "Source: synthetic.", 324, 300);
+      const vars = ["GDP", "Revenue", "Rate"], shocks = ["Supply", "Demand", "Policy"];
+      const H = 20;
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+        const box = [40 + c * 96, 26 + r * 88, 76, 58];
+        const a = ax(f, box, [0, H], [-0.8, 1.2], { yticks: c === 0 ? [-0.5, 0, 0.5, 1] : [-0.5, 0, 0.5, 1], ylab: c === 0, xticks: r === 2 ? [{ v: 0, l: "0" }, { v: 10, l: "10" }, { v: 20, l: "20" }] : [], xlab: r === 2 });
+        const sgn = (r + c) % 2 ? -1 : 1, peak = 0.35 + 0.28 * ((r * 3 + c) % 4) / 3;
+        const med = [], b68l = [], b68h = [], b90l = [], b90h = [];
+        for (let h = 0; h <= H; h++) {
+          const m = sgn * peak * Math.exp(-h / (5 + c * 2)) * (1 - Math.exp(-h / 1.4 - 0.15));
+          const s = 0.1 + 0.02 * h;
+          med.push(m); b68l.push(m - s); b68h.push(m + s); b90l.push(m - 1.7 * s); b90h.push(m + 1.7 * s);
+        }
+        f.polys.push({ points: bandPoly(b90l, b90h, a.X, a.Y), fill: C.band[0], opacity: 1 });
+        f.polys.push({ points: bandPoly(b68l, b68h, a.X, a.Y), fill: C.band[2], opacity: 1 });
+        f.lines.push({ points: `${a.X(0)},${a.Y(0)} ${a.X(H)},${a.Y(0)}`, stroke: C.ink, w: 0.5, dash: "0" });
+        f.lines.push({ points: poly(med, a.X, a.Y), stroke: C.est, w: 1.1, dash: "0" });
+        if (r === 0) txt(f, `${shocks[c]} shock`, box[0] + 38, 20, { size: 8.5, fill: C.ink, weight: "600" });
+        if (c === 2) txt(f, vars[r], box[0] + 80, box[1] + 30, { rot: `rotate(90 ${(box[0] + 80).toFixed(1)} ${(box[1] + 30).toFixed(1)})`, size: 8.5, fill: C.ink, weight: "600" });
+      }
+      legend(f, [{ t: "median", c: C.est }, { t: "68 %", c: C.band[2], swatch: true }, { t: "90 %", c: C.band[0], swatch: true }], 40, 294, 58);
+    }
+
+    /* ---------- 3. fan chart ---------- */
+    {
+      const f = F("3 · Fan chart", "324 × 150 pt · text width · history, median, 4 quantile bands, realized points",
+        "Figure 5.3. BVAR forecast of real GDP growth, 2018Q1 to 2019Q4. Bands: 50, 68, 90 and 95 % posterior predictive intervals. Dots: realized values.", "Source: synthetic (BCRP-style series).", 324, 150);
+      const hN = 20, H = 8, N = hN + H;
+      const a = ax(f, [34, 12, 282, 104], [0, N - 1], [-2, 8], { yticks: [-2, 0, 2, 4, 6, 8], xticks: [0, 8, 16, 24].map(v => ({ v, l: `${2013 + Math.round(v / 4)}Q1` })) });
+      const hist = []; let p = 4;
+      for (let i = 0; i < hN; i++) { p = 0.75 * p + 1.5 * rnd() + 0.9; hist.push(p); }
+      const med = []; for (let h = 0; h < H; h++) med.push(3.0 + 0.08 * h);
+      const widths = [0.45, 0.65, 1.05, 1.3];
+      f.rects.push({ x: +a.X(hN - 1).toFixed(1), y: 12, w: +(a.X(N - 1) - a.X(hN - 1)).toFixed(1), h: 104, fill: C.fcst, stroke: "none", sw: 0 });
+      [3, 2, 1, 0].forEach(bi => {
+        const k = widths[3 - bi];
+        const lo = med.map((v, i) => v - k * (1 + 0.14 * i)), hi = med.map((v, i) => v + k * (1 + 0.14 * i));
+        const xs = med.map((_, i) => hN + i);
+        f.polys.push({ points: [`${a.X(hN - 1).toFixed(1)},${a.Y(hist[hN - 1]).toFixed(1)}`, bandPoly(lo, hi, a.X, a.Y, xs)].join(" "), fill: C.band[bi], opacity: 1 });
+      });
+      f.lines.push({ points: `${a.X(0)},${a.Y(0)} ${a.X(N - 1)},${a.Y(0)}`, stroke: C.ink, w: 0.6, dash: "0" });
+      f.lines.push({ points: poly(hist, a.X, a.Y), stroke: C.ink, w: 1, dash: "0" });
+      f.lines.push({ points: [`${a.X(hN - 1).toFixed(1)},${a.Y(hist[hN - 1]).toFixed(1)}`, poly(med, a.X, a.Y, med.map((_, i) => hN + i))].join(" "), stroke: C.est, w: 1.2, dash: "3 2" });
+      med.forEach((v, i) => f.dots.push({ x: +a.X(hN + i).toFixed(1), y: +a.Y(v + 0.5 * Math.sin(i * 1.9) + 0.35 * rnd()).toFixed(1), r: 1.7, fill: C.real, stroke: "none" }));
+      txt(f, "per cent", 12, 64, { rot: "rotate(-90 12 64)" });
+      legend(f, [{ t: "history", c: C.ink }, { t: "median", c: C.est, dash: "3 2" }, { t: "95 / 90 / 68 / 50 %", c: C.band[1], swatch: true }, { t: "realized", c: C.real, marker: "dot" }], 34, 140, 68);
+    }
+
+    /* ---------- 4. FEVD ---------- */
+    {
+      const f = F("4 · Forecast error variance decomposition", "324 × 150 pt · text width · stacked, 6 ordered shocks",
+        "Figure 6.7. Share of the forecast error variance of real GDP growth attributed to each structural shock, horizons 1–20.", "Source: synthetic.", 324, 150);
+      const H = 20;
+      const a = ax(f, [34, 12, 244, 104], [1, H], [0, 100], { yticks: [0, 25, 50, 75, 100], yfmt: v => `${v}`, xticks: [1, 5, 10, 15, 20].map(v => ({ v, l: `${v}` })) });
+      const shares = [];
+      for (let h = 1; h <= H; h++) {
+        const raw = [46 - 0.9 * h, 18 + 0.5 * h, 12 + 0.4 * h, 10, 8, 6 - 0.05 * h].map(v => Math.max(v, 1));
+        const tot = raw.reduce((s, v) => s + v, 0);
+        shares.push(raw.map(v => (100 * v) / tot));
+      }
+      let base = new Array(H).fill(0);
+      for (let k = 0; k < 6; k++) {
+        const lo = base.slice(), hi = base.map((b, i) => b + shares[i][k]);
+        const xs = hi.map((_, i) => i + 1);
+        f.polys.push({ points: bandPoly(lo, hi, a.X, a.Y, xs), fill: C.shock[k], opacity: 1 });
+        base = hi;
+      }
+      txt(f, "per cent of variance", 12, 64, { rot: "rotate(-90 12 64)" });
+      txt(f, "horizon (quarters)", 156, 134, {});
+      ["Supply", "Demand", "Policy", "Terms of trade", "Fiscal", "Other"].forEach((s, i) => {
+        f.rects.push({ x: 288, y: 16 + i * 13, w: 7, h: 7, fill: C.shock[i], stroke: "none", sw: 0 });
+        txt(f, s, 298, 22 + i * 13, { anchor: "start", size: 7.5 });
+      });
+    }
+
+    /* ---------- 5. historical decomposition ---------- */
+    {
+      const f = F("5 · Historical decomposition", "432 × 170 pt · full width · stacked bars by shock plus series line",
+        "Figure 6.9. Contribution of each structural shock to deviations of output growth from trend, 2008Q1–2019Q4.", "Source: synthetic.", 432, 170);
+      const T = 48;
+      const a = ax(f, [34, 12, 340, 118], [-0.5, T - 0.5], [-6, 6], { yticks: [-6, -3, 0, 3, 6], xticks: [0, 12, 24, 36, 47].map(v => ({ v, l: `${2008 + Math.round(v / 4)}` })) });
+      const bw = (a.X(1) - a.X(0)) * 0.78;
+      const series = [];
+      for (let t = 0; t < T; t++) {
+        const c = [1.8 * Math.sin(t / 5) + 0.7 * rnd(), 1.4 * Math.cos(t / 7) + 0.5 * rnd(), 0.9 * Math.sin(t / 3.5), 0.7 * Math.cos(t / 9), 0.5 * Math.sin(t / 6), 0.4 * rnd()];
+        let up = 0, dn = 0;
+        c.forEach((v, k) => {
+          const y0 = v >= 0 ? up + v : dn + v, y1 = v >= 0 ? up : dn;
+          f.rects.push({ x: +(a.X(t) - bw / 2).toFixed(1), y: +a.Y(Math.max(y0, y1)).toFixed(1), w: +bw.toFixed(1), h: +Math.abs(a.Y(y1) - a.Y(y0)).toFixed(1), fill: C.shock[k], stroke: "none", sw: 0 });
+          if (v >= 0) up += v; else dn += v;
+        });
+        series.push(c.reduce((s, v) => s + v, 0));
+      }
+      f.lines.push({ points: `${a.X(-0.5)},${a.Y(0)} ${a.X(T - 0.5)},${a.Y(0)}`, stroke: C.ink, w: 0.6, dash: "0" });
+      f.lines.push({ points: poly(series, a.X, a.Y), stroke: C.ink, w: 1.3, dash: "0" });
+      txt(f, "deviation from trend, pp", 12, 70, { rot: "rotate(-90 12 70)" });
+      ["Supply", "Demand", "Policy", "Terms of trade", "Fiscal", "Other"].forEach((s, i) => {
+        f.rects.push({ x: 384, y: 18 + i * 13, w: 7, h: 7, fill: C.shock[i], stroke: "none", sw: 0 });
+        txt(f, s, 394, 24 + i * 13, { anchor: "start", size: 7.5 });
+      });
+      f.lines.push({ points: "384,101 393,101", stroke: C.ink, w: 1.3, dash: "0" });
+      txt(f, "output growth", 396, 103.5, { anchor: "start", size: 7.5 });
+    }
+
+    /* ---------- 6. prior vs posterior ---------- */
+    {
+      const f = F("6 · Prior versus posterior density", "324 × 140 pt · text width · OLS marker",
+        "Figure 5.5. Prior and posterior density of the own first-lag coefficient of real GDP growth, with the OLS estimate.", "Source: synthetic.", 324, 140);
+      const a = ax(f, [34, 12, 282, 94], [-0.4, 1.2], [0, 3.4], { yticks: [0, 1, 2, 3], xticks: [-0.4, 0, 0.4, 0.8, 1.2].map(v => ({ v, l: v.toFixed(1) })) });
+      const xs = [], prior = [], post = [];
+      for (let i = 0; i <= 80; i++) {
+        const x = -0.4 + (1.6 * i) / 80; xs.push(x);
+        prior.push(0.85 * Math.exp(-((x - 1) ** 2) / (2 * 0.35 ** 2)) / (0.35 * 2.5066) * 0.9);
+        post.push(Math.exp(-((x - 0.62) ** 2) / (2 * 0.12 ** 2)) / (0.12 * 2.5066) * 0.95);
+      }
+      f.polys.push({ points: [`${a.X(-0.4)},${a.Y(0)}`, poly(post, a.X, a.Y, xs), `${a.X(1.2)},${a.Y(0)}`].join(" "), fill: C.band[0], opacity: 1 });
+      f.lines.push({ points: poly(prior, a.X, a.Y, xs), stroke: C.mute, w: 1, dash: "3 2" });
+      f.lines.push({ points: poly(post, a.X, a.Y, xs), stroke: C.est, w: 1.2, dash: "0" });
+      f.lines.push({ points: `${a.X(0.71).toFixed(1)},${a.Y(0)} ${a.X(0.71).toFixed(1)},${a.Y(3.1).toFixed(1)}`, stroke: C.real, w: 0.9, dash: "1 1.5" });
+      txt(f, "OLS = 0.71", a.X(0.71) + 4, a.Y(3.1) + 3, { anchor: "start", size: 7.5, fill: C.real });
+      txt(f, "density", 12, 60, { rot: "rotate(-90 12 60)" });
+      txt(f, "coefficient on own first lag", 175, 130, {});
+      legend(f, [{ t: "prior", c: C.mute, dash: "3 2" }, { t: "posterior", c: C.est }], 34, 20, 48);
+    }
+
+    /* ---------- 7. trace plot ---------- */
+    {
+      const f = F("7 · MCMC trace with burn-in shading", "324 × 120 pt · text width",
+        "Figure 5.6. Gibbs draws of the own first-lag coefficient, 5000 iterations. Shaded: discarded burn-in.", "Source: synthetic.", 324, 120);
+      const N = 200;
+      const a = ax(f, [34, 12, 282, 76], [0, N - 1], [0.3, 0.95], { yticks: [0.4, 0.6, 0.8], yfmt: v => v.toFixed(1), xticks: [0, 50, 100, 150, 199].map(v => ({ v, l: `${Math.round((v * 5000) / 199 / 100) * 100}` })) });
+      f.rects.push({ x: +a.X(0).toFixed(1), y: 12, w: +(a.X(N / 2) - a.X(0)).toFixed(1), h: 76, fill: C.rec, stroke: "none", sw: 0 });
+      const v = []; let p = 0.4;
+      for (let i = 0; i < N; i++) { const target = i < 60 ? 0.42 + 0.004 * i : 0.62; p = 0.7 * p + 0.3 * target + 0.09 * rnd(); v.push(p); }
+      f.lines.push({ points: poly(v, a.X, a.Y), stroke: C.mute, w: 0.55, dash: "0" });
+      f.lines.push({ points: `${a.X(0)},${a.Y(0.62)} ${a.X(N - 1)},${a.Y(0.62)}`, stroke: C.est, w: 0.9, dash: "3 2" });
+      txt(f, "burn-in (2500)", a.X(N / 4), 24, { size: 7.5 });
+      txt(f, "posterior mean", a.X(N - 2), a.Y(0.62) - 3, { anchor: "end", size: 7.5, fill: C.est });
+      txt(f, "draw", 175, 110, {});
+    }
+
+    /* ---------- 8. relative RMSE ---------- */
+    {
+      const f = F("8 · Relative RMSE by horizon", "324 × 140 pt · text width · 4 models against a random walk",
+        "Figure 7.2. RMSE relative to a random-walk benchmark, expanding-window evaluation 2014Q1–2019Q4. Values below one beat the benchmark.", "Source: synthetic.", 324, 140);
+      const a = ax(f, [34, 12, 228, 94], [1, 12], [0.6, 1.5], { yticks: [0.6, 0.8, 1, 1.2, 1.4], yfmt: v => v.toFixed(1), xticks: [1, 4, 8, 12].map(v => ({ v, l: `${v}` })) });
+      const models = [
+        { n: "BVAR, Minnesota", v: [0.83, 0.81, 0.79, 0.80, 0.83, 0.86, 0.87, 0.89, 0.90, 0.91, 0.92, 0.93], c: C.est, d: "0", m: "circle" },
+        { n: "BVAR, hierarchical λ₁", v: [0.81, 0.78, 0.76, 0.78, 0.80, 0.82, 0.84, 0.86, 0.87, 0.88, 0.89, 0.90], c: C.ink, d: "3 2", m: "square" },
+        { n: "VAR, OLS", v: [1.04, 1.08, 1.12, 1.18, 1.24, 1.29, 1.33, 1.36, 1.39, 1.41, 1.43, 1.44], c: C.mute, d: "4 1.5 1 1.5", m: "triangle" },
+        { n: "AR(4)", v: [0.92, 0.93, 0.95, 0.96, 0.97, 0.98, 0.98, 0.99, 1.00, 1.00, 1.01, 1.01], c: C.grey, d: "1 1.5", m: "diamond" }
+      ];
+      f.lines.push({ points: `${a.X(1)},${a.Y(1)} ${a.X(12)},${a.Y(1)}`, stroke: C.ink, w: 0.7, dash: "0" });
+      txt(f, "random walk = 1", a.X(11.8), a.Y(1) - 3, { anchor: "end", size: 7.5, fill: C.ink });
+      models.forEach((m, k) => {
+        const xs = m.v.map((_, i) => i + 1);
+        f.lines.push({ points: poly(m.v, a.X, a.Y, xs), stroke: m.c, w: 1, dash: m.d });
+        m.v.forEach((v, i) => {
+          if (i % 3) return;
+          const X = a.X(i + 1), Y = a.Y(v), r = 1.6;
+          if (m.m === "circle") f.dots.push({ x: +X.toFixed(1), y: +Y.toFixed(1), r, fill: m.c, stroke: "none" });
+          if (m.m === "square") f.rects.push({ x: +(X - r).toFixed(1), y: +(Y - r).toFixed(1), w: 2 * r, h: 2 * r, fill: m.c, stroke: "none", sw: 0 });
+          if (m.m === "triangle") f.marks.push({ d: `M${(X - r).toFixed(1)},${(Y + r).toFixed(1)} L${X.toFixed(1)},${(Y - r).toFixed(1)} L${(X + r).toFixed(1)},${(Y + r).toFixed(1)} Z`, fill: m.c, stroke: "none", w: 0 });
+          if (m.m === "diamond") f.marks.push({ d: `M${X.toFixed(1)},${(Y - r).toFixed(1)} L${(X + r).toFixed(1)},${Y.toFixed(1)} L${X.toFixed(1)},${(Y + r).toFixed(1)} L${(X - r).toFixed(1)},${Y.toFixed(1)} Z`, fill: m.c, stroke: "none", w: 0 });
+        });
+        f.lines.push({ points: `${268},${22 + k * 13} ${277},${22 + k * 13}`, stroke: m.c, w: 1, dash: m.d });
+        txt(f, m.n, 280, 24.5 + k * 13, { anchor: "start", size: 7.5 });
+      });
+      txt(f, "relative RMSE", 12, 60, { rot: "rotate(-90 12 60)" });
+      txt(f, "horizon (quarters)", 148, 130, {});
+    }
+
+    /* ---------- 9. TVP coefficient and SV ---------- */
+    {
+      const f = F("9 · Time-varying coefficient and stochastic volatility", "324 × 200 pt · text width · two panels with bands",
+        "Figure 10.3. Posterior median and 68 % band of the inflation persistence coefficient (top) and of the stochastic volatility of its innovations (bottom), 1995Q1–2019Q4.", "Source: synthetic.", 324, 200);
+      const T = 100, xt = [0, 20, 40, 60, 80, 99].map(v => ({ v, l: `${1995 + Math.round(v / 4)}` }));
+      const mk = (k, box, dom, gen, lab) => {
+        const a = ax(f, box, [0, T - 1], dom, { yticks: k ? [0.2, 0.6, 1.0, 1.4] : [0.2, 0.5, 0.8], yfmt: v => v.toFixed(1), xticks: k ? xt : [], xlab: !!k });
+        const med = [], lo = [], hi = [];
+        for (let t = 0; t < T; t++) { const m = gen(t); const s = 0.07 + 0.0003 * t; med.push(m); lo.push(m - s * 1.6); hi.push(m + s * 1.6); }
+        f.polys.push({ points: bandPoly(lo, hi, a.X, a.Y), fill: C.band[1], opacity: 1 });
+        f.lines.push({ points: poly(med, a.X, a.Y), stroke: k ? C.ink : C.est, w: 1.1, dash: "0" });
+        txt(f, lab, box[0], box[1] - 3, { anchor: "start", size: 8.5, fill: C.ink, weight: "600" });
+      };
+      mk(0, [34, 16, 282, 72], [0.1, 0.9], t => 0.35 + 0.3 * Math.sin(t / 26) + 0.0015 * t, "Persistence coefficient");
+      mk(1, [34, 116, 282, 66], [0.1, 1.5], t => 0.9 - 0.5 * Math.exp(-((t - 30) ** 2) / 300) + 0.35 * Math.exp(-((t - 72) ** 2) / 200), "Stochastic volatility, σₜ");
+      legend(f, [{ t: "median", c: C.est }, { t: "68 % band", c: C.band[1], swatch: true }], 34, 194, 52);
+    }
+
+    /* ---------- 10. trend and cycle ---------- */
+    {
+      const f = F("10 · Trend and cycle", "324 × 200 pt · text width · two panels",
+        "Figure 2.6. Log real GDP with its estimated trend (top) and the implied cycle (bottom), 1995Q1–2019Q4. Shaded: contraction episodes.", "Source: synthetic.", 324, 200);
+      const T = 100, xt = [0, 20, 40, 60, 80, 99].map(v => ({ v, l: `${1995 + Math.round(v / 4)}` }));
+      const lvl = [], trend = [], cyc = [];
+      for (let t = 0; t < T; t++) {
+        const tr = 4.2 + 0.021 * t;
+        const c = 0.055 * Math.sin(t / 7.5) + 0.03 * Math.sin(t / 3.1) + 0.012 * rnd();
+        trend.push(tr); lvl.push(tr + c); cyc.push(100 * c);
+      }
+      const a1 = ax(f, [34, 16, 282, 74], [0, T - 1], [4.1, 6.5], { yticks: [4.5, 5, 5.5, 6, 6.5], yfmt: v => v.toFixed(1), xticks: [], xlab: false });
+      [[52, 58], [84, 88]].forEach(([s, e]) => f.rects.push({ x: +a1.X(s).toFixed(1), y: 16, w: +(a1.X(e) - a1.X(s)).toFixed(1), h: 74, fill: C.rec, stroke: "none", sw: 0 }));
+      f.lines.push({ points: poly(lvl, a1.X, a1.Y), stroke: C.ink, w: 1, dash: "0" });
+      f.lines.push({ points: poly(trend, a1.X, a1.Y), stroke: C.est, w: 1.1, dash: "3 2" });
+      txt(f, "Log real GDP and trend", 34, 13, { anchor: "start", size: 8.5, fill: C.ink, weight: "600" });
+      const a2 = ax(f, [34, 118, 282, 64], [0, T - 1], [-8, 8], { yticks: [-8, -4, 0, 4, 8], xticks: xt });
+      [[52, 58], [84, 88]].forEach(([s, e]) => f.rects.push({ x: +a2.X(s).toFixed(1), y: 118, w: +(a2.X(e) - a2.X(s)).toFixed(1), h: 64, fill: C.rec, stroke: "none", sw: 0 }));
+      f.lines.push({ points: `${a2.X(0)},${a2.Y(0)} ${a2.X(T - 1)},${a2.Y(0)}`, stroke: C.ink, w: 0.6, dash: "0" });
+      f.lines.push({ points: poly(cyc, a2.X, a2.Y), stroke: C.mute, w: 1, dash: "0" });
+      txt(f, "Cycle, per cent", 34, 115, { anchor: "start", size: 8.5, fill: C.ink, weight: "600" });
+      legend(f, [{ t: "observed", c: C.ink }, { t: "trend", c: C.est, dash: "3 2" }, { t: "contraction", c: C.rec, swatch: true }], 34, 194, 58);
+    }
+
+    /* ---------- 11. heatmap ---------- */
+    {
+      const f = F("11 · Heatmap of time-varying coefficients", "432 × 170 pt · full width · diverging ramp, signed colourbar",
+        "Figure 10.7. Posterior median of the time-varying coefficients on the first lag of each variable, by quarter, 1998Q1–2019Q4.", "Source: synthetic.", 432, 170);
+      const rows = ["GDP", "Revenue", "Terms of trade", "Policy rate", "Inflation", "Credit"], cols = 44;
+      const x0 = 74, y0 = 16, cw = 300 / cols, chh = 18;
+      for (let r = 0; r < rows.length; r++) {
+        for (let c = 0; c < cols; c++) {
+          const v = Math.sin(c / 6 + r) * 0.6 + 0.25 * Math.cos(c / 3 - r) + 0.12 * rnd();
+          const idx = Math.max(0, Math.min(6, Math.round((v + 1) * 3)));
+          f.rects.push({ x: +(x0 + c * cw).toFixed(1), y: y0 + r * chh, w: +(cw + 0.2).toFixed(1), h: chh, fill: C.div[idx], stroke: "none", sw: 0 });
+        }
+        txt(f, rows[r], x0 - 4, y0 + r * chh + 12, { anchor: "end", size: 8 });
+      }
+      [0, 8, 16, 24, 32, 43].forEach(c => txt(f, `${1998 + Math.round(c / 4)}`, x0 + c * cw + cw / 2, y0 + rows.length * chh + 10, { size: 8 }));
+      const cbx = x0 + 305;
+      C.div.forEach((h, i) => f.rects.push({ x: cbx, y: y0 + (6 - i) * 15, w: 10, h: 15, fill: h, stroke: "none", sw: 0 }));
+      ["+0.9", "+0.3", "−0.3", "−0.9"].forEach((s, i) => txt(f, s, cbx + 13, y0 + 10 + i * 30, { anchor: "start", size: 7.5 }));
+      f.rects.push({ x: cbx, y: y0, w: 10, h: 105, fill: "none", stroke: C.border || "#DED0C4", sw: 0.4 });
+      txt(f, "posterior median coefficient", 224, 164, { size: 8 });
+    }
+
+    return { figs };
+  }
+}
+</script>
+</body>
+</html>

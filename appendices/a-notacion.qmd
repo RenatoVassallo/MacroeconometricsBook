@@ -1,0 +1,62 @@
+# Notación {#sec-notacion}
+
+*Apéndice en preparación.*
+
+## Convenciones generales
+
+| Símbolo | Significado |
+|:--------|:------------|
+| $\mathbf{y}_t$ | vector $n \times 1$ de variables endógenas en el periodo $t$ |
+| $y_t$ | PBI real (escalar); las variables escalares van sin negrita |
+| $\Phi_\ell$ | matriz $n \times n$ de coeficientes del rezago $\ell$ |
+| $\mathbf{u}_t$ | innovaciones de forma reducida, $\mathbf{u}_t \sim N(0,\Sigma)$ |
+| $\varepsilon_t$ | choques estructurales, $\mathbb{E}[\varepsilon_t\varepsilon_t'] = I_n$ |
+| $\Sigma$ | matriz de covarianzas de las innovaciones de forma reducida |
+| $B$ | matriz $k \times n$ de coeficientes en forma compacta, $k = np + 1$ |
+| $b$ | $\operatorname{vec}(B)$, apilado por columnas (ecuación por ecuación) |
+| $T$, $n$, $p$, $h$ | tamaño de muestra, número de variables, rezagos y horizonte |
+| $\otimes$ | producto de Kronecker |
+| $F$, $J$ | matriz companion $np \times np$ y selector $n \times np$ |
+| $\Psi_j$ | pesos de Wold de la forma reducida, $\Psi_j = J F^j J'$ |
+| $\mu$ | media incondicional, $(I_n - \Phi_1 - \cdots - \Phi_p)^{-1}c$ |
+
+## Datos y descomposición
+
+| Símbolo | Significado |
+|:--------|:------------|
+| $\tau_t$, $c_t$, $s_t$, $\eta_t$ | tendencia, ciclo, componente estacional e irregular de $\ln y_t$ |
+| $T_t$, $C_t$, $S_t$, $I_t$ | los mismos componentes en la versión multiplicativa, $y_t = T_t C_t S_t I_t$ |
+| $g_t$ | tasa de crecimiento ordinaria, $g_t = y_t/y_{t-1} - 1$ |
+| $\Delta \ln y_t$ | diferencia logarítmica, $\ln(1+g_t)$ |
+| $\Delta_s$ | diferencia de orden $s$, $\Delta_s x_t = x_t - x_{t-s}$ |
+
+El ciclo $c_t$ lleva subíndice temporal y no debe confundirse con el vector de constantes $c$ de la forma reducida, que no lo lleva. El irregular es $\eta_t$ y no $\varepsilon_t$, reservado para los choques estructurales.
+
+## Análisis estructural
+
+| Símbolo | Significado |
+|:--------|:------------|
+| $S$ | matriz de impacto, $\mathbf{u}_t = S\varepsilon_t$ y $\Sigma = SS'$ |
+| $\Theta_j$ | respuesta estructural en el horizonte $j$, $\Theta_j = \Psi_j S$ |
+| $\Theta_\infty$ | efecto acumulado de largo plazo, $A^{-1}S$ con $A = I_n - \sum_\ell \Phi_\ell$ |
+| $Q$ | matriz ortonormal, $QQ' = I_n$, usada para recorrer el conjunto identificado |
+| $\operatorname{FEVD}_{i,k}(h)$ | parte de la varianza del error de pronóstico de $i$ atribuida al choque $k$ |
+
+## Distribuciones
+
+| Símbolo | Significado |
+|:--------|:------------|
+| $N(\mu, \Omega)$ | normal multivariada |
+| $\mathcal{IW}(S, \nu)$ | inversa-Wishart con matriz de escala $S$ y $\nu$ grados de libertad |
+| $b_0$, $H$ | media y varianza a priori de $b$ |
+| $S_0$, $\nu_0$ | escala y grados de libertad a priori de $\Sigma$ |
+
+## Hiperparámetros del prior de Minnesota
+
+| Símbolo | Significado |
+|:--------|:------------|
+| $\lambda_1$ | intensidad general del encogimiento |
+| $\lambda_2$ | encogimiento de los rezagos cruzados |
+| $\lambda_3$ | decaimiento con el rezago |
+| $\lambda_4$ | dispersión de los términos deterministas |
+| $\delta_i$ | media a priori del primer rezago propio de la variable $i$ |

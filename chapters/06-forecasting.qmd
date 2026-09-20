@@ -1,0 +1,90 @@
+# Pronóstico y evaluación {#sec-pronostico}
+
+::: {.pregunta}
+¿Cómo se construye un pronóstico defendible y cómo se sabe, después, si sirvió?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. La diferencia entre pronóstico puntual y pronóstico por densidad, y por qué un banco central necesita el segundo.
+2. Cómo montar una evaluación pseudo fuera de muestra con ventanas recursivas o móviles sin mirar el futuro.
+3. Qué mide la RECM relativa y qué añade la prueba de Diebold y Mariano.
+4. Cómo se construyen y se comunican los escenarios condicionales.
+:::
+
+**Requisitos previos.** @sec-var y @sec-bvar.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| Panel macrofiscal del libro | BCRP | trimestral | var. % interanual |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## Qué es un buen pronóstico
+
+*Por escribir:* función de pérdida, horizonte y el pronóstico óptimo bajo error cuadrático.
+
+## Pronóstico por densidad
+
+*Por escribir:* de la distribución predictiva al gráfico de abanico.
+
+## Diseño de la evaluación
+
+*Por escribir:* orígenes, ventanas recursivas y móviles, y el error de mirar el futuro.
+
+## Métricas
+
+*Por escribir:* RECM y EAM relativos, pérdida logarítmica y CRPS.
+
+## Comparación formal
+
+*Por escribir:* Diebold y Mariano, y sus límites con modelos anidados.
+
+## Calibración
+
+*Por escribir:* PIT y qué hacer cuando las bandas son sistemáticamente estrechas.
+
+## Combinación de pronósticos
+
+*Por escribir:* por qué el promedio suele ganar y cuándo no.
+
+## Escenarios condicionales
+
+*Por escribir:* Waggoner y Zha: imponer una trayectoria a una variable y leer el resto.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. Sin un modelo de referencia, un número de RECM no dice nada.
+2. La calibración de la densidad importa tanto como el error del punto central.
+3. Un escenario condicional no es un pronóstico: es una respuesta a una pregunta de política, con su propio supuesto de identificación.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Diebold y Mariano (1995)
+:   la prueba estándar de precisión predictiva comparada.
+
+Waggoner y Zha (1999)
+:   pronósticos condicionales en modelos multivariados dinámicos.
+
+Karlsson (2013)
+:   revisión del pronóstico con VAR bayesianos.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-pronostico-1}
+Monte una evaluación pseudo fuera de muestra con 20 orígenes y compare BVAR, VAR por MCO y caminata aleatoria a horizontes 1 a 8.
+:::
+
+::: {#exr-pronostico-2}
+Calcule el PIT de la densidad predictiva del BVAR y grafique su histograma. ¿Está bien calibrada?
+:::
+

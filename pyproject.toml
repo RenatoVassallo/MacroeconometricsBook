@@ -1,0 +1,56 @@
+# Entorno del libro. Se maneja con uv:
+#
+#   uv sync                  crea .venv e instala todo (incluido macrolibro)
+#   uv run quarto preview    abre el libro con ese entorno
+#
+# Python 3.11 porque MacroPy exige >=3.11,<3.12. Si no está en la máquina,
+# uv lo descarga solo.
+
+[project]
+name = "macroeconometria-libro"
+version = "0.1.0"
+description = "Macroeconometría aplicada con Python: libro en Quarto y utilidades de apoyo."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { text = "MIT" }
+authors = [{ name = "Renato Vassallo" }]
+
+dependencies = [
+    # cálculo y datos
+    "numpy>=2.2,<3",
+    "pandas>=2.2,<3",
+    "scipy>=1.15",
+    "matplotlib>=3.8",
+    "statsmodels>=0.14",
+    # motor de ejecución de Quarto
+    "jupyter>=1.0",
+    "ipykernel>=6.29",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+    "pyyaml>=6.0",
+    # tipografías (regenerar las estáticas de styles/fonts si hiciera falta)
+    "fonttools>=4.50",
+    # caja de herramientas del autor, fijada a una versión concreta
+    "macropy",
+    "openpyxl>=3.1.5",
+]
+
+[project.optional-dependencies]
+# Calidad de vida al escribir; no hace falta para compilar el libro.
+dev = ["ruff>=0.6", "jupyterlab>=4.2"]
+
+[tool.uv.sources]
+macropy = { url = "https://github.com/RenatoVassallo/MacroPy/releases/download/0.1.11/macropy-0.1.11-py3-none-any.whl" }
+
+# El paquete del libro (macrobook) vive en code/python y se instala con el
+# proyecto, de modo que `import macrobook` funciona en cualquier capítulo.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "code/python" }
+
+[tool.setuptools.packages.find]
+where = ["code/python"]
+include = ["macrobook*"]

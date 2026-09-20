@@ -1,0 +1,82 @@
+# Volatilidad cambiante {#sec-volatilidad}
+
+::: {.pregunta}
+¿Qué hacemos cuando el tamaño típico de los choques cambia con el tiempo?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. Reconocer heterocedasticidad condicional en series macro y financieras.
+2. Estimar modelos ARCH y GARCH y entender qué dinámica imponen.
+3. Estimar volatilidad estocástica con el muestreador de mezcla de Kim, Shephard y Chib.
+4. Incorporar volatilidad estocástica en un VAR y qué cambia en las bandas de pronóstico.
+:::
+
+**Requisitos previos.** @sec-estado y @sec-bvar.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| Inflación, tipo de cambio | BCRP | mensual | var. % y logaritmos |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## Evidencia de volatilidad cambiante
+
+*Por escribir:* qué se ve en los residuos y qué prueba lo confirma.
+
+## ARCH y GARCH
+
+*Por escribir:* especificación, estimación y límites en frecuencia macro.
+
+## Volatilidad estocástica
+
+*Por escribir:* la volatilidad como estado latente en escala logarítmica.
+
+## El muestreador de mezcla
+
+*Por escribir:* la aproximación de Kim, Shephard y Chib y su implementación.
+
+## VAR con volatilidad estocástica
+
+*Por escribir:* residuos heterocedásticos en un sistema y su efecto sobre la densidad predictiva.
+
+## La pandemia otra vez
+
+*Por escribir:* volatilidad estocástica frente a dummies: dos formas de tratar 2020.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. En frecuencia macro, la volatilidad estocástica suele ajustar mejor que GARCH y se integra naturalmente con el resto del libro.
+2. Ignorar la volatilidad cambiante no sesga tanto el punto central como las bandas: el costo aparece en la densidad.
+3. La Gran Moderación y 2020 son los dos episodios que ningún modelo homocedástico explica.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Kim, Shephard y Chib (1998)
+:   el muestreador que hace tratable la volatilidad estocástica.
+
+Clark (2011)
+:   densidades predictivas de BVAR con volatilidad estocástica.
+
+Engle (1982)
+:   el artículo fundacional de ARCH.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-volatilidad-1}
+Estime un GARCH(1,1) y un modelo de volatilidad estocástica para la misma serie y compare las trayectorias de volatilidad.
+:::
+
+::: {#exr-volatilidad-2}
+Repita la evaluación de densidad del @sec-pronostico con y sin volatilidad estocástica.
+:::
+

@@ -1,0 +1,87 @@
+# Modelos de espacio de estados {#sec-estado}
+
+::: {.pregunta}
+¿Cómo estimamos algo que importa para la política pero que nadie observa?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. Escribir un modelo macro en forma de estado y medida.
+2. Cómo funciona el filtro de Kalman y qué produce en cada paso.
+3. Cómo obtener la verosimilitud por descomposición del error de predicción y estimar hiperparámetros.
+4. Cómo extraer trayectorias del estado con el suavizador y con el simulador de Carter y Kohn.
+:::
+
+**Requisitos previos.** @sec-var, distribución normal multivariada y nociones bayesianas del @sec-bayes.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| PBI real | BCRP | trimestral | logaritmo |
+| Series mensuales para nowcasting | BCRP | mensual | varias |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## La forma de estado y medida
+
+*Por escribir:* la estructura común a casi todo lo que sigue en el libro.
+
+## El filtro de Kalman
+
+*Por escribir:* predicción, actualización y la ganancia como ponderador entre señal y ruido.
+
+## Verosimilitud y estimación
+
+*Por escribir:* descomposición del error de predicción; máxima verosimilitud e inferencia bayesiana.
+
+## Suavizado
+
+*Por escribir:* estimar el estado con toda la muestra y por qué difiere del filtrado.
+
+## Simulación del estado
+
+*Por escribir:* Carter y Kohn dentro de un muestreador de Gibbs.
+
+## Datos faltantes y frecuencias mixtas
+
+*Por escribir:* la ventaja natural del espacio de estados y el nowcasting.
+
+## Modelos de factores dinámicos
+
+*Por escribir:* muchas series, pocos factores comunes.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. El filtro de Kalman no es un método de estimación sino una recursión para la distribución del estado.
+2. Filtrar y suavizar responden preguntas distintas: en tiempo real sólo se dispone del primero.
+3. Frecuencias mixtas y datos faltantes dejan de ser un problema cuando el modelo está en forma de estado.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Durbin y Koopman (2012)
+:   el tratamiento de referencia del espacio de estados.
+
+Kim y Nelson (1999)
+:   filtros, suavizadores y cambio de régimen con aplicaciones macro.
+
+Carter y Kohn (1994)
+:   el simulador del estado que usan los capítulos 9 y 10.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-estado-1}
+Escriba un AR(2) en forma de estado y verifique que la verosimilitud del filtro coincide con la verosimilitud exacta.
+:::
+
+::: {#exr-estado-2}
+Estime un modelo de componentes no observados para el PBI y compare el estado filtrado con el suavizado en los últimos ocho trimestres.
+:::
+

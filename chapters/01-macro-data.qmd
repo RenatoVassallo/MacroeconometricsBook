@@ -1,0 +1,506 @@
+# Datos macroeconómicos {#sec-datos}
+
+::: {.pregunta}
+¿Qué mide en realidad la serie que estamos a punto de modelar, y qué le hicimos antes de verla?
+:::
+
+::: {.aprendizajes}
+1. Descomponer una serie en tendencia, ciclo, estacionalidad e irregular, y saber qué parte de esa separación es un supuesto.
+2. Desestacionalizar con X-13ARIMA-SEATS, entender qué hace el algoritmo y por qué los bancos centrales usan además TRAMO-SEATS.
+3. Elegir la transformación con un criterio, y explicar por qué los economistas trabajan casi siempre en logaritmos.
+:::
+
+**Requisitos previos.** Nociones de series de tiempo y manejo básico de `pandas`.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Código |
+|:-------------------------------|:--------|:-----------|:--------------|
+| PBI real de EE.UU. (interpolado a mensual) | Uhlig (2005) | mensual | `y` |
+| Deflactor del PBI de EE.UU. (índice) | Uhlig (2005) | mensual | `pi` |
+| PBI del Perú (índice 2007 = 100, desestacionalizado) | BCRP | mensual | `PN01773AM` |
+| IPC de Lima Metropolitana (sin desestacionalizar) | BCRP | mensual | `PN38705PM` |
+
+Los archivos crudos están en `data/raw/` y los CSV que leen los capítulos los construyen `code/python/build_us_data.py` y `code/python/build_peru_data.py`.
+:::
+
+## Qué mide la serie {#sec-datos-medicion}
+
+Ningún dato macroeconómico se observa directamente. El PBI no se mide: se estima, combinando censos, encuestas, registros administrativos y supuestos de imputación, y se publica como un índice encadenado cuya unidad depende del año base. La inflación no es el cambio de "los precios" sino el de una canasta fija durante un tiempo, con sustituciones y ajustes de calidad que son decisiones metodológicas. Entre el concepto teórico del modelo y la serie que entra al código hay una cadena de convenciones, y conviene conocerla antes de estimar algo.
+
+Tres consecuencias prácticas atraviesan todo el libro.
+
+La primera es que **el nivel casi nunca es comparable y la tasa casi siempre sí**. Un índice con base 2007 = 100 no dice nada por sí solo; su tasa de crecimiento, en cambio, se compara entre países y entre épocas. Por eso casi todo el trabajo empírico se hace con transformaciones y no con niveles crudos.
+
+La segunda es que **los datos se revisan**. La primera estimación del PBI de un trimestre se publica con semanas de retraso y se corrige durante años. Un ejercicio de pronóstico evaluado con los datos finales de hoy sobreestima lo que un analista podría haber hecho en su momento, porque usa información que entonces no existía. Cuando el objetivo es evaluar pronósticos, hay que usar datos en tiempo real [@croushore2001].
+
+La tercera es que **las series traen ruido con estructura**: estacionalidad, efectos de calendario, valores atípicos. Ese ruido no es aleatorio ni pequeño, y si no se trata explícitamente termina interpretándose como economía. Buena parte de este capítulo trata de eso.
+
+Vale un ejemplo concreto, porque aparece en los datos que este libro usa. En Estados Unidos las cuentas nacionales son trimestrales: el PBI mensual no existe como estadística oficial. La serie mensual de @uhlig2005 que usa este capítulo es una interpolación del PBI trimestral con indicadores mensuales, de modo que su variación de un mes al siguiente es en parte producto del método de interpolación y no de la economía. Eso no la invalida (es la única forma de poner producto y tasa de interés en un mismo VAR mensual), pero obliga a no leer un movimiento mensual aislado como si fuera un dato. Los capítulos @sec-svar y @sec-bvar evitan el problema trabajando con las muestras trimestrales de @stock2001 y @blanchard1989.
+
+## Descarga reproducible {#sec-datos-descarga}
+
+La regla del libro es simple: `data/raw/` es inmutable y todo lo demás se reconstruye con un script. Ninguna serie se edita a mano, y ningún resultado depende de un archivo que sólo existe en la computadora de quien escribe.
+
+`MacroPy` trae funciones de descarga para las dos fuentes que usa el libro, la API del BCRP y FRED:
+
+```{python}
+#| label: descarga
+#| eval: false
+from MacroPy import get_bcrp_data, get_fred_data
+
+series = {"PN01773AM": "gdp_sa",  # PBI desestacionalizado
+          "PN38705PM": "cpi",     # IPC de Lima, sin ajustar
+          "PN01210PM": "fx",      # tipo de cambio bancario
+          "PD04722MM": "mpr"}     # tasa de referencia
+peru = get_bcrp_data(series, frequency="M",
+                     start_period="1996-1")
+
+usa = get_fred_data(["GDPC1", "GDPDEF"], ["gdp", "deflator"],
+                    frequency="q", api_key=API_KEY,
+                    start_period="1960-1")
+```
+
+Esa celda no se ejecuta al compilar el libro, a propósito. Los archivos que produce están guardados en `data/raw/`, de modo que el libro se compila sin conexión y los resultados no cambian cuando la fuente revisa el pasado. Para actualizar, se corre la descarga y se vuelve a compilar: la diferencia entre las dos versiones es exactamente la revisión de los datos.
+
+```{python}
+#| label: datos-setup
+import numpy as np
+import pandas as pd
+
+from macrobook import data_path
+
+usa = pd.read_csv(data_path("uhlig2005.csv"), index_col="date")
+usa.index = pd.PeriodIndex(usa.index, freq="M")
+peru = pd.read_csv(data_path("peru_monthly.csv"),
+                   index_col="date")
+peru.index = pd.PeriodIndex(peru.index, freq="M")
+
+gdp_us = np.exp(usa["y"])          # el archivo trae logaritmos
+price_us = np.exp(usa["pi"])
+gdp_pe = peru["gdp_sa"].dropna()
+cpi_pe = peru["cpi"].dropna()
+
+print("EE.UU.:", usa.index[0], "a", usa.index[-1])
+print("Perú:  ", cpi_pe.index[0], "a", cpi_pe.index[-1])
+```
+
+## Cuatro series y sus hechos estilizados {#sec-datos-hechos}
+
+```{python}
+#| label: fig-datos-series
+#| fig-cap: "Las cuatro series del capítulo. Arriba, Estados Unidos entre 1965 y 2003; abajo, Perú entre 1996 y 2026. La escala vertical es logarítmica en las cuatro."
+import matplotlib.pyplot as plt
+
+from macrobook import use_style, figsize, PALETTE, charts
+
+use_style()
+
+panels = [(gdp_us, "PBI real, EE.UU."),
+          (price_us, "deflactor, EE.UU."),
+          (gdp_pe, "PBI, Perú"),
+          (cpi_pe, "IPC, Perú")]
+
+size = figsize(0.62)
+fig, axes = plt.subplots(2, 2, figsize=size)
+for ax, (series, title) in zip(axes.ravel(), panels):
+    ax.plot(series.index.to_timestamp(how="end"), series,
+            color=PALETTE["ink"], lw=1.0)
+    ax.set_yscale("log")
+    charts.plain_log_ticks(ax)
+    charts.year_ticks(ax, every=10)
+    ax.set_title(title, fontsize=8.5)
+plt.show()
+```
+
+Las cuatro series comparten una propiedad que decide casi todo lo que sigue: crecen de forma multiplicativa, no aditiva. En escala logarítmica las cuatro se ven como rectas con quiebres, y esa es la forma en que conviene mirarlas.
+
+```{python}
+#| label: momentos
+def summary(series, freq=12):
+    growth = (series / series.shift(freq) - 1) * 100
+    return {"media": growth.mean(), "desv.": growth.std(),
+            "autocorr.": growth.autocorr(1),
+            "mín": growth.min(), "máx": growth.max()}
+
+table = pd.DataFrame({
+    "PBI EE.UU.": summary(gdp_us),
+    "Precios EE.UU.": summary(price_us),
+    "PBI Perú": summary(gdp_pe),
+    "Precios Perú": summary(cpi_pe)}).T
+digits = {"media": 1, "desv.": 1, "autocorr.": 2,
+          "mín": 1, "máx": 1}
+table.round(digits)
+```
+
+El cuadro resume las tasas interanuales y contiene cuatro hechos que reaparecen en todo el libro.
+
+**El crecimiento es persistente pero acotado.** La autocorrelación de primer orden está entre 0.8 y 0.95. Parte de esa persistencia es mecánica: una tasa interanual solapa doce meses de información y sería autocorrelacionada aun si el crecimiento mensual fuera independiente. Lo que no es mecánico es que las series oscilen alrededor de una media positiva sin alejarse de ella de forma permanente. Un modelo razonable de la tasa de crecimiento es estacionario y persistente, no una caminata aleatoria.
+
+**La inflación es todavía más persistente.** Con autocorrelaciones de 0.98 y 0.99, la inflación se comporta casi como si tuviera una raíz unitaria, y esa persistencia es el motivo de que los VAR del @sec-var funcionen bien en niveles de la tasa.
+
+**La volatilidad no es comparable entre países, pero el cuadro exagera la diferencia.** El PBI peruano tiene una desviación estándar tres veces mayor que el estadounidense, y sus extremos son de $-39$ y $+60$ por ciento. Esos dos números son el mismo episodio: el confinamiento de 2020 y el rebote de 2021. Si se quitan esos dos años, la desviación estándar peruana baja de 6.9 a 2.9, apenas por encima de la estadounidense. Un momento muestral que se mueve así al sacar veinticuatro observaciones no describe la economía: describe un episodio. Volveremos a él en el @sec-datos-otros, porque un dato así rompe cualquier modelo lineal estimado sin cuidado.
+
+**Producto e inflación no se mueven juntos de manera estable.** La correlación entre ambas tasas es $-0.34$ en Estados Unidos y $-0.02$ en Perú. No hay una curva de Phillips visible en el dato crudo, y por eso hace falta un modelo estructural como el del @sec-svar para decir algo sobre la relación.
+
+## La descomposición de una serie {#sec-datos-descomposicion}
+
+La tradición que arranca con @burns1946 mira una serie macroeconómica como la suma de componentes no observados con interpretación distinta.
+
+::: {#def-descomposicion}
+## Descomposición por componentes no observados
+
+En logaritmos, una serie se escribe como
+
+$$ \ln y_t = \tau_t + c_t + s_t + \eta_t , $$ {#eq-descomposicion}
+
+donde $\tau_t$ es la tendencia, $c_t$ el ciclo, $s_t$ el componente estacional y $\eta_t$ el irregular. En niveles, la misma relación es multiplicativa: $y_t = T_t \cdot C_t \cdot S_t \cdot I_t$.
+:::
+
+Trabajar en logaritmos convierte la descomposición multiplicativa en aditiva, y esa es la primera razón práctica por la que los economistas usan logaritmos: la amplitud de la estacionalidad de una serie que crece suele ser proporcional al nivel, no fija en unidades.
+
+::: {.cuidado}
+La @eq-descomposicion no se puede estimar sin supuestos adicionales: cuatro componentes no observados y una sola serie observada. Todo método de descomposición añade restricciones, casi siempre sobre las frecuencias que ocupa cada componente o sobre la forma de su dinámica. Dos métodos razonables dan resultados distintos, y ninguno es "el" verdadero. Lo que se puede exigir es que el supuesto sea explícito y que el resultado se reporte junto con él.
+:::
+
+La separación no es igual de difícil en todos los componentes. La estacionalidad ocupa frecuencias conocidas, se repite y es la parte mejor identificada del problema; separar tendencia de ciclo, en cambio, es una decisión casi puramente teórica, con una literatura entera en desacuerdo: el filtro de @hodrick1997, la crítica de @hamilton2018, la descomposición de @beveridge1981 y los modelos de componentes no observados de @harvey1989 producen ciclos distintos con los mismos datos. El @sec-tendencias trata ese problema. Este capítulo se ocupa del componente estacional, donde el acuerdo es mucho mayor.
+
+Vale la pena ver el problema con una serie inventada, donde sí conocemos la respuesta.
+
+```{python}
+#| label: fig-datos-simulacion
+#| fig-cap: "Una serie simulada y sus cuatro componentes. La tendencia y el ciclo son suaves; la estacionalidad se repite; el irregular no tiene estructura."
+rng = np.random.default_rng(7)
+T = 240
+index = pd.period_range("2006-01", periods=T, freq="M")
+
+trend = np.log(100) + 0.0025 * np.arange(T)
+cycle = np.zeros(T)
+for t in range(2, T):
+    cycle[t] = (1.5 * cycle[t - 1] - 0.6 * cycle[t - 2]
+                + rng.normal(0, 0.004))
+pattern = np.array([-1.2, -1.8, 2.8, 0.6, 0.2, -0.4,
+                    0.9, 0.4, -0.3, 0.1, -0.8, -0.5]) / 100
+pattern = pattern - pattern.mean()
+season = pattern[np.arange(T) % 12]
+irregular = rng.normal(0, 0.004, T)
+
+log_y = trend + cycle + season + irregular
+y_sim = pd.Series(np.exp(log_y), index=index.to_timestamp())
+
+size = figsize(0.52)
+fig, axes = plt.subplots(2, 2, sharex=True, figsize=size)
+pieces = [(log_y, "serie (en logaritmos)"),
+          (trend + cycle, "tendencia y ciclo"),
+          (season, "estacional"),
+          (irregular, "irregular")]
+for ax, (values, title) in zip(axes.ravel(), pieces):
+    ax.plot(y_sim.index, values, color=PALETTE["ink"], lw=0.9)
+    ax.set_title(title, fontsize=8.5)
+plt.show()
+```
+
+## Desestacionalizar {#sec-datos-desestacionalizar}
+
+La estacionalidad es un fenómeno económico real: en diciembre se produce y se compra más, en marzo suben las matrículas escolares, la pesca depende de las vedas. No es un error de medición. El problema es que domina la variación de corto plazo y esconde justamente lo que interesa: si la economía se está acelerando o desacelerando ahora.
+
+Hay dos maneras de lidiar con eso, y sólo una funciona bien.
+
+La primera es comparar contra el mismo mes del año anterior. Es gratis, es la que usan los titulares y tiene dos defectos serios: promedia los últimos doce meses, de modo que llega tarde a los puntos de quiebre, y arrastra lo que pasó hace un año, el llamado **efecto base**. La segunda es estimar el componente estacional y removerlo, que es lo que hacen las oficinas de estadística.
+
+```{python}
+#| label: fig-datos-base
+#| fig-cap: "Perú: el nivel del PBI desestacionalizado (izquierda) y dos lecturas de su crecimiento (derecha). El punto marca abril de 2021, cuando la tasa interanual llegó a 60 por ciento con el nivel todavía por debajo del promedio de 2019 (línea punteada). El eje derecho está recortado: la tasa mensual anualizada baja a -97 y sube a +842 por ciento en 2020."
+yoy = (gdp_pe / gdp_pe.shift(12) - 1) * 100
+monthly = ((gdp_pe / gdp_pe.shift(1)) ** 12 - 1) * 100
+window = slice("2019-01", "2022-12")
+dates_pe = gdp_pe[window].index.to_timestamp(how="end")
+mark = pd.Period("2021-04", freq="M").to_timestamp(how="end")
+
+size = figsize(0.40)
+fig, axes = plt.subplots(1, 2, figsize=size)
+axes[0].plot(dates_pe, gdp_pe[window], color=PALETTE["ink"],
+             lw=1.2)
+axes[0].axhline(gdp_pe["2019"].mean(), color=PALETTE["muted"],
+                lw=0.8, ls=(0, (2, 2)))
+axes[0].plot([mark], [gdp_pe["2021-04"]], "o", ms=4,
+             color=PALETTE["accent"])
+axes[0].set_title("nivel (2007 = 100)", fontsize=8.5)
+axes[1].plot(dates_pe, yoy[window], color=PALETTE["ink"],
+             lw=1.2, label="interanual")
+axes[1].plot(dates_pe, monthly[window], color=PALETTE["accent"],
+             lw=1.2, ls=(0, (4, 2)),
+             label="mensual anualizada")
+axes[1].plot([mark], [yoy["2021-04"]], "o", ms=4,
+             color=PALETTE["accent"])
+axes[1].set_ylim(-60, 75)
+charts.zero_line(axes[1])
+for ax in axes:
+    charts.year_ticks(ax, every=2)
+axes[1].set_title("%", fontsize=8.5)
+charts.legend_outside(axes[1], ncol=2)
+plt.show()
+```
+
+En abril de 2021 el PBI peruano creció 60.5 % interanual y el titular decía que la economía se expandía a un ritmo histórico. El punto rojo del panel izquierdo muestra el mismo mes en niveles: el PBI estaba 2.1 % por debajo del de abril de 2019 y algo por debajo del de marzo de 2021. La tasa mensual anualizada de la serie desestacionalizada era de $-6.3$ % ese mes, porque la segunda ola de contagios estaba frenando la actividad. Las dos cifras son correctas y miden cosas distintas: la interanual compara contra abril de 2020, el mes del confinamiento más estricto, y por lo tanto habla sobre todo del pasado. Eso es un efecto base.
+
+### X-13ARIMA-SEATS
+
+El estándar internacional es el programa de la Oficina del Censo de Estados Unidos, heredero del X-11 de los años sesenta [@dagum1980] y del X-12-ARIMA [@findley1998]. El algoritmo tiene dos etapas.
+
+En la **primera etapa**, llamada regARIMA, se estima un modelo de la serie con regresores deterministas y un ARIMA estacional para el residuo:
+
+$$ \ln y_t = \beta' x_t + z_t, \qquad \phi(L)\Phi(L^{12})(1-L)^d(1-L^{12})^D z_t = \theta(L)\Theta(L^{12}) a_t . $$ {#eq-regarima}
+
+Los regresores $x_t$ recogen efectos de calendario y valores atípicos: días hábiles del mes, año bisiesto, Semana Santa, feriados nacionales, cambios de nivel, valores extremos. Con el modelo estimado, la serie se limpia de esos efectos y se extiende hacia atrás y hacia adelante con pronósticos, para que los promedios móviles de la etapa siguiente no se rompan en los extremos de la muestra.
+
+En la **segunda etapa** se separan los componentes, y aquí el programa ofrece dos caminos. El filtro X-11 aplica una secuencia iterativa de promedios móviles: estima una tendencia, obtiene el componente estacional como promedio móvil de los residuos por mes, lo remueve, vuelve a estimar la tendencia y repite hasta converger. El camino SEATS, en cambio, es de extracción de señal: a partir del ARIMA estimado deriva los modelos de cada componente y calcula el filtro óptimo en el sentido de error cuadrático medio mínimo.
+
+::: {.intuicion}
+X-11 es un filtro: un conjunto de promedios móviles afinados durante décadas de práctica. SEATS es un modelo: dado un ARIMA, deduce cuál es la mejor separación posible. El primero es robusto y transparente; el segundo entrega además medidas de incertidumbre de los componentes, que el primero no tiene.
+:::
+
+`MacroPy` trae el binario `x13as` y lo expone en una sola función.
+
+```{python}
+#| label: x13-simulacion
+from MacroPy import seasonal_adjust
+
+result = seasonal_adjust(y_sim, method="x13", outlier=True)
+estimated = np.log(y_sim / result.seasadj) * 100
+
+comparison = pd.DataFrame(
+    {"simulado": pattern * 100,
+     "X-13": estimated.groupby(estimated.index.month).mean()},
+    index=range(1, 13))
+comparison.round(2).T
+```
+
+Sobre la serie simulada, donde conocemos la respuesta, X-13 recupera el patrón estacional con un error medio de una décima de punto porcentual y una correlación de 0.995 con el patrón verdadero. La serie desestacionalizada que devuelve correlaciona 0.9999 con la serie sin estacionalidad que se simuló. Este es el sentido en que la separación estacional es un problema bien planteado, a diferencia de la separación entre tendencia y ciclo.
+
+```{python}
+#| label: fig-datos-x13
+#| fig-cap: "IPC del Perú, factor estacional estimado por X-13. A la izquierda, el factor de cada mes año por año, con marzo resaltado; a la derecha, el promedio por mes de toda la muestra. El patrón se repite, pero no es fijo."
+adjusted = seasonal_adjust(cpi_pe.to_timestamp(how="end"),
+                           method="x13", outlier=True)
+factors = np.log(adjusted.observed / adjusted.seasadj) * 100
+by_month = factors.groupby(factors.index.month).mean()
+
+size = figsize(0.40)
+fig, axes = plt.subplots(1, 2, figsize=size,
+                         gridspec_kw={"width_ratios": [1.4, 1]})
+for month in range(1, 13):
+    line = factors[factors.index.month == month]
+    axes[0].plot(line.index.year, line.values, lw=0.7,
+                 color=PALETTE["accent"] if month == 3
+                 else PALETTE["observed"][2],
+                 zorder=3 if month == 3 else 1)
+axes[0].annotate("marzo", (2006, 0.44), fontsize=8,
+                 color=PALETTE["accent"])
+charts.zero_line(axes[0])
+axes[0].set_title("factor por mes, año a año (%)", fontsize=8.5)
+axes[1].bar(by_month.index, by_month.values,
+            color=PALETTE["steel"], width=0.7)
+charts.zero_line(axes[1])
+axes[1].set_xticks(range(1, 13, 2))
+axes[1].set_title("promedio por mes (%)", fontsize=8.5)
+plt.show()
+```
+
+El patrón estimado para el Perú tiene sentido económico: marzo, abril y mayo por encima de la tendencia, por la temporada escolar y el fin de la campaña agrícola, y noviembre, diciembre y enero por debajo. La amplitud es pequeña, algo más de medio punto entre el mes más alto y el más bajo, y aun así basta para que la inflación mensual de marzo parezca alta todos los años si no se corrige.
+
+El panel izquierdo muestra la propiedad que separa a X-13 de una regresión con dummies: el factor de marzo no es una constante. Sube de 0.21 puntos en 1996 a 0.38 en 2004, cae a 0.12 en 2012 y vuelve a 0.34 al final de la muestra, un rango de tres a uno. El factor de agosto es 0.18 puntos más alto en la segunda mitad de la muestra que en la primera. Un patrón fijo estimado sobre treinta años no describe bien ninguna de las dos décadas.
+
+### Otros métodos
+
+**STL** [@cleveland1990] descompone con regresiones locales ponderadas en lugar de promedios móviles. Es robusto a atípicos, no impone estacionalidad fija y está disponible en `statsmodels`; `MacroPy` lo expone con `method="stl"`. No maneja efectos de calendario, que es su principal limitación para datos oficiales.
+
+**Variables dummy estacionales** en una regresión son la opción más simple y la peor: imponen un patrón fijo para toda la muestra, cuando la estacionalidad cambia lentamente con la estructura productiva.
+
+**Modelos de componentes no observados** en forma de espacio de estados estiman la estacionalidad junto con la tendencia y el ciclo dentro de un mismo modelo, con el filtro de Kalman [@harvey1989]. Es la opción natural cuando la desestacionalización es parte del modelo y no un paso previo, y es lo que hace el @sec-estado.
+
+::: {.cuidado}
+Usar la variación interanual como si fuera una desestacionalización es un error frecuente. La diferencia de doce meses elimina el patrón estacional, sí, pero también introduce una media móvil que distorsiona la dinámica: crea autocorrelación artificial, desplaza los puntos de quiebre y arrastra los efectos base. Para describir la coyuntura, desestacionalizar; para el titular, la interanual.
+:::
+
+### Por qué los bancos centrales usan TRAMO-SEATS
+
+TRAMO-SEATS es un software independiente desarrollado en el Banco de España por @gomez1996. TRAMO se ocupa de la primera etapa, que en su nombre original es *Time series Regression with ARIMA noise, Missing values and Outliers*, y SEATS de la extracción de señal.
+
+Conviene despejar primero una confusión de nombres. X-13ARIMA-SEATS incorporó el motor SEATS, de modo que la elección entre los dos programas no es "filtro contra modelo": con X-13 se puede usar SEATS. Lo que distingue a TRAMO-SEATS es su etapa de preajuste y el ecosistema institucional construido a su alrededor. Con eso dicho, que el Banco Central Europeo, Eurostat y buena parte de los bancos centrales y ministerios lo sigan usando tiene tres razones concretas.
+
+La primera es la **flexibilidad del calendario**. Los efectos de días hábiles y feriados son específicos de cada país: Semana Santa se mueve entre marzo y abril, el Perú tiene Fiestas Patrias en julio y feriados largos que cambian de fecha, y el efecto del año bisiesto depende de la estructura productiva. TRAMO permite definir regresores de calendario a medida, con identificación automática del ARIMA y de los atípicos, y contrastar su significancia. Eso es exactamente lo que hace falta cuando la serie es de un país que el programa no trae precalibrado, y es lo que las directrices europeas piden: regresores de calendario contrastados uno por uno, no un paquete fijo.
+
+La segunda es que **entrega incertidumbre, no sólo una cifra**. Al derivar los componentes del ARIMA estimado, SEATS produce errores estándar de la serie desestacionalizada y diagnósticos formales sobre si la descomposición es admisible, es decir, si existen componentes con espectro no negativo compatibles con el modelo. Para una institución que publica una cifra oficial y tiene que defenderla, esa auditoría importa.
+
+La tercera es **institucional**. Las directrices europeas de ajuste estacional [@ess2024] no nombran programas: aceptan dos familias de métodos, la extracción de señal a partir de un modelo ARIMA y el método semiparamétrico de promedios móviles predefinidos, y recomiendan software libre publicado por institutos de estadística. Las dos familias son precisamente SEATS y X-11, y la plataforma JDemetra+ las implementa juntas. Una vez que un país documenta su metodología y forma a su equipo, el costo de cambiar es alto y el beneficio pequeño: en series bien comportadas las dos familias dan resultados muy parecidos.
+
+## Transformaciones {#sec-datos-transformaciones}
+
+Elegir la transformación es elegir qué pregunta se puede responder después. Las opciones usuales son pocas.
+
+| Transformación | Fórmula | Qué preserva |
+|:---------------|:--------|:-------------|
+| Nivel | $y_t$ | todo, incluida la tendencia |
+| Logaritmo | $\ln y_t$ | la tendencia, en escala proporcional |
+| Diferencia logarítmica | $\Delta \ln y_t$ | la dinámica de corto plazo |
+| Tasa interanual | $y_t/y_{t-s} - 1$ | el movimiento de baja frecuencia |
+| Diferencia de orden $s$ | $\Delta_s \ln y_t$ | la dinámica sin estacionalidad |
+
+: Transformaciones habituales y qué conserva cada una {#tbl-transformaciones}
+
+La primera decisión, niveles frente a diferencias, se discutió en el @sec-var-otros: la respuesta depende de si interesan las relaciones de largo plazo y de si las series comparten tendencias estocásticas [@nelson1982]. La segunda decisión, que es la de esta sección, es si trabajar con la variable o con su logaritmo.
+
+### Por qué logaritmos
+
+Hay cuatro razones, y todas se ven en los datos.
+
+**Primera: linealiza el crecimiento exponencial.** Una serie que crece a tasa constante es una exponencial en niveles y una recta en logaritmos. Los ojos juzgan mal las exponenciales y bien las rectas, de modo que un cambio de tendencia se ve en el gráfico logarítmico y se esconde en el de niveles.
+
+```{python}
+#| label: fig-datos-log
+#| fig-cap: "PBI real de Estados Unidos en niveles y en logaritmos. La recta punteada es la tendencia ajustada a los logaritmos; en niveles, la misma tendencia se curva."
+steps = np.arange(len(gdp_us))
+slope, intercept = np.polyfit(steps, np.log(gdp_us), 1)
+fitted = intercept + slope * steps
+dates_us = gdp_us.index.to_timestamp(how="end")
+
+size = figsize(0.36)
+fig, axes = plt.subplots(1, 2, figsize=size)
+axes[0].plot(dates_us, gdp_us, color=PALETTE["ink"], lw=1.1)
+axes[0].plot(dates_us, np.exp(fitted), color=PALETTE["accent"],
+             lw=1.0, ls=(0, (4, 2)))
+axes[0].set_title("nivel del índice", fontsize=8.5)
+axes[1].plot(dates_us, np.log(gdp_us), color=PALETTE["ink"],
+             lw=1.1)
+axes[1].plot(dates_us, fitted, color=PALETTE["accent"], lw=1.0,
+             ls=(0, (4, 2)))
+axes[1].set_title("logaritmo", fontsize=8.5)
+for ax in axes:
+    charts.year_ticks(ax, every=10)
+plt.show()
+```
+
+**Segunda: la diferencia logarítmica es casi la tasa de crecimiento, y es más manejable.** Con $g_t = y_t/y_{t-1} - 1$,
+
+$$ \Delta \ln y_t = \ln(1 + g_t) \approx g_t - \frac{g_t^2}{2} + \frac{g_t^3}{3} - \cdots $$ {#eq-aproximacion}
+
+La aproximación es excelente para tasas pequeñas y se deteriora rápido para tasas grandes.
+
+```{python}
+#| label: fig-datos-aprox
+#| fig-cap: "Error de aproximación de la diferencia logarítmica frente a la tasa de crecimiento. Los puntos marcan 5, 10 y 25 por ciento. Hasta 10 por ciento el error es menor a medio punto porcentual; en el rebote peruano de 2021, de 60 por ciento, el error llega a trece puntos."
+grid = np.linspace(0.001, 0.6, 200)
+error = (np.log1p(grid) - grid) * 100
+
+size = figsize(0.38)
+fig, ax = plt.subplots(figsize=size)
+ax.plot(grid * 100, error, color=PALETTE["ink"], lw=1.2)
+for point in (0.05, 0.10, 0.25):
+    ax.plot(point * 100, (np.log1p(point) - point) * 100,
+            marker="o", ms=4, color=PALETTE["accent"])
+charts.zero_line(ax)
+ax.set_xlabel("tasa de crecimiento (%)")
+ax.set_ylabel("error en puntos porcentuales")
+plt.show()
+```
+
+Con crecimiento trimestral de 1 %, la diferencia entre las dos medidas es de medio punto básico y da igual cuál se use. Con el 60 % interanual del rebote peruano de 2021, la diferencia logarítmica da 47 % y la tasa ordinaria 60 %: ahí sí importa, y hay que decir cuál se está reportando.
+
+**Tercera: las diferencias logarítmicas se suman.** El crecimiento acumulado de un año es la suma de los doce crecimientos logarítmicos mensuales, mientras que con tasas ordinarias hay que multiplicar factores. Lo mismo vale para descomponer un agregado o para anualizar: $(1+g)^{12} - 1$ se vuelve $12\,\Delta \ln y_t$.
+
+**Cuarta: suele estabilizar la varianza y simetrizar la distribución.** Cuando la amplitud de las fluctuaciones crece con el nivel, el logaritmo produce una serie de cambios con varianza aproximadamente constante. Es el caso $\lambda = 0$ de la familia de @boxcox1964, y es también lo que convierte una estacionalidad multiplicativa en aditiva.
+
+El IPC peruano es el caso de manual. Entre 1996 y 2026 el índice pasa de 42 a 121, y la desviación estándar de su variación mensual medida en puntos del índice sube 76 % entre la primera y la segunda mitad de la muestra; medida en diferencias logarítmicas baja 7 %, es decir, es estable. La asimetría de los cambios cae de 2.3 a 1.0 al pasar a logaritmos.
+
+Conviene no convertir eso en una ley. En el PBI mensual de Estados Unidos ocurre lo contrario: la desviación estándar de la primera diferencia en niveles es casi la misma en 1965-1984 y en 1985-2003, mientras que la de la diferencia logarítmica cae 41 %, porque la Gran Moderación redujo la volatilidad relativa más rápido de lo que creció el nivel. La estabilización de varianza es una hipótesis contrastable sobre cada serie, no una propiedad automática del logaritmo, y la forma de contrastarla es exactamente la de arriba: comparar la dispersión de los cambios entre submuestras en una y otra escala.
+
+La contracara es que la transformación no es neutral para pronosticar: revertirla con la exponencial de la media no devuelve la media del nivel, sino la mediana, y la corrección importa cuando la varianza es grande [@lutkepohl2012].
+
+::: {.cuidado}
+Dos límites. El logaritmo exige variables positivas, y eso descarta más series de las que parece: saldos fiscales, cuenta corriente, brechas y cualquier tasa que pueda ser negativa. Forzar un logaritmo sumando una constante arbitraria cambia la interpretación de los coeficientes y no resuelve nada. Y la simetría se gana sobre el nivel, no sobre una tasa: aplicar el logaritmo a una variación interanual que ya es un cociente no la vuelve más simétrica. En el PBI peruano sólo cambia el signo de la asimetría, de $+1.3$ a $-1.6$.
+:::
+
+### Qué transformación usa cada quien
+
+Conviene mirar qué hacen los artículos que el libro replica, porque la elección no es arbitraria.
+
+| Artículo | Variables | Transformación |
+|:---------|:----------|:---------------|
+| @sims1980 | producto, precios, dinero, tasas | logaritmos en niveles |
+| @blanchard1989 | PBI, desempleo | tasa de crecimiento, desempleo sin tendencia |
+| @stock2001 | inflación, desempleo, tasa | $400\,\Delta \ln P_t$; tasas en niveles |
+| @uhlig2005 | PBI, deflactor, reservas, tasa | $100 \ln$ en niveles; tasa en nivel |
+| @banbura2010 | 131 series | logaritmos en niveles, con prior de Minnesota |
+
+: Transformaciones en los artículos que el libro replica {#tbl-papers}
+
+El patrón es claro. Cuando el objetivo es estructural, es decir estimar respuestas a choques, la práctica dominante es trabajar en logaritmos de los niveles y dejar que los rezagos capturen la persistencia, tal como argumentan @simsstockwatson1990. Cuando el objetivo es pronosticar y las series tienen raíces cercanas a uno, se diferencia, o se encoge hacia una caminata aleatoria con el prior del @sec-bvar, que es una forma más suave de hacer lo mismo. Las tasas de interés y de desempleo se dejan en niveles siempre, porque ya están acotadas y su logaritmo no tiene interpretación útil.
+
+::: {.intuicion}
+La regla operativa cabe en tres líneas. Si la variable es un índice o un valor que crece de forma multiplicativa, logaritmo. Si es una tasa o un porcentaje, nivel. Si el modelo va a leerse como elasticidades o como respuestas porcentuales a un choque, logaritmo otra vez, porque es lo que hace que los coeficientes tengan esa lectura.
+:::
+
+## Otros temas {#sec-datos-otros}
+
+### Revisiones y datos en tiempo real
+
+Las bases de datos de *vintages*, como ALFRED de la Reserva Federal de San Luis, guardan lo que se publicó en cada fecha. Un ejercicio de pronóstico honesto usa, en cada momento, sólo lo que estaba disponible entonces [@croushore2001]. La diferencia no es menor: las primeras estimaciones del PBI se revisan en varias décimas, y con series muy revisadas la evaluación con datos finales exagera la calidad del pronóstico.
+
+### Valores atípicos y la pandemia
+
+Los dos extremos del PBI peruano del cuadro de momentos, $-39$ y $+60$ por ciento, son el mismo episodio. Un modelo lineal con errores gaussianos estimado sobre esa muestra interpreta esos meses como evidencia sobre la dinámica normal del sistema, y el resultado es una varianza sobreestimada y unos coeficientes deformados. Las opciones son tratarlos como atípicos con variables dummy, escalar la volatilidad de esos meses [@lenza2022], excluir el tramo o modelar la volatilidad cambiante como en el @sec-volatilidad. Ninguna es gratis, y lo mínimo es decir cuál se usó.
+
+### Frecuencias y agregación
+
+Pasar de mensual a trimestral parece inocuo y no lo es. Un promedio de tres meses no es lo mismo que el dato de fin de trimestre: el promedio suaviza y crea autocorrelación, el fin de periodo conserva el ruido. Para variables de flujo, como el PBI, corresponde promediar o sumar; para variables de saldo, como una tasa de interés o el tipo de cambio, el promedio y el fin de periodo responden preguntas distintas y la elección debe declararse. Los capítulos siguientes trabajan con series ya agregadas por la fuente y no re-agregan nada, precisamente para no añadir una decisión propia a las que la fuente ya tomó.
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. Una serie macro es el resultado de una cadena de convenciones de medición. Conocerla es parte del trabajo empírico, no un prólogo.
+2. La descomposición en tendencia, ciclo, estacionalidad e irregular necesita supuestos: la parte estacional está bien identificada, la separación entre tendencia y ciclo no.
+3. Desestacionalizar no es un lujo: la variación interanual llega tarde a los quiebres y arrastra efectos base, como muestra el Perú de 2021.
+4. X-13ARIMA-SEATS combina una etapa de regresión con ARIMA, que limpia calendario y atípicos, con una de extracción de componentes por filtros o por modelo.
+5. El logaritmo se usa porque lineariza el crecimiento, aproxima la tasa y se suma; que además estabilice la varianza es una hipótesis que hay que contrastar serie por serie. Deja de usarse cuando la variable puede ser negativa o ya es una tasa.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Ghysels y Osborn (2001)
+:   el tratamiento econométrico completo de la estacionalidad.
+
+Findley et al. (1998)
+:   la descripción oficial del programa X-12-ARIMA, base del X-13 actual.
+
+Gómez y Maravall (1996)
+:   el manual de TRAMO-SEATS, con la lógica de extracción de señal basada en modelos.
+
+Eurostat (2024)
+:   las directrices europeas de ajuste estacional; el documento que siguen las oficinas de estadística.
+
+Lütkepohl y Xu (2012)
+:   qué gana y qué pierde el pronóstico al tomar logaritmos.
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-datos-1}
+Reproduzca la simulación de la @fig-datos-simulacion con una estacionalidad cuya amplitud crece 2 % por año. Desestacionalice con X-13 y con STL y compare cuál sigue mejor el cambio de patrón.
+:::
+
+::: {#exr-datos-2}
+Tome la serie mensual del IPC peruano y calcule la inflación de tres maneras: interanual, mensual anualizada sobre la serie observada y mensual anualizada sobre la desestacionalizada. Grafique las tres desde 2020 y explique cuál habría sido más útil para decidir la tasa de política en cada momento.
+:::
+
+::: {#exr-datos-3}
+Estime con `seasonal_adjust` el factor estacional del IPC en dos submuestras, 1996-2010 y 2011-2026. ¿Cambió el patrón? Relacione el resultado con el argumento contra las variables dummy estacionales.
+:::
+
+::: {#exr-datos-4}
+Verifique numéricamente la @eq-aproximacion: calcule la diferencia entre $\Delta \ln y_t$ y $g_t$ para el PBI peruano mes a mes, y encuentre el percentil de la distribución de tasas a partir del cual el error supera un punto porcentual.
+:::
+
+::: {#exr-datos-5}
+Construya la serie trimestral del PBI peruano de dos maneras, promediando los meses y tomando el último mes de cada trimestre. Estime un AR(4) sobre cada una y compare la persistencia estimada. ¿Cuánto de lo que se lee como dinámica económica es consecuencia de la agregación?
+:::

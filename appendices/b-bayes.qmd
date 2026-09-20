@@ -1,0 +1,23 @@
+# Repaso bayesiano {#sec-bayes}
+
+*Apéndice en preparación.*
+
+## Qué se necesita saber
+
+*Por escribir:* verosimilitud, prior, posterior y el papel de la constante de normalización; por qué en este libro casi nunca hace falta calcularla.
+
+## Distribuciones de uso frecuente
+
+*Por escribir:* normal multivariada, inversa-Wishart, gamma inversa y la normal-inversa-Wishart conjugada del @sec-bvar.
+
+## Muestreo
+
+*Por escribir:* Gibbs, Metropolis-Hastings dentro de Gibbs y el muestreo del estado en modelos de espacio de estados.
+
+## Diagnóstico de convergencia
+
+*Por escribir:* trazas, media acumulada, tamaño de muestra efectivo y el diagnóstico de cadenas múltiples.
+
+## Elección de priors
+
+*Por escribir:* priors informativos frente a difusos, sensibilidad y verosimilitud marginal.

@@ -1,0 +1,54 @@
+# Material de origen (clases, códigos MATLAB y notebooks previos).
+# No se publica y saldrá del repositorio cuando termine la extracción.
+archive/
+
+# Salidas de Quarto
+/_book/
+/.quarto/
+/_site/
+**/*_files/
+# _freeze/ SÍ se versiona: guarda los resultados de las celdas para que el
+# render de CI no vuelva a ejecutar los capítulos lentos.
+*.tex.bak
+
+# Datos: lo crudo se descarga, lo procesado se reconstruye.
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+# Los archivos de replicacion de los articulos son pequenos y se versionan,
+# para que el libro se reconstruya de punta a punta desde el repositorio.
+!data/raw/SW2001_Data.xlsx
+!data/raw/BQ1989_Data.xlsx
+!data/raw/Uhlig2005_Data.xlsx
+!data/raw/peru_mensual_bcrp.csv
+data/processed/*
+!data/processed/.gitkeep
+# el CSV derivado sí se versiona: es pequeño y permite compilar el libro
+# sin el archivo crudo de 11 MB
+!data/processed/peru_domestic.csv
+!data/processed/sw2001.csv
+!data/processed/bq1989.csv
+!data/processed/uhlig2005.csv
+!data/processed/peru_monthly.csv
+
+# Figuras generadas por scripts (las de los capítulos las escribe Quarto)
+figures/generated/*
+!figures/generated/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv-*/
+venv/
+.ipynb_checkpoints/
+
+# Archivos que deja la app de escritorio al entregar resultados
+/Claude outputs/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+**/*.quarto_ipynb

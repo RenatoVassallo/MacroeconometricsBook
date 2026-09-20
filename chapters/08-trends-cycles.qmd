@@ -1,0 +1,86 @@
+# Tendencias y ciclos {#sec-tendencias}
+
+::: {.pregunta}
+¿Cuánto del producto observado es capacidad y cuánto es ciclo, si la separación no se observa?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. Qué supuesto sobre la tendencia hace cada filtro, aunque no lo declare.
+2. Por qué el filtro de Hodrick y Prescott genera dinámica espuria y qué propone Hamilton en su lugar.
+3. Cómo estimar una brecha del producto con componentes no observados y cómo reportar su incertidumbre.
+4. Por qué la brecha estimada en tiempo real se revisa tanto y qué significa eso para la política.
+:::
+
+**Requisitos previos.** @sec-estado.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| PBI real | BCRP / FRED | trimestral | logaritmo × 100 |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## Qué es una tendencia
+
+*Por escribir:* definiciones operativas y por qué no hay una sola correcta.
+
+## Filtros mecánicos
+
+*Por escribir:* Hodrick y Prescott, Baxter y King: qué imponen sin decirlo.
+
+## La crítica de Hamilton
+
+*Por escribir:* la regresión a h pasos como alternativa y sus propios supuestos.
+
+## Descomposición de Beveridge y Nelson
+
+*Por escribir:* tendencia estocástica y ciclo a partir del pronóstico de largo plazo.
+
+## Componentes no observados
+
+*Por escribir:* el modelo UC univariado y su versión bivariada con la curva de Phillips.
+
+## Incertidumbre y revisiones
+
+*Por escribir:* bandas del ciclo y el problema del punto final.
+
+## Lectura de política
+
+*Por escribir:* qué se puede afirmar con una brecha estimada y qué no.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. Todo filtro es un modelo con supuestos implícitos: conviene hacerlos explícitos y compararlos.
+2. La brecha del producto es una cantidad latente con bandas anchas; presentarla como un número es engañoso.
+3. El problema del punto final es justamente el que importa para la política.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Hamilton (2018)
+:   por qué no usar el filtro HP y qué hacer en su lugar.
+
+Hodrick y Prescott (1997)
+:   la referencia original, para leer con la crítica al lado.
+
+Beveridge y Nelson (1981)
+:   la descomposición basada en el pronóstico de largo plazo.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-tendencias-1}
+Compare las brechas obtenidas con HP, Hamilton y un UC univariado. ¿Coinciden en fechar las recesiones?
+:::
+
+::: {#exr-tendencias-2}
+Estime la brecha con datos hasta cada trimestre entre 2015 y 2019 y grafique la revisión posterior de cada estimación.
+:::
+

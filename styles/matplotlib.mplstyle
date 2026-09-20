@@ -1,0 +1,83 @@
+# Warm Folio - estilo único de todas las figuras del libro.
+# Valores tomados de styles/design/tokens.json. No redefinir colores ni tamaños
+# en los capítulos: si algo falta aquí, se agrega aquí.
+# Se aplica con macrolibro.usar_estilo(), que además registra las tipografías.
+
+font.family:        sans-serif
+# Los colores van sin '#': en un mplstyle '#' abre un comentario.
+font.sans-serif:    Source Sans 3, DejaVu Sans, Helvetica, Arial
+font.serif:         EB Garamond, DejaVu Serif, Georgia
+font.size:          8.5
+axes.labelsize:     9
+axes.titlesize:     9
+xtick.labelsize:    8
+ytick.labelsize:    8
+legend.fontsize:    8
+figure.titlesize:   9.5
+
+text.color:         2A231D
+axes.labelcolor:    6B5F52
+axes.edgecolor:     6B5F52
+axes.linewidth:     0.7
+axes.facecolor:     white
+axes.spines.top:    False
+axes.spines.right:  False
+axes.axisbelow:     True
+axes.grid:          True
+axes.grid.axis:     y
+axes.titlelocation: left
+axes.titlepad:      6.0
+axes.labelpad:      3.5
+axes.prop_cycle:    cycler('color', ['2A231D', '3D647F', 'B0472A', '5A7D43', '9A7B2E', 'C9A98A'])
+
+grid.color:         E7DAD0
+grid.linewidth:     0.5
+grid.alpha:         1.0
+
+xtick.color:        6B5F52
+ytick.color:        6B5F52
+xtick.labelcolor:   6B5F52
+ytick.labelcolor:   6B5F52
+xtick.direction:    out
+ytick.direction:    out
+xtick.major.size:   3.0
+ytick.major.size:   3.0
+xtick.major.width:  0.7
+ytick.major.width:  0.7
+
+lines.linewidth:    1.1
+lines.markersize:   3.5
+lines.solid_capstyle: round
+patch.linewidth:    0.0
+
+legend.frameon:     False
+legend.handlelength: 1.6
+legend.handletextpad: 0.6
+legend.columnspacing: 1.4
+legend.borderaxespad: 0.0
+legend.labelcolor:  2A231D
+# El ancho de la figura NO se fija aquí: lo pone Quarto según el formato
+# (7 in en la web, 4.5 in en el PDF) y macrobook.figsize() lo lee de ahí.
+figure.dpi:         110
+figure.facecolor:   white
+figure.constrained_layout.use: True
+figure.constrained_layout.h_pad: 0.03
+figure.constrained_layout.w_pad: 0.03
+
+savefig.dpi:        300
+savefig.facecolor:  white
+savefig.transparent: False
+savefig.bbox:       tight
+savefig.pad_inches: 0.02
+svg.fonttype:       path
+pdf.fonttype:       42
+ps.fonttype:        42
+
+mathtext.fontset:   custom
+mathtext.rm:        EB Garamond
+mathtext.it:        EB Garamond:italic
+mathtext.bf:        EB Garamond:bold
+mathtext.cal:       EB Garamond:italic
+
+date.autoformatter.year:  %Y
+date.autoformatter.month: %Y-%m

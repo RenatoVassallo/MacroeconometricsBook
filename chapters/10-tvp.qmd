@@ -1,0 +1,82 @@
+# Parámetros que cambian en el tiempo {#sec-tvp}
+
+::: {.pregunta}
+¿Cambió la economía o cambió sólo el tamaño de los choques?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. Especificar un VAR con coeficientes que evolucionan como caminata aleatoria.
+2. Estimarlo combinando Carter y Kohn con el muestreador de volatilidad del capítulo anterior.
+3. Distinguir cambios en los coeficientes de cambios en la varianza de los choques.
+4. Cuándo un modelo de cambio de régimen responde mejor que la variación suave.
+:::
+
+**Requisitos previos.** @sec-estado y @sec-volatilidad.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| PBI, inflación, tasa de política | FRED | trimestral | logaritmos y tasas |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## Por qué permitir variación
+
+*Por escribir:* cambios de régimen de política, aprendizaje y quiebres estructurales.
+
+## El TVP-VAR
+
+*Por escribir:* coeficientes en caminata aleatoria y la forma de estado del sistema.
+
+## Estimación
+
+*Por escribir:* el muestreador de Primiceri, con la corrección de Del Negro y Primiceri.
+
+## Coeficientes frente a volatilidad
+
+*Por escribir:* el debate sobre qué cambió en la Gran Moderación.
+
+## Sobreajuste y encogimiento
+
+*Por escribir:* cuántos estados libres puede sostener una muestra macro.
+
+## Cambio de régimen
+
+*Por escribir:* modelos de Markov como alternativa discreta a la variación suave.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. Un TVP-VAR puede acomodar casi cualquier cosa: la disciplina viene de los priors sobre la varianza de los estados.
+2. Buena parte de lo que parece cambio en la transmisión es cambio en el tamaño de los choques.
+3. Variación suave y cambio de régimen son supuestos distintos sobre la misma pregunta, y se eligen por argumento económico.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Primiceri (2005)
+:   el TVP-VAR con volatilidad estocástica aplicado a política monetaria.
+
+Del Negro y Primiceri (2015)
+:   la corrección al orden del muestreador; imprescindible antes de programarlo.
+
+Cogley y Sargent (2005)
+:   derivas y volatilidades en la posguerra de Estados Unidos.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-tvp-1}
+Estime un TVP-VAR y compare la respuesta al choque de política en dos fechas distantes. ¿La diferencia sobrevive a las bandas?
+:::
+
+::: {#exr-tvp-2}
+Fije la volatilidad y reestime. ¿Cuánto de la variación atribuida a los coeficientes desaparece?
+:::
+

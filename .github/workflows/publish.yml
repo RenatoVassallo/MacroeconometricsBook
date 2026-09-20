@@ -1,0 +1,65 @@
+name: Publicar el libro
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Habilita GitHub Pages con origen "GitHub Actions" en el primer
+      # despliegue, para no tener que activarlo a mano en los ajustes.
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Crear el entorno
+        run: uv sync --frozen
+
+      # Una sola llamada para los dos formatos: `quarto render --to <formato>`
+      # limpia el directorio de salida, de modo que renderizar por separado
+      # borraria el resultado anterior.
+      - name: Renderizar (HTML y PDF)
+        run: uv run quarto render
+
+      - name: Comprobar que salieron las dos versiones
+        run: |
+          test -f _book/index.html
+          ls _book/*.pdf
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _book
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

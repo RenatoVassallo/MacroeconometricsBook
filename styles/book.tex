@@ -1,0 +1,290 @@
+% =====================================================================
+% Warm Folio - preámbulo LaTeX del libro (salida PDF, LuaLaTeX).
+% Valores tomados de styles/design/tokens.json.
+% Se incluye con format.pdf.include-in-header.
+%
+% Nota de orden: Quarto carga amsthm, caption, float y los entornos de
+% teorema DESPUÉS de este archivo. Todo lo que depende de ellos va dentro
+% de \AtBeginDocument, con \makeatletter FUERA del gancho (los tokens del
+% argumento se leen aquí, no al ejecutarse) y con # duplicado.
+% =====================================================================
+
+\usepackage{iftex}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{setspace}
+\usepackage{marginnote}
+\usepackage{scrlayer-scrpage}
+\usepackage{ragged2e}
+\usepackage{tikz}
+% ---------- Colores (tokens) ----------
+\definecolor{ink}{HTML}{2A231D}
+\definecolor{muted}{HTML}{6B5F52}
+\definecolor{paper}{HTML}{FDFBF7}
+\definecolor{tint}{HTML}{F7EDE5}
+\definecolor{tintstrong}{HTML}{F0E0D6}
+\definecolor{codebg}{HTML}{FBF6F1}
+\definecolor{rule}{HTML}{DED0C4}
+\definecolor{rulesoft}{HTML}{E7DAD0}
+\definecolor{accent}{HTML}{B0472A}
+\definecolor{accentdark}{HTML}{8E3620}
+\definecolor{olive}{HTML}{4E6E38}
+\definecolor{steel}{HTML}{3D647F}
+\definecolor{shadecolor}{HTML}{FBF6F1}
+
+\color{ink}
+\setlength{\emergencystretch}{2em}
+\frenchspacing
+\widowpenalty=10000
+\clubpenalty=10000
+
+% ---------- Títulos ----------
+\KOMAoptions{chapterprefix=true,headings=normal}
+\setkomafont{chapterprefix}{\sffamily\bfseries\fontsize{9}{11}\selectfont\color{accent}}
+\renewcommand*{\chapterformat}{\MakeUppercase{\chapapp\nobreakspace\thechapter}}
+\setkomafont{chapter}{\rmfamily\bfseries\fontsize{26}{29}\selectfont\color{ink}}
+\setkomafont{section}{\sffamily\bfseries\fontsize{14}{17}\selectfont\color{ink}}
+\setkomafont{subsection}{\sffamily\bfseries\fontsize{11.5}{14}\selectfont\color{ink}}
+\setkomafont{subsubsection}{\sffamily\bfseries\fontsize{10.5}{13}\selectfont\color{muted}}
+
+% ---------- Encabezados y folios ----------
+\clearpairofpagestyles
+\automark[section]{chapter}
+\setkomafont{pagehead}{\sffamily\fontsize{9}{11}\selectfont\color{muted}}
+\setkomafont{pagenumber}{\sffamily\fontsize{9}{11}\selectfont\color{muted}}
+\newcommand{\wfshorttitle}{Macroeconometría aplicada con Python}
+\lehead{\pagemark\quad\MakeUppercase{\wfshorttitle}}
+\rohead{\MakeUppercase{\rightmark}\quad\pagemark}
+\cfoot{}
+\renewcommand*{\chapterpagestyle}{plain}
+
+% Con \flushbottom (el estilo por omisión de scrbook a dos caras) LaTeX estira
+% los espacios verticales cuando una figura flotante se pospone, y las páginas
+% con mucho código quedan con huecos enormes entre bloques. \raggedbottom deja
+% el sobrante al pie, que es lo habitual en un libro técnico.
+\raggedbottom
+
+% ---------- Bloques de código ----------
+% fvextra parte las líneas largas de los bloques de código. Quarto no lo carga
+% por su cuenta en este proyecto, así que se carga aquí (después de fancyvrb,
+% que ya está en el preámbulo) y se fija el comportamiento de corte:
+% breakanywhere evita que un identificador largo se salga del bloque de texto.
+\usepackage{fvextra}
+\fvset{breaklines=true,breakanywhere=true,breakindent=1.2em,
+  breaksymbolleft={\color{muted}\footnotesize\ensuremath{\hookrightarrow}},
+  breaksymbolindentleft=0pt,breaksymbolsepleft=0.4em}
+
+% El entorno Shaded de pandoc usa framed/snugshade, que al partirse entre
+% páginas deja una franja teñida vacía. Se redefine con tcolorbox partible,
+% que corta limpio y conserva el mismo fondo sin borde.
+\AtBeginDocument{%
+  \renewenvironment{Shaded}{%
+    \begin{tcolorbox}[breakable, enhanced jigsaw, colback=codebg,
+      frame hidden, boxrule=0pt, sharp corners, boxsep=0pt,
+      left=6pt, right=6pt, top=5pt, bottom=5pt,
+      grow to left by=6pt, grow to right by=6pt,
+      before skip=8pt, after skip=8pt]}{\end{tcolorbox}}}
+
+% ---------- Notas al margen ----------
+\renewcommand*{\marginfont}{\sffamily\fontsize{8}{10.5}\selectfont\color{muted}\RaggedRight}
+
+% ---------- Etiquetas de los bloques ----------
+\newcommand{\wfheadcolor}{ink}
+% \protected: newtheoremstyle hace xdef y así el nombre no se expande allí.
+\protected\def\wfheadfont{\sffamily\bfseries\fontsize{8.5}{10.5}\selectfont\color{\wfheadcolor}}
+\newcommand{\wfsetheadcolor}[2]{\AtBeginEnvironment{#1}{\renewcommand{\wfheadcolor}{#2}}}
+\newcommand{\wflabel}[2]{\noindent{\sffamily\bfseries\fontsize{8.5}{10.5}\selectfont\color{#1}#2}\par\vspace{3pt}}
+
+\makeatletter
+\newcommand{\wfblockstyle}{%
+  \newtheoremstyle{wfblock}%
+    {8pt}{8pt}%            espacio arriba / abajo
+    {\normalfont}%         cuerpo (sin cursiva)
+    {0pt}%                 sangría
+    {\wfheadfont}%         tipo de la etiqueta
+    {}%                    sin puntuación tras la etiqueta
+    {\newline}%            la etiqueta ocupa su propia línea
+    {\thmname{\MakeUppercase{##1}}\thmnumber{\ ##2}%
+     \thmnote{\ \textperiodcentered\ \MakeUppercase{##3}}}%
+  \let\th@plain\th@wfblock
+  \let\th@definition\th@wfblock
+  \let\th@remark\th@wfblock}
+\makeatother
+
+% ---------- Cajas de los bloques ----------
+% Estilo "sólo filetes" de los bloques de resultado, como clave de tcolorbox
+% (un \newcommand no sirve: pgfkeys no lo expande antes de leer las claves).
+\tcbset{wfsolofiletes/.style={
+  blanker, breakable, boxsep=0pt,
+  left=0pt, right=0pt, top=7pt, bottom=7pt,
+  borderline north={1.2pt}{0pt}{ink},
+  borderline south={0.4pt}{0pt}{ink},
+  before skip=12pt, after skip=12pt}}
+
+\AtBeginDocument{%
+  \wfblockstyle
+  % color de la etiqueta por bloque
+  \wfsetheadcolor{conjecture}{accentdark}%   Supuesto
+  \wfsetheadcolor{definition}{ink}%          Definición
+  \wfsetheadcolor{theorem}{ink}%             Resultado
+  \wfsetheadcolor{proposition}{ink}%
+  \wfsetheadcolor{lemma}{ink}%
+  \wfsetheadcolor{corollary}{ink}%
+  \wfsetheadcolor{example}{steel}%           Ejemplo / aplicación
+  \wfsetheadcolor{exercise}{muted}%          Ejercicio
+  % Supuesto: el bloque más fuerte del sistema.
+  \tcolorboxenvironment{conjecture}{
+    blanker, breakable, colback=tintstrong, boxsep=0pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    borderline west={2.5pt}{0pt}{accent},
+    before skip=12pt, after skip=12pt}
+  % Definición: fondo tenue.
+  \tcolorboxenvironment{definition}{
+    blanker, breakable, colback=tint, boxsep=0pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    before skip=12pt, after skip=12pt}
+  % Resultado: sólo filetes.
+  \tcolorboxenvironment{theorem}{wfsolofiletes}
+  \tcolorboxenvironment{proposition}{wfsolofiletes}
+  \tcolorboxenvironment{lemma}{wfsolofiletes}
+  \tcolorboxenvironment{corollary}{wfsolofiletes}
+  % Ejemplo: caja blanca con filete.
+  \tcolorboxenvironment{example}{
+    blanker, breakable, colback=white, boxsep=0pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    borderline={0.4pt}{0pt}{rule},
+    before skip=12pt, after skip=12pt}
+  % Ejercicio: filetes arriba y abajo.
+  \tcolorboxenvironment{exercise}{
+    blanker, breakable, boxsep=0pt,
+    left=0pt, right=0pt, top=6pt, bottom=6pt,
+    borderline north={0.4pt}{0pt}{rule},
+    borderline south={0.4pt}{0pt}{rule},
+    before skip=10pt, after skip=10pt}}
+
+% ---------- Bloques sin numeración (los produce filters/blocks.lua) ----------
+\newtcolorbox{intuicionblock}{
+  blanker, breakable, boxsep=0pt,
+  left=10pt, right=0pt, top=6pt, bottom=6pt,
+  borderline west={1.5pt}{0pt}{olive,dashed},
+  before skip=12pt, after skip=12pt,
+  before upper={\wflabel{olive}{INTUICIÓN}}}
+
+\newtcolorbox{cuidadoblock}{
+  blanker, breakable, boxsep=0pt,
+  left=10pt, right=0pt, top=6pt, bottom=6pt,
+  borderline north={0.4pt}{0pt}{accentdark},
+  borderline west={2.5pt}{0pt}{accentdark},
+  before skip=12pt, after skip=12pt,
+  before upper={\wflabel{accentdark}{CUIDADO}}}
+
+\newtcolorbox{solucionblock}{
+  blanker, breakable, boxsep=0pt,
+  left=0pt, right=0pt, top=2pt, bottom=6pt,
+  before skip=10pt, after skip=12pt,
+  fontupper=\small,
+  before upper={\wflabel{muted}{SOLUCIÓN}}}
+
+\newtcolorbox{preguntablock}{
+  blanker, breakable, boxsep=0pt,
+  left=12pt, right=0pt, top=6pt, bottom=6pt,
+  borderline west={2.5pt}{0pt}{accent},
+  before skip=10pt, after skip=14pt,
+  fontupper=\fontsize{12}{16.5}\selectfont,
+  before upper={\wflabel{accentdark}{LA PREGUNTA ECONÓMICA}}}
+
+\newtcolorbox{datosblock}{
+  blanker, breakable, colback=tint, boxsep=0pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=12pt, after skip=14pt,
+  fontupper=\small,
+  before upper={\wflabel{ink}{DATOS UTILIZADOS}}}
+
+\newtcolorbox{aprendizajesblock}{
+  blanker, breakable, boxsep=0pt,
+  left=0pt, right=0pt, top=4pt, bottom=4pt,
+  before skip=10pt, after skip=12pt,
+  before upper={\wflabel{ink}{QUÉ VAS A APRENDER}}}
+
+\newtcolorbox{ideasblock}{
+  blanker, breakable, boxsep=0pt,
+  left=0pt, right=0pt, top=6pt, bottom=6pt,
+  borderline north={1.2pt}{0pt}{ink},
+  before skip=14pt, after skip=12pt,
+  before upper={\wflabel{ink}{IDEAS CLAVE}}}
+
+% ---------- Leyendas, flotantes y enlaces ----------
+\makeatletter
+\AtBeginDocument{%
+  \captionsetup{font={sf,small,color=ink},labelfont={sf,bf},labelsep=period,
+                justification=raggedright,singlelinecheck=false,skip=6pt}%
+  \@ifundefined{c@algoritmo}{}{%
+    \floatstyle{ruled}\restylefloat{algoritmo}%
+    \captionsetup[algoritmo]{font={sf,small},labelfont={sf,bf},labelsep=period,skip=4pt}%
+    % Quarto centra el contenido de los flotantes; en un algoritmo estorba.
+    \AtBeginEnvironment{algoritmo}{\let\centering\relax}}%
+  \hypersetup{colorlinks=true,linkcolor=accentdark,citecolor=accentdark,
+              urlcolor=accent,filecolor=accent,linktoc=all}}
+\makeatother
+
+% ---------------------------------------------------------------------
+% Portada (diseño Warm Folio, versión de septiembre de 2026).
+% Un solo motivo: tres densidades sobre una misma base, de la difusa a la
+% concentrada, con un filete en la moda. Sin imágenes ni degradados.
+% ---------------------------------------------------------------------
+\definecolor{densuno}{HTML}{E4C6B4}
+\definecolor{densdos}{HTML}{CE8C70}
+\definecolor{denstres}{HTML}{B0472A}
+
+\newcommand{\wfportadatitulo}{Macroeconometría\\aplicada con Python}
+\newcommand{\wfportadasubtitulo}{De los datos macro a la inferencia estructural y el pronóstico}
+\newcommand{\wfportadaautor}{Renato Vassallo}
+\newcommand{\wfportadaeyebrow}{LIBRO ABIERTO DE POSGRADO \textperiodcentered\ EDICIÓN 2026}
+
+\renewcommand{\maketitle}{%
+  \begin{titlepage}%
+  \thispagestyle{empty}%
+  \begin{tikzpicture}[remember picture, overlay, x=1in, y=1in]
+    % fondo
+    \fill[tint] (current page.south west) rectangle (current page.north east);
+    % bloque de texto superior
+    \node[anchor=north west, xshift=1.05in, yshift=-1.95in, inner sep=0pt,
+          font=\sffamily\bfseries\fontsize{9}{11}\selectfont, text=accent]
+      at (current page.north west) {\wfportadaeyebrow};
+    \draw[ink, line width=0.5pt]
+      ([xshift=1.05in, yshift=-2.12in] current page.north west) --
+      ([xshift=-1.05in, yshift=-2.12in] current page.north east);
+    \node[anchor=north west, xshift=1.02in, yshift=-2.45in, inner sep=0pt, align=left,
+          font=\rmfamily\bfseries\fontsize{34}{41}\selectfont, text=ink]
+      at (current page.north west) {\wfportadatitulo};
+    \node[anchor=north west, xshift=1.05in, yshift=-4.15in, inner sep=0pt, align=left,
+          text width=5.0in, font=\rmfamily\fontsize{15}{20}\selectfont, text=muted]
+      at (current page.north west) {\wfportadasubtitulo};
+    % motivo: tres densidades
+    \path (current page.south west) ++(1.05in, 2.75in) coordinate (base);
+    \begin{scope}[shift={(base)}]
+      \fill[densuno] plot[domain=0:4.9, samples=170, smooth]
+        (\x, {1.029*exp(-0.5*((\x-2.058)/1.274)^2)}) -- (4.9,0) -- (0,0) -- cycle;
+      \fill[densdos] plot[domain=0:4.9, samples=170, smooth]
+        (\x, {1.617*exp(-0.5*((\x-2.450)/0.637)^2)}) -- (4.9,0) -- (0,0) -- cycle;
+      \fill[denstres] plot[domain=0:4.9, samples=170, smooth]
+        (\x, {2.254*exp(-0.5*((\x-2.695)/0.2695)^2)}) -- (4.9,0) -- (0,0) -- cycle;
+      \draw[ink, line width=0.5pt] (2.695,0) -- (2.695,2.377);
+      \draw[ink, line width=0.7pt] (0,0) -- (4.9,0);
+    \end{scope}
+    % pie
+    \node[anchor=south west, xshift=1.05in, yshift=1.55in, inner sep=0pt,
+          font=\rmfamily\fontsize{15}{18}\selectfont, text=ink]
+      at (current page.south west) {\wfportadaautor};
+    \node[anchor=south west, xshift=1.05in, yshift=1.25in, inner sep=0pt,
+          font=\sffamily\fontsize{8.5}{11}\selectfont, text=muted]
+      at (current page.south west) {CC BY-NC-SA 4.0 \textperiodcentered\ compilado el \today};
+    \node[anchor=south east, xshift=-1.05in, yshift=1.25in, inner sep=0pt, align=right,
+          font=\ttfamily\fontsize{8.5}{13}\selectfont, text=accent]
+      at (current page.south east)
+      {VAR \textperiodcentered\ BVAR \textperiodcentered\ SVAR\\espacio de estados \textperiodcentered\ ML};
+  \end{tikzpicture}
+  \end{titlepage}%
+}

@@ -1,0 +1,39 @@
+# Prefacio {.unnumbered}
+
+## A quién está dirigido
+
+A quien ya tomó un curso de econometría y quiere usar series de tiempo macroeconómicas para responder preguntas de política: estudiantes de maestría y de doctorado, y economistas de bancos centrales, ministerios y organismos internacionales.
+
+Se asume econometría de pregrado, álgebra matricial, probabilidad y algo de Python. No se asume experiencia previa con métodos bayesianos: el @sec-bayes reúne lo necesario.
+
+## Por qué otro libro
+
+Hay manuales excelentes de teoría y hay repositorios de código. Lo que escasea es el puente: el paso del supuesto de identificación al algoritmo, y del algoritmo a la figura que termina en un informe de política. Este libro ocupa ese espacio, con una deuda explícita con *Applied Bayesian Econometrics for Central Bankers* de Blake y Mumtaz [-@blake2017], que sigue siendo la referencia más cercana a este espíritu, aquí en Python, con notación uniforme y algo más de formalidad.
+
+## Cómo está escrito cada capítulo
+
+1. Una pregunta económica.
+2. La motivación: por qué el modelo anterior no alcanza.
+3. El modelo y sus supuestos estadísticos.
+4. La estimación y su algoritmo.
+5. La interpretación económica.
+6. La implementación en Python.
+7. Una aplicación empírica.
+8. Diagnósticos, límites y extensiones.
+9. Ejercicios.
+
+La progresión es siempre la misma: modelo simple, límite del modelo simple, modelo más rico.
+
+## Convenciones
+
+Los vectores van en negrita ($\mathbf{y}_t$, $\mathbf{u}_t$) para no confundirlos con el PBI ($y_t$); las matrices en mayúscula ($A_\ell$, $\Sigma$). Los bloques marcados **Supuesto** contienen restricciones de identificación: son el lugar donde el modelo deja de hablar de los datos y empieza a hablar de economía. El @sec-notacion reúne la notación completa.
+
+El código privilegia la transparencia sobre la eficiencia: primero el algoritmo escrito a mano, luego la versión de biblioteca.
+
+## Reproducibilidad
+
+Todo lo que aparece en el libro se regenera con `quarto render`. Los datos crudos no se editan nunca a mano; lo que se descarga vive en `data/raw/` y lo construido en `data/processed/`. Las figuras usan una sola hoja de estilo, `styles/matplotlib.mplstyle`.
+
+## Licencia
+
+El texto se publica bajo CC BY-NC-SA 4.0 y el código bajo licencia MIT.

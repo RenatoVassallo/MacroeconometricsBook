@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..600&family=Source+Sans+3:ital,wght@0,400..700;1,400&family=JetBrains+Mono:wght@400;600&family=Charis+SIL:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=STIX+Two+Text:ital,wght@0,400..700;1,400..600&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #E8E6E1; }
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</helmet>
+
+<section style="display:flex; flex-direction:column; gap:28px; padding:48px; font-family:'IBM Plex Sans',system-ui,sans-serif;">
+  <div style="display:flex; flex-direction:column; gap:6px; max-width:760px;">
+    <div style="font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:#6B5F52;">Turn 1 · Step 1, low fidelity</div>
+    <div style="font-size:26px; font-weight:600; color:#241F1B;">Three directions for the interior chapter page</div>
+    <div style="font-size:14px; line-height:1.55; color:#4A423B;">Same Quarto book layout, same content from §5.3, same figure. What differs: palette, type pairing (body + matching math font), and how a content block and a figure are articulated. Pick one — <a href="#1a">1a</a>, <a href="#1b">1b</a>, or <a href="#1c">1c</a> — and I develop it into the full token set, mockups, print spread and figure sheet.</div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:36px; align-items:flex-start;">
+
+    <!-- ================= 1a  Warm Folio ================= -->
+    <div id="1a" style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:#FDFBF7; background:#2A231D; padding:3px 7px;">1a</span>
+        <span style="font-size:17px; font-weight:600; color:#241F1B;">Warm Folio</span>
+        <span style="font-size:13px; color:#5C544C;">Garamond book page; terracotta as the only loud colour</span>
+      </div>
+
+      <div style="width:1120px; background:#FDFBF7; border:1px solid #DED0C4; box-shadow:0 1px 0 rgba(42,35,29,0.06);">
+        <!-- swatches + type note -->
+        <div style="display:flex; justify-content:space-between; gap:24px; padding:14px 22px; border-bottom:1px solid #E7DAD0; background:#F7EDE5;">
+          <div style="display:flex; gap:14px;">
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#2A231D;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B5F52;">#2A231D ink</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#B0472A;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B5F52;">#B0472A prim</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#4E6E38;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B5F52;">#4E6E38 acc</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#F7EDE5; border:1px solid #DED0C4;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B5F52;">#F7EDE5 surf</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#FDFBF7; border:1px solid #DED0C4;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B5F52;">#FDFBF7 bg</div></div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; line-height:1.7; color:#5C544C; text-align:right;">EB Garamond + Garamond-Math<br>Source Sans 3 · JetBrains Mono</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:200px minmax(0,1fr) 190px; align-items:start;">
+          <!-- sidebar -->
+          <nav style="padding:22px 18px; border-right:1px solid #E7DAD0; display:flex; flex-direction:column; gap:9px; font-family:'Source Sans 3',sans-serif; font-size:12.5px; color:#6B5F52;">
+            <div style="font-family:'EB Garamond',serif; font-size:16px; font-weight:600; color:#2A231D; line-height:1.3;">Applied Macroeconometrics with Python</div>
+            <div style="height:1px; background:#E7DAD0; margin:6px 0;"></div>
+            <div>3 · Univariate models</div>
+            <div>4 · Vector autoregressions</div>
+            <div style="color:#B0472A; font-weight:600; border-left:2px solid #B0472A; margin-left:-18px; padding-left:16px;">5 · Bayesian VARs</div>
+            <div style="padding-left:12px; font-size:12px;">5.1 Why shrink?</div>
+            <div style="padding-left:12px; font-size:12px;">5.2 Reduced form</div>
+            <div style="padding-left:12px; font-size:12px; color:#B0472A;">5.3 The Minnesota prior</div>
+            <div style="padding-left:12px; font-size:12px;">5.4 Gibbs sampling</div>
+            <div>6 · Forecasting</div>
+            <div>7 · State space models</div>
+          </nav>
+
+          <!-- main -->
+          <main style="padding:26px 34px 34px; font-family:'EB Garamond',serif; color:#2A231D;">
+            <div style="font-family:'Source Sans 3',sans-serif; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#6B5F52; margin-bottom:18px;">Chapter 5 · Bayesian Vector Autoregressions</div>
+            <h2 style="margin:0 0 14px; font-size:27px; font-weight:600; letter-spacing:-0.005em;">5.3 The Minnesota prior</h2>
+            <p style="margin:0 0 14px; font-size:18px; line-height:1.62; max-width:34em; text-wrap:pretty;">A VAR with <em>n</em> = 7 variables and <em>p</em> = 4 lags has 203 coefficients per draw of the sample. The Minnesota prior answers the count problem by pulling every equation toward a univariate process, so the data only has to overturn a belief rather than build one from nothing <a href="#" style="color:#B0472A; border-bottom:1px solid rgba(176,71,42,0.35);">(Litterman 1986)</a>.</p>
+            <div style="display:flex; align-items:center; gap:18px; margin:18px 0 20px;">
+              <div style="flex:1; font-size:19px; text-align:center;"><em>y<sub style="font-size:0.7em;">t</sub></em> = <em>c</em> + <em>A</em><sub style="font-size:0.7em;">1</sub><em>y</em><sub style="font-size:0.7em;">t−1</sub> + ⋯ + <em>A<sub style="font-size:0.7em;">p</sub>y</em><sub style="font-size:0.7em;">t−p</sub> + <em>u<sub style="font-size:0.7em;">t</sub></em>,&ensp; <em>u<sub style="font-size:0.7em;">t</sub></em> ~ <em>N</em>(0, Σ)</div>
+              <div style="font-family:'Source Sans 3',sans-serif; font-size:13px; color:#6B5F52;">(5.1)</div>
+            </div>
+
+            <!-- content block: Assumption -->
+            <div style="border-left:4px solid #B0472A; background:#F7EDE5; padding:14px 18px 16px; margin:22px 0;">
+              <div style="font-family:'Source Sans 3',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#8F3A22; margin-bottom:7px;">Assumption 5.1 — Recursive identification</div>
+              <div style="font-size:17.5px; line-height:1.55;"><em>u<sub style="font-size:0.7em;">t</sub></em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>ε<sub style="font-size:0.7em;">t</sub></em>, with <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> lower triangular and 𝔼[<em>ε<sub style="font-size:0.7em;">t</sub>ε</em>′<sub style="font-size:0.7em;">t</sub>] = <em>I<sub style="font-size:0.7em;">n</sub></em>, so that Σ = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1′</sup>.</div>
+            </div>
+
+            <!-- figure -->
+            <figure style="margin:24px 0 0;">
+              <svg viewBox="0 0 600 250" width="100%" style="display:block;">
+                <g stroke="#E0D3C7" stroke-width="1">
+                  <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><line x1="40" x2="592" y1="{{ g.y }}" y2="{{ g.y }}"></line></sc-for>
+                </g>
+                <sc-if value="{{ shadeForecast }}" hint-placeholder-val="{{ true }}"><rect x="{{ fan.fx }}" y="10" width="{{ fan.fw }}" height="214" fill="#B0472A" opacity="0.055"></rect></sc-if>
+                <polygon points="{{ fan.b95 }}" fill="#B0472A" opacity="0.14"></polygon>
+                <polygon points="{{ fan.b68 }}" fill="#B0472A" opacity="0.3"></polygon>
+                <polyline points="{{ fan.hist }}" fill="none" stroke="#6B5F52" stroke-width="1.6"></polyline>
+                <polyline points="{{ fan.med }}" fill="none" stroke="#B0472A" stroke-width="1.8" stroke-dasharray="5 3"></polyline>
+                <line x1="40" x2="592" y1="{{ fan.zeroY }}" y2="{{ fan.zeroY }}" stroke="#2A231D" stroke-width="0.9"></line>
+                <sc-for list="{{ fan.dots }}" as="d" hint-placeholder-count="8"><circle cx="{{ d.x }}" cy="{{ d.y }}" r="2.9" fill="#4E6E38"></circle></sc-for>
+                <g font-family="JetBrains Mono, monospace" font-size="9" fill="#6B5F52">
+                  <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><text x="34" y="{{ g.ty }}" text-anchor="end">{{ g.label }}</text></sc-for>
+                  <sc-for list="{{ fan.xticks }}" as="t" hint-placeholder-count="6"><text x="{{ t.x }}" y="243" text-anchor="middle">{{ t.label }}</text></sc-for>
+                </g>
+              </svg>
+              <figcaption style="margin-top:10px; font-family:'Source Sans 3',sans-serif; font-size:12.5px; line-height:1.5; color:#3A322B; max-width:38em;"><span style="font-weight:700;">Figure 5.3.</span> BVAR forecast of real GDP growth, 2018Q1 to 2019Q4. Bands: 68% and 95% posterior predictive intervals. Dots: realized values.<br><span style="color:#6B5F52;">Source: Central Reserve Bank of Peru (BCRP); author's calculations.</span></figcaption>
+            </figure>
+          </main>
+
+          <!-- margin column -->
+          <aside style="padding:76px 20px 22px 0; font-family:'Source Sans 3',sans-serif; font-size:12px; line-height:1.55; color:#6B5F52;">
+            <div style="border-top:2px solid #DED0C4; padding-top:8px;"><span style="font-weight:700; color:#3A322B;">Margin note.</span> Litterman's original prior treated Σ as fixed and diagonal; the independent Normal-inverse-Wishart version in §5.4 relaxes both.</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 1b  Working Paper ================= -->
+    <div id="1b" style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:#FFFFFF; background:#1C1F23; padding:3px 7px;">1b</span>
+        <span style="font-size:17px; font-weight:600; color:#241F1B;">Working Paper</span>
+        <span style="font-size:13px; color:#5C544C;">Near-monochrome, hairline rules, maximum density</span>
+      </div>
+
+      <div style="width:1120px; background:#FFFFFF; border:1px solid #DCE0E3;">
+        <div style="display:flex; justify-content:space-between; gap:24px; padding:14px 22px; border-bottom:1px solid #E6E9EB; background:#F4F5F6;">
+          <div style="display:flex; gap:14px;">
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#1C1F23;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5B646B;">#1C1F23 ink</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#2F5C7E;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5B646B;">#2F5C7E prim</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#8A5A3B;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5B646B;">#8A5A3B acc</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#F4F5F6; border:1px solid #DCE0E3;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5B646B;">#F4F5F6 surf</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#FFFFFF; border:1px solid #DCE0E3;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5B646B;">#FFFFFF bg</div></div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; line-height:1.7; color:#5B646B; text-align:right;">Charis SIL / XCharter + XCharter-Math<br>IBM Plex Sans · IBM Plex Mono</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:200px minmax(0,1fr) 190px; align-items:start;">
+          <nav style="padding:22px 18px; border-right:1px solid #E6E9EB; display:flex; flex-direction:column; gap:9px; font-family:'IBM Plex Sans',sans-serif; font-size:12.5px; color:#5B646B;">
+            <div style="font-family:'IBM Plex Sans',sans-serif; font-size:14px; font-weight:600; color:#1C1F23; line-height:1.3;">Applied Macroeconometrics with Python</div>
+            <div style="height:1px; background:#E6E9EB; margin:6px 0;"></div>
+            <div>3 · Univariate models</div>
+            <div>4 · Vector autoregressions</div>
+            <div style="color:#1C1F23; font-weight:600;">5 · Bayesian VARs</div>
+            <div style="padding-left:12px; font-size:12px;">5.1 Why shrink?</div>
+            <div style="padding-left:12px; font-size:12px;">5.2 Reduced form</div>
+            <div style="padding-left:12px; font-size:12px; color:#2F5C7E; font-weight:600;">5.3 The Minnesota prior</div>
+            <div style="padding-left:12px; font-size:12px;">5.4 Gibbs sampling</div>
+            <div>6 · Forecasting</div>
+            <div>7 · State space models</div>
+          </nav>
+
+          <main style="padding:26px 34px 34px; font-family:'Charis SIL',Georgia,serif; color:#1C1F23;">
+            <div style="font-family:'IBM Plex Sans',sans-serif; font-size:10.5px; letter-spacing:0.09em; text-transform:uppercase; color:#5B646B; border-bottom:1px solid #E6E9EB; padding-bottom:7px; margin-bottom:18px; display:flex; justify-content:space-between;"><span>Chapter 5 · Bayesian Vector Autoregressions</span><span>5.3</span></div>
+            <h2 style="margin:0 0 14px; font-family:'IBM Plex Sans',sans-serif; font-size:23px; font-weight:600; letter-spacing:-0.01em;">5.3 The Minnesota prior</h2>
+            <p style="margin:0 0 14px; font-size:16px; line-height:1.66; max-width:36em; text-wrap:pretty;">A VAR with <em>n</em> = 7 variables and <em>p</em> = 4 lags has 203 coefficients per draw of the sample. The Minnesota prior answers the count problem by pulling every equation toward a univariate process, so the data only has to overturn a belief rather than build one from nothing <a href="#" style="color:#2F5C7E;">(Litterman 1986)</a>.</p>
+            <div style="display:flex; align-items:center; gap:18px; margin:18px 0 20px; padding:4px 0;">
+              <div style="flex:1; font-size:17px; text-align:center;"><em>y<sub style="font-size:0.7em;">t</sub></em> = <em>c</em> + <em>A</em><sub style="font-size:0.7em;">1</sub><em>y</em><sub style="font-size:0.7em;">t−1</sub> + ⋯ + <em>A<sub style="font-size:0.7em;">p</sub>y</em><sub style="font-size:0.7em;">t−p</sub> + <em>u<sub style="font-size:0.7em;">t</sub></em>,&ensp; <em>u<sub style="font-size:0.7em;">t</sub></em> ~ <em>N</em>(0, Σ)</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#5B646B;">(5.1)</div>
+            </div>
+
+            <div style="border-top:2.5px solid #1C1F23; border-bottom:1px solid #1C1F23; padding:11px 0 13px; margin:22px 0;">
+              <div style="font-family:'IBM Plex Sans',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.13em; text-transform:uppercase; color:#1C1F23; margin-bottom:6px;">Assumption 5.1 <span style="font-weight:400; color:#5B646B; letter-spacing:0.06em;">Recursive identification</span></div>
+              <div style="font-size:16px; line-height:1.6;"><em>u<sub style="font-size:0.7em;">t</sub></em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>ε<sub style="font-size:0.7em;">t</sub></em>, with <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> lower triangular and 𝔼[<em>ε<sub style="font-size:0.7em;">t</sub>ε</em>′<sub style="font-size:0.7em;">t</sub>] = <em>I<sub style="font-size:0.7em;">n</sub></em>, so that Σ = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1′</sup>.</div>
+            </div>
+
+            <figure style="margin:24px 0 0;">
+              <svg viewBox="0 0 600 250" width="100%" style="display:block;">
+                <g stroke="#E6E9EB" stroke-width="1">
+                  <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><line x1="40" x2="592" y1="{{ g.y }}" y2="{{ g.y }}"></line></sc-for>
+                </g>
+                <sc-if value="{{ shadeForecast }}" hint-placeholder-val="{{ true }}"><rect x="{{ fan.fx }}" y="10" width="{{ fan.fw }}" height="214" fill="#1C1F23" opacity="0.04"></rect></sc-if>
+                <polygon points="{{ fan.b95 }}" fill="#2F5C7E" opacity="0.13"></polygon>
+                <polygon points="{{ fan.b68 }}" fill="#2F5C7E" opacity="0.28"></polygon>
+                <polyline points="{{ fan.hist }}" fill="none" stroke="#1C1F23" stroke-width="1.4"></polyline>
+                <polyline points="{{ fan.med }}" fill="none" stroke="#2F5C7E" stroke-width="1.7" stroke-dasharray="6 3"></polyline>
+                <line x1="40" x2="592" y1="{{ fan.zeroY }}" y2="{{ fan.zeroY }}" stroke="#5B646B" stroke-width="0.8"></line>
+                <sc-for list="{{ fan.dots }}" as="d" hint-placeholder-count="8"><circle cx="{{ d.x }}" cy="{{ d.y }}" r="3" fill="#FFFFFF" stroke="#1C1F23" stroke-width="1.3"></circle></sc-for>
+                <g font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B646B">
+                  <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><text x="34" y="{{ g.ty }}" text-anchor="end">{{ g.label }}</text></sc-for>
+                  <sc-for list="{{ fan.xticks }}" as="t" hint-placeholder-count="6"><text x="{{ t.x }}" y="243" text-anchor="middle">{{ t.label }}</text></sc-for>
+                </g>
+              </svg>
+              <figcaption style="margin-top:10px; font-family:'IBM Plex Sans',sans-serif; font-size:12px; line-height:1.5; color:#32383D; max-width:40em;"><span style="font-weight:600;">Figure 5.3.</span> BVAR forecast of real GDP growth, 2018Q1 to 2019Q4. Bands: 68% and 95% posterior predictive intervals. Dots: realized values.<br><span style="color:#5B646B;">Source: Central Reserve Bank of Peru (BCRP); author's calculations.</span></figcaption>
+            </figure>
+          </main>
+
+          <aside style="padding:76px 20px 22px 0; font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; line-height:1.55; color:#5B646B;">
+            <div style="border-left:1px solid #DCE0E3; padding-left:12px;"><span style="font-weight:600; color:#32383D;">Margin note.</span> Litterman's original prior treated Σ as fixed and diagonal; the independent Normal-inverse-Wishart version in §5.4 relaxes both.</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 1c  Plate ================= -->
+    <div id="1c" style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:#FAF8F5; background:#1F3D5C; padding:3px 7px;">1c</span>
+        <span style="font-size:17px; font-weight:600; color:#241F1B;">Plate</span>
+        <span style="font-size:13px; color:#5C544C;">Navy structure, blocks as labelled panels, figures as plates</span>
+      </div>
+
+      <div style="width:1120px; background:#FAF8F5; border:1px solid #DFD8CF;">
+        <div style="display:flex; justify-content:space-between; gap:24px; padding:14px 22px; border-bottom:1px solid #E6DFD6; background:#EFEAE3;">
+          <div style="display:flex; gap:14px;">
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#221F1C;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B6257;">#221F1C ink</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#1F3D5C;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B6257;">#1F3D5C prim</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#A8421F;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B6257;">#A8421F acc1</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#4F6B37;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B6257;">#4F6B37 acc2</div></div>
+            <div style="display:flex; flex-direction:column; gap:4px;"><div style="width:52px; height:22px; background:#EFEAE3; border:1px solid #DFD8CF;"></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B6257;">#EFEAE3 surf</div></div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; line-height:1.7; color:#6B6257; text-align:right;">STIX Two Text + STIX Two Math<br>Archivo · IBM Plex Mono</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:200px minmax(0,1fr) 190px; align-items:start;">
+          <nav style="padding:22px 18px; border-right:1px solid #E6DFD6; display:flex; flex-direction:column; gap:9px; font-family:'Archivo',sans-serif; font-size:12.5px; color:#6B6257;">
+            <div style="font-size:13px; font-weight:700; letter-spacing:-0.005em; color:#1F3D5C; line-height:1.3; text-transform:uppercase;">Applied Macroeconometrics with Python</div>
+            <div style="height:1px; background:#E6DFD6; margin:6px 0;"></div>
+            <div>3 · Univariate models</div>
+            <div>4 · Vector autoregressions</div>
+            <div style="background:#1F3D5C; color:#FAF8F5; font-weight:600; margin:2px -18px; padding:5px 18px;">5 · Bayesian VARs</div>
+            <div style="padding-left:12px; font-size:12px;">5.1 Why shrink?</div>
+            <div style="padding-left:12px; font-size:12px;">5.2 Reduced form</div>
+            <div style="padding-left:12px; font-size:12px; color:#1F3D5C; font-weight:600;">5.3 The Minnesota prior</div>
+            <div style="padding-left:12px; font-size:12px;">5.4 Gibbs sampling</div>
+            <div>6 · Forecasting</div>
+            <div>7 · State space models</div>
+          </nav>
+
+          <main style="padding:26px 34px 34px; font-family:'STIX Two Text',serif; color:#221F1C;">
+            <div style="font-family:'Archivo',sans-serif; font-size:10.5px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:#1F3D5C; margin-bottom:16px;">Chapter 5 · Bayesian Vector Autoregressions</div>
+            <h2 style="margin:0 0 14px; font-family:'Archivo',sans-serif; font-size:25px; font-weight:700; letter-spacing:-0.015em;">5.3 The Minnesota prior</h2>
+            <p style="margin:0 0 14px; font-size:16.5px; line-height:1.64; max-width:35em; text-wrap:pretty;">A VAR with <em>n</em> = 7 variables and <em>p</em> = 4 lags has 203 coefficients per draw of the sample. The Minnesota prior answers the count problem by pulling every equation toward a univariate process, so the data only has to overturn a belief rather than build one from nothing <a href="#" style="color:#1F3D5C; border-bottom:1px solid rgba(31,61,92,0.35);">(Litterman 1986)</a>.</p>
+            <div style="display:flex; align-items:center; gap:18px; margin:18px 0 20px; background:#EFEAE3; padding:14px 16px;">
+              <div style="flex:1; font-size:17.5px; text-align:center;"><em>y<sub style="font-size:0.7em;">t</sub></em> = <em>c</em> + <em>A</em><sub style="font-size:0.7em;">1</sub><em>y</em><sub style="font-size:0.7em;">t−1</sub> + ⋯ + <em>A<sub style="font-size:0.7em;">p</sub>y</em><sub style="font-size:0.7em;">t−p</sub> + <em>u<sub style="font-size:0.7em;">t</sub></em>,&ensp; <em>u<sub style="font-size:0.7em;">t</sub></em> ~ <em>N</em>(0, Σ)</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#6B6257;">(5.1)</div>
+            </div>
+
+            <div style="border:1px solid #1F3D5C; margin:22px 0;">
+              <div style="background:#1F3D5C; color:#FAF8F5; font-family:'Archivo',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:7px 14px; display:flex; justify-content:space-between;"><span>Assumption 5.1</span><span style="font-weight:400; letter-spacing:0.06em;">Recursive identification</span></div>
+              <div style="padding:13px 14px 15px; font-size:16.5px; line-height:1.58;"><em>u<sub style="font-size:0.7em;">t</sub></em> = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>ε<sub style="font-size:0.7em;">t</sub></em>, with <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup> lower triangular and 𝔼[<em>ε<sub style="font-size:0.7em;">t</sub>ε</em>′<sub style="font-size:0.7em;">t</sub>] = <em>I<sub style="font-size:0.7em;">n</sub></em>, so that Σ = <em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1</sup><em>B</em><sub style="font-size:0.7em;">0</sub><sup style="font-size:0.7em;">−1′</sup>.</div>
+            </div>
+
+            <figure style="margin:24px 0 0;">
+              <div style="background:#FFFFFF; border:1px solid #DFD8CF; padding:14px 12px 6px;">
+                <svg viewBox="0 0 600 250" width="100%" style="display:block;">
+                  <g stroke="#E6DFD6" stroke-width="1">
+                    <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><line x1="40" x2="592" y1="{{ g.y }}" y2="{{ g.y }}"></line></sc-for>
+                  </g>
+                  <sc-if value="{{ shadeForecast }}" hint-placeholder-val="{{ true }}"><rect x="{{ fan.fx }}" y="10" width="{{ fan.fw }}" height="214" fill="#1F3D5C" opacity="0.05"></rect></sc-if>
+                  <polygon points="{{ fan.b95 }}" fill="#1F3D5C" opacity="0.13"></polygon>
+                  <polygon points="{{ fan.b68 }}" fill="#1F3D5C" opacity="0.3"></polygon>
+                  <polyline points="{{ fan.hist }}" fill="none" stroke="#221F1C" stroke-width="1.5"></polyline>
+                  <polyline points="{{ fan.med }}" fill="none" stroke="#1F3D5C" stroke-width="1.9"></polyline>
+                  <line x1="40" x2="592" y1="{{ fan.zeroY }}" y2="{{ fan.zeroY }}" stroke="#6B6257" stroke-width="0.9"></line>
+                  <sc-for list="{{ fan.dots }}" as="d" hint-placeholder-count="8"><rect x="{{ d.rx }}" y="{{ d.ry }}" width="5.4" height="5.4" fill="#A8421F"></rect></sc-for>
+                  <g font-family="IBM Plex Mono, monospace" font-size="9" fill="#6B6257">
+                    <sc-for list="{{ fan.ygrid }}" as="g" hint-placeholder-count="5"><text x="34" y="{{ g.ty }}" text-anchor="end">{{ g.label }}</text></sc-for>
+                    <sc-for list="{{ fan.xticks }}" as="t" hint-placeholder-count="6"><text x="{{ t.x }}" y="243" text-anchor="middle">{{ t.label }}</text></sc-for>
+                  </g>
+                </svg>
+              </div>
+              <figcaption style="margin-top:10px; font-family:'Archivo',sans-serif; font-size:12px; line-height:1.5; color:#3A342E; max-width:40em;"><span style="font-weight:700;">Figure 5.3.</span> BVAR forecast of real GDP growth, 2018Q1 to 2019Q4. Bands: 68% and 95% posterior predictive intervals. Squares: realized values.<br><span style="color:#6B6257;">Source: Central Reserve Bank of Peru (BCRP); author's calculations.</span></figcaption>
+            </figure>
+          </main>
+
+          <aside style="padding:72px 20px 22px 0; font-family:'Archivo',sans-serif; font-size:11.5px; line-height:1.55; color:#6B6257;">
+            <div style="background:#EFEAE3; padding:10px 12px;"><span style="font-weight:700; color:#1F3D5C; text-transform:uppercase; letter-spacing:0.08em; font-size:10px; display:block; margin-bottom:4px;">Margin note</span>Litterman's original prior treated Σ as fixed and diagonal; the independent Normal-inverse-Wishart version in §5.4 relaxes both.</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;shadeForecast&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Figure&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const W = 600, PL = 40, PR = 8, PT = 10, PB = 26, H = 250;
+    const n = 24, hN = 16;
+    const plotW = W - PL - PR, plotH = H - PT - PB;
+    const x = i => PL + (i * plotW) / (n - 1);
+    const y = v => PT + ((7 - v) * plotH) / 8;
+
+    let s = 20260917;
+    const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff - 0.5);
+
+    const hist = [];
+    for (let i = 0; i < hN; i++) hist.push(3.2 + 1.5 * Math.sin(i / 2.4) + 1.1 * rnd());
+    const med = [3.1, 2.9, 3.0, 3.2, 3.35, 3.45, 3.5, 3.55];
+    const half68 = med.map((_, h) => 0.55 + 0.11 * h);
+    const half95 = med.map((_, h) => 1.05 + 0.22 * h);
+
+    const pts = (arr, off) => arr.map((v, i) => `${x(i + off).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const anchor = hist[hN - 1];
+    const band = hw => {
+      const up = med.map((v, i) => `${x(hN + i).toFixed(1)},${y(v + hw[i]).toFixed(1)}`);
+      const lo = med.map((v, i) => `${x(hN + i).toFixed(1)},${y(v - hw[i]).toFixed(1)}`).reverse();
+      const a = `${x(hN - 1).toFixed(1)},${y(anchor).toFixed(1)}`;
+      return [a, ...up, ...lo].join(" ");
+    };
+
+    const realized = med.map((v, i) => v + 0.45 * Math.sin(i * 1.7) + 0.5 * rnd());
+    const dots = realized.map((v, i) => {
+      const cx = x(hN + i), cy = y(v);
+      return { x: cx.toFixed(1), y: cy.toFixed(1), rx: (cx - 2.7).toFixed(1), ry: (cy - 2.7).toFixed(1) };
+    });
+
+    const ygrid = [-1, 1, 3, 5, 7].map(v => ({
+      y: y(v).toFixed(1), ty: (y(v) + 3).toFixed(1), label: v.toFixed(0)
+    }));
+    const xticks = [0, 4, 8, 12, 16, 20].map(i => ({
+      x: x(i).toFixed(1), label: `${2014 + i / 4}Q1`
+    }));
+
+    return {
+      shadeForecast: this.props.shadeForecast ?? true,
+      fan: {
+        hist: pts([...hist], 0),
+        med: [`${x(hN - 1).toFixed(1)},${y(anchor).toFixed(1)}`, pts(med, hN)].join(" "),
+        b68: band(half68),
+        b95: band(half95),
+        dots, ygrid, xticks,
+        zeroY: y(0).toFixed(1),
+        fx: x(hN - 1).toFixed(1),
+        fw: (x(n - 1) - x(hN - 1)).toFixed(1)
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

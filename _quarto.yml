@@ -1,0 +1,150 @@
+project:
+  type: book
+  output-dir: _book
+  execute-dir: project
+  resources:
+    - styles/fonts/web/
+
+lang: es
+
+book:
+  title: "Macroeconometría aplicada con Python"
+  subtitle: "De los datos macro a la inferencia estructural y el pronóstico"
+  author:
+    - name: "Renato Vassallo"
+  date: last-modified
+  date-format: "MMMM [de] YYYY"
+  repo-url: https://github.com/RenatoVassallo/MacroeconometricsBook
+  repo-branch: main
+  repo-actions: [source, issue]
+  search: true
+  reader-mode: false
+  sidebar:
+    style: floating
+    collapse-level: 1
+  page-footer:
+    left: "Macroeconometría aplicada con Python"
+    right: "Texto CC BY-NC-SA 4.0 · Código MIT"
+  chapters:
+    - index.qmd
+    - prefacio.qmd
+    - chapters/01-macro-data.qmd
+    - chapters/02-univariate.qmd
+    - chapters/03-var.qmd
+    - chapters/04-svar.qmd
+    - chapters/05-bvar.qmd
+    - chapters/06-forecasting.qmd
+    - chapters/07-state-space.qmd
+    - chapters/08-trends-cycles.qmd
+    - chapters/09-volatility.qmd
+    - chapters/10-tvp.qmd
+    - chapters/11-ml.qmd
+    - referencias.qmd
+  appendices:
+    - appendices/a-notacion.qmd
+    - appendices/b-bayes.qmd
+
+bibliography: references.bib
+
+# Mostrar u ocultar las soluciones de los ejercicios en la salida.
+mostrar-soluciones: true
+
+crossref:
+  chapters: true
+  cnj-title: "Supuesto"
+  cnj-prefix: "Supuesto"
+  custom:
+    - kind: float
+      key: alg
+      reference-prefix: "Algoritmo"
+      caption-prefix: "Algoritmo"
+      caption-location: top
+      latex-env: algoritmo
+
+filters:
+  - quarto
+  - filters/blocks.lua
+
+execute:
+  freeze: auto
+  echo: true
+  warning: false
+
+knitr: false
+
+format:
+  html:
+    theme:
+      - cosmo
+      - styles/book.scss
+    css: styles/fonts.css
+    highlight-style: styles/warmfolio.theme
+    toc: true
+    toc-depth: 3
+    number-depth: 2
+    fig-format: svg
+    fig-align: center
+    fig-width: 7.0
+    fig-height: 4.0
+    tbl-cap-location: top
+    citations-hover: true
+    footnotes-hover: true
+    code-copy: true
+    code-overflow: wrap
+    anchor-sections: true
+    link-external-newwindow: true
+  pdf:
+    pdf-engine: lualatex
+    documentclass: scrbook
+    classoption:
+      - fontsize=10.5pt
+      - numbers=noenddot
+      - twoside
+    geometry:
+      - paperwidth=7in
+      - paperheight=10in
+      - top=0.9in
+      - inner=0.85in
+      - outer=1.65in
+      - bottom=1.0in
+      - marginparwidth=1.15in
+      - marginparsep=0.3in
+      - headsep=0.3in
+      - footskip=0.55in
+    linestretch: 1.05
+    mainfont: EBGaramond
+    mainfontoptions:
+      - Path=styles/fonts/
+      - Extension=.ttf
+      - UprightFont=*-Regular
+      - ItalicFont=*-Italic
+      - BoldFont=*-SemiBold
+      - BoldItalicFont=*-SemiBoldItalic
+    sansfont: SourceSans3
+    sansfontoptions:
+      - Path=styles/fonts/
+      - Extension=.ttf
+      - UprightFont=*-Regular
+      - ItalicFont=*-Italic
+      - BoldFont=*-SemiBold
+      - BoldItalicFont=*-SemiBoldItalic
+    monofont: JetBrainsMono
+    monofontoptions:
+      - Path=styles/fonts/
+      - Extension=.ttf
+      - UprightFont=*-Regular
+      - ItalicFont=*-Italic
+      - BoldFont=*-SemiBold
+      - Scale=0.78
+    mathfont: Garamond-Math.otf
+    mathfontoptions:
+      - Path=styles/fonts/
+    include-in-header: styles/book.tex
+    fig-format: pdf
+    code-overflow: wrap
+    fig-width: 4.5
+    fig-height: 2.6
+    number-depth: 2
+    toc-depth: 2
+    colorlinks: true
+    keep-tex: false

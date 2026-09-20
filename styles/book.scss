@@ -1,0 +1,534 @@
+/*-- scss:defaults --*/
+$font-serif:      "EB Garamond", Georgia, "Times New Roman", serif;
+$font-family-sans-serif: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif !default;
+$font-family-monospace:  "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace !default;
+$font-family-base: $font-serif !default;
+$headings-font-family: $font-family-sans-serif !default;
+$font-size-base: 1.0625rem !default;
+$line-height-base: 1.62 !default;
+$headings-font-weight: 600 !default;
+$h1-font-size: 2.75rem !default;
+$h2-font-size: 1.6875rem !default;
+$h3-font-size: 1.25rem !default;
+$h4-font-size: 1.0625rem !default;
+
+$ink:          #2A231D;
+$ink-muted:    #6B5F52;
+$paper:        #FDFBF7;
+$surface:      #F7EDE5;
+$surface-2:    #F0E0D6;
+$surface-code: #FBF6F1;
+$rule:         #DED0C4;
+$rule-soft:    #E7DAD0;
+$accent:       #B0472A;
+$accent-dark:  #8E3620;
+$olive:        #4E6E38;
+$steel:        #3D647F;
+
+$body-color: $ink !default;
+$body-bg: $paper !default;
+$primary: $accent !default;
+$link-color: $accent !default;
+$link-hover-color: $accent-dark !default;
+$border-color: $rule !default;
+$table-border-color: $rule !default;
+$code-color: $accent-dark !default;
+$code-bg: #F4EAE2 !default;
+$code-block-bg: $surface-code !default;
+$code-block-border-left: false !default;
+$blockquote-footer-color: $ink-muted !default;
+
+$grid-sidebar-width: 270px !default;
+$grid-body-width: 875px !default;
+$grid-margin-width: 240px !default;
+$grid-column-gutter-width: 1.6rem !default;
+
+$toc-color: $ink-muted !default;
+$toc-active-border: $accent !default;
+$toc-font-size: 0.8125rem !default;
+
+/*-- scss:rules --*/
+/* =====================================================================
+   Warm Folio - reglas HTML. Valores de styles/design/tokens.json.
+   Estructura: tipografía, navegación, bloques, código, figuras, tablas,
+   componentes de capítulo.
+   ===================================================================== */
+
+/* ---------- Tipografía general ---------- */
+body {
+  font-family: $font-serif;
+  font-size: 1.0625rem;
+  line-height: 1.62;
+  color: $ink;
+  background-color: $paper;
+  -webkit-font-smoothing: antialiased;
+}
+
+p, li { max-width: 85ch; }
+
+h1, h2, h3, h4, h5, h6 { color: $ink; letter-spacing: -0.005em; }
+
+h1.title, .quarto-title h1.title {
+  font-family: $font-serif;
+  font-size: 2.75rem;
+  line-height: 1.12;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  margin-bottom: 0.6rem;
+}
+
+.quarto-title .chapter-number {
+  display: block;
+  font-family: $font-family-sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: $accent;
+  margin-bottom: 0.5rem;
+}
+.quarto-title .chapter-number::before { content: "Capítulo "; }
+.quarto-title .chapter-title { display: block; }
+
+h2 {
+  border-bottom: none;
+  font-size: 1.6875rem;
+  line-height: 1.22;
+  margin-top: 2.6rem;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.55rem;
+  position: relative;
+}
+h2::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 56px; height: 2px;
+  background: $ink;
+}
+.header-section-number { color: $ink; font-weight: 600; }
+h3 { font-size: 1.25rem; margin-top: 1.9rem; margin-bottom: 0.6rem; }
+h4 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-top: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+a { text-decoration: none; }
+#quarto-document-content p a:not(.quarto-xref):not(.no-underline) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(176, 71, 42, 0.35);
+}
+a:hover { color: $accent-dark; text-decoration: underline; }
+
+/* ---------- Navegación, barra lateral, índice ---------- */
+.sidebar, #quarto-sidebar, #quarto-margin-sidebar, .sidebar-navigation,
+#TOC, .navbar, .nav-page, .quarto-secondary-nav, footer.footer {
+  font-family: $font-family-sans-serif;
+}
+.sidebar-navigation .sidebar-item-container { font-size: 0.875rem; }
+.sidebar nav[role="doc-toc"] > h2, .sidebar-title, #toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $ink-muted;
+}
+.navbar-brand, .sidebar-title a { font-family: $font-serif; font-weight: 600; }
+.nav-page a { font-size: 0.875rem; }
+
+/* ---------- Bloques numerados (entornos de teorema de Quarto) ---------- */
+.theorem, .definition, .conjecture, .example, .exercise, .proposition,
+.intuicion, .cuidado, .algoritmo {
+  margin: 1.6rem 0;
+}
+
+.theorem-title, .proof-title {
+  display: block;
+  font-family: $font-family-sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+  color: $ink;
+}
+.theorem-title strong { font-weight: 700; }
+.theorem p:last-child, .theorem-content p:last-child { margin-bottom: 0; }
+
+/* Supuesto: el bloque más fuerte. */
+.theorem.conjecture {
+  background: $surface-2;
+  border: 1px solid #DCC4B5;
+  border-left: 4px solid $accent;
+  padding: 0.85rem 1.1rem;
+}
+.theorem.conjecture .theorem-title { color: $accent-dark; }
+
+/* Definición */
+.theorem.definition {
+  background: $surface;
+  border: 1px solid #E0D0C2;
+  padding: 0.85rem 1.1rem;
+}
+
+/* Resultado (teorema, proposición, lema, corolario) */
+.theorem:not(.definition):not(.conjecture):not(.example):not(.exercise) {
+  border-top: 2.5px solid $ink;
+  border-bottom: 1px solid $ink;
+  padding: 0.75rem 0;
+}
+.theorem:not(.definition):not(.conjecture):not(.example):not(.exercise) > p { font-style: italic; }
+.theorem:not(.definition):not(.conjecture):not(.example):not(.exercise) .theorem-title { font-style: normal; }
+
+/* Ejemplo / aplicación empírica */
+.theorem.example {
+  background: #FFFFFF;
+  border: 1px solid #CFC2B6;
+  padding: 0.85rem 1.1rem;
+}
+.theorem.example .theorem-title { color: $steel; }
+.theorem.example .theorem-title::before {
+  content: "";
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: $steel;
+  margin-right: 0.5rem;
+  vertical-align: 0.02em;
+}
+
+/* Ejercicio */
+.theorem.exercise {
+  border-top: 1px solid $rule;
+  border-bottom: 1px solid $rule;
+  padding: 0.8rem 0;
+}
+.theorem.exercise .theorem-title {
+  font-family: $font-family-monospace;
+  font-size: 0.6875rem;
+  color: $ink-muted;
+}
+
+/* ---------- Bloques sin numeración (filters/blocks.lua) ---------- */
+.intuicion, .cuidado, .pregunta, .datos-usados, .ideas-clave {
+  padding: 0.2rem 0 0.2rem 0;
+}
+.intuicion::before, .cuidado::before, .pregunta::before,
+.datos-usados::before {
+  display: block;
+  font-family: $font-family-sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.intuicion {
+  border-left: 2px dotted $olive;
+  padding: 0.5rem 0 0.5rem 0.95rem;
+}
+.intuicion::before { content: "Intuición"; color: $olive; }
+.cuidado {
+  border-top: 1px solid $accent-dark;
+  border-left: 4px double $accent-dark;
+  padding: 0.65rem 0 0.5rem 0.95rem;
+}
+.cuidado::before { content: "Cuidado"; color: $accent-dark; }
+
+/* Solución plegable */
+details.solucion {
+  margin: 0.5rem 0 1.4rem 0;
+  font-size: 0.9375rem;
+}
+details.solucion > summary {
+  cursor: pointer;
+  font-family: $font-family-sans-serif;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: $accent;
+  list-style: none;
+}
+details.solucion > summary::-webkit-details-marker { display: none; }
+details.solucion > summary::before { content: "▸ "; }
+details.solucion[open] > summary::before { content: "▾ "; }
+details.solucion .solucion-cuerpo { padding-top: 0.5rem; }
+
+/* ---------- Algoritmo (flotante propio de Quarto) ---------- */
+.quarto-float-alg {
+  background: $surface-code;
+  border: 1px solid $rule-soft;
+  border-left: 3px double $ink-muted;
+  padding: 0.85rem 1.1rem;
+  margin: 1.6rem 0;
+}
+.quarto-float-alg > figcaption {
+  font-family: $font-family-sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: $ink;
+  margin-bottom: 0.5rem;
+}
+/* Quarto centra el contenido de los flotantes; en un algoritmo estorba. */
+.quarto-float-alg, .quarto-float-alg > div, .quarto-float-alg p,
+.quarto-float-alg li, .quarto-float-alg ol, div[id^="alg-"] { text-align: left; }
+.quarto-float-alg ol { padding-left: 1.5rem; }
+.quarto-float-alg ol > li { margin-bottom: 0.65rem; }
+.quarto-float-alg ol > li:last-child { margin-bottom: 0.15rem; }
+.quarto-float-alg mjx-container[display="true"] { margin: 0.65rem 0 !important; }
+.quarto-float-alg p { margin-bottom: 0.5rem; }
+.quarto-float-alg ol li::marker {
+  font-family: $font-family-monospace;
+  font-size: 0.75rem;
+  color: $accent;
+}
+.quarto-float-alg p:last-child, .quarto-float-alg ol:last-child { margin-bottom: 0; }
+
+/* ---------- Código ---------- */
+code, pre, .sourceCode { font-family: $font-family-monospace; }
+p code, li code, td code {
+  font-size: 0.78em;
+  background: #F4EAE2;
+  border: 1px solid $rule-soft;
+  padding: 0.05em 0.3em;
+  border-radius: 0;
+}
+div.sourceCode {
+  background: $surface-code;
+  border: 1px solid $rule-soft;
+  border-radius: 0;
+  padding: 0.65rem 0.85rem;
+  margin: 1.1rem 0;
+}
+/* 12 px de JetBrains Mono junto a 17 px de EB Garamond: la mono tiene una
+   altura de x mucho mayor, así que al mismo tamaño nominal se ve más grande. */
+pre.sourceCode code { font-size: 0.75rem; line-height: 1.6; }
+pre.sourceCode code span { white-space: pre-wrap; }
+.cell-output pre {
+  background: transparent;
+  border-left: 2px solid $rule;
+  border-radius: 0;
+  color: #4A423B;
+  font-size: 0.75rem;
+  padding: 0.3rem 0 0.3rem 0.8rem;
+  margin-top: -0.4rem;
+}
+
+/* Pestañas de código */
+.panel-tabset .nav-tabs { border-bottom: 1px solid $rule-soft; gap: 0.15rem; }
+.panel-tabset .nav-tabs .nav-link {
+  font-family: $font-family-sans-serif;
+  font-size: 0.8125rem;
+  color: $ink-muted;
+  border: 1px solid transparent;
+  border-radius: 0;
+  padding: 0.35rem 0.75rem;
+}
+.panel-tabset .nav-tabs .nav-link.active {
+  color: $ink;
+  font-weight: 600;
+  background: $surface-code;
+  border-color: $rule-soft $rule-soft $surface-code;
+}
+.panel-tabset .tab-content { padding-top: 0.4rem; }
+.panel-tabset .tab-content div.sourceCode { border-top: none; margin-top: 0; }
+
+/* ---------- Figuras y tablas ---------- */
+figure { margin: 1.8rem 0; }
+figure img, .cell-output-display img, .cell-output-display svg {
+  background: #FFFFFF;
+  max-width: 100%;
+}
+/* En la web las figuras se dibujan a 7 in (672 px) y ocupan la columna; en el
+   PDF se vuelven a dibujar a 4.5 in. En los dos casos la letra de la figura
+   sale a 8.5 pt, algo por debajo de la del texto. */
+.cell-output-display > img, .cell-output-display > svg,
+.quarto-figure img, figure > p > img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+figcaption, .figure-caption, .quarto-float-caption {
+  font-family: $font-family-sans-serif;
+  font-size: 0.78125rem;
+  line-height: 1.52;
+  color: $ink-muted;
+  text-align: left;
+}
+figcaption strong, .quarto-float-caption strong { color: $ink; }
+.fuente {
+  font-family: $font-family-sans-serif;
+  font-size: 0.75rem;
+  color: $ink-muted;
+  margin-top: -0.9rem;
+}
+
+table {
+  font-family: $font-family-sans-serif;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  border-collapse: collapse;
+}
+table > thead { border-top: 1.6px solid $ink; border-bottom: 0.8px solid $ink; }
+table > tbody { border-bottom: 1.6px solid $ink; }
+table > tbody > tr { border-bottom: 0.4px solid #E0D2C6; }
+table > tbody > tr:last-child { border-bottom: none; }
+th, td { padding: 0.35rem 0.7rem; }
+th { font-weight: 600; }
+
+/* Las tablas que salen de una celda de código (pandas) siguen la misma regla:
+   filetes arriba y abajo, sin franjas de color. */
+.cell-output-display table tbody tr,
+.cell-output-display table tbody tr:nth-child(odd) { background: transparent; }
+.cell-output-display table { font-size: 0.8125rem; }
+
+/* ---------- Notas al margen y notas al pie ---------- */
+.column-margin, .margin-aside {
+  font-family: $font-family-sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: $ink-muted;
+  border-top: 1px solid $rule;
+  padding-top: 0.4rem;
+}
+.column-margin strong { color: $ink; }
+#footnotes, .footnotes {
+  border-top: 1px solid $rule;
+  padding-top: 0.8rem;
+  font-size: 0.9375rem;
+}
+
+/* Citas con vista previa */
+.tippy-box, .citation-hover, .footnote-hover {
+  font-family: $font-family-sans-serif;
+  font-size: 0.78125rem;
+  background: #FFFFFF;
+  color: $ink;
+  border: 1px solid $rule;
+  border-radius: 0;
+  box-shadow: 0 2px 12px rgba(42, 35, 29, 0.12);
+}
+
+/* Bibliografía */
+.csl-entry { font-size: 0.9375rem; margin-bottom: 0.65rem; }
+
+/* ---------- Componentes de apertura y cierre de capítulo ---------- */
+.pregunta {
+  border-left: 4px solid $accent;
+  padding: 0.35rem 0 0.35rem 1.1rem;
+  margin: 1.4rem 0 1.8rem 0;
+}
+.pregunta::before { content: "La pregunta económica"; color: $accent-dark; }
+.pregunta p {
+  font-size: 1.4375rem;
+  line-height: 1.48;
+  margin-bottom: 0;
+}
+
+.aprendizajes { margin: 1.6rem 0; }
+.aprendizajes::before {
+  content: "Qué vas a aprender";
+  display: block;
+  font-family: $font-family-sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: $ink;
+  margin-bottom: 0.5rem;
+}
+.aprendizajes ol { list-style: none; padding-left: 0; counter-reset: aprende; }
+.aprendizajes ol > li {
+  counter-increment: aprende;
+  border-top: 1px solid $rule-soft;
+  padding: 0.55rem 0 0.55rem 2.2rem;
+  position: relative;
+}
+.aprendizajes ol > li::before {
+  content: counter(aprende, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  font-family: $font-family-monospace;
+  font-size: 0.75rem;
+  color: $accent;
+}
+.aprendizajes ol > li:last-child { border-bottom: 1px solid $rule-soft; }
+
+.datos-usados {
+  background: $surface;
+  border: 1px solid #E0D0C2;
+  padding: 0.9rem 1.1rem;
+  margin: 1.6rem 0;
+  font-size: 0.9375rem;
+}
+.datos-usados::before { content: "Datos utilizados"; color: $ink; }
+.datos-usados table { width: 100%; font-size: 0.8125rem; margin-bottom: 0; }
+
+.ideas-clave { margin: 2.2rem 0 1.6rem 0; border-top: 2.5px solid $ink; padding-top: 0.8rem; }
+.ideas-clave ol { list-style: none; padding-left: 0; counter-reset: idea; }
+.ideas-clave ol > li {
+  counter-increment: idea;
+  border-top: 1px solid $rule-soft;
+  padding: 0.6rem 0 0.6rem 2.2rem;
+  position: relative;
+}
+.ideas-clave ol > li:first-child { border-top: none; }
+.ideas-clave ol > li::before {
+  content: counter(idea, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  font-family: $font-family-monospace;
+  font-size: 0.75rem;
+  color: $accent;
+}
+
+.lecturas dl, .lecturas { font-size: 0.9375rem; }
+.lecturas dt {
+  font-family: $font-family-sans-serif;
+  font-size: 0.8125rem;
+  color: $ink-muted;
+  font-weight: 400;
+}
+.lecturas dd { margin-bottom: 0.7rem; }
+
+/* Índice de capítulos de la portada */
+.indice-capitulos ol { list-style: none; padding-left: 0; counter-reset: cap; }
+.indice-capitulos ol > li {
+  counter-increment: cap;
+  border-top: 1px solid #EFE6DE;
+  padding: 0.5rem 0 0.5rem 2.4rem;
+  position: relative;
+}
+.indice-capitulos ol > li::before {
+  content: counter(cap, decimal-leading-zero);
+  position: absolute; left: 0;
+  font-family: $font-family-monospace;
+  font-size: 0.75rem;
+  color: $accent;
+}
+.indice-capitulos .descripcion {
+  display: block;
+  font-family: $font-family-sans-serif;
+  font-size: 0.78125rem;
+  color: $ink-muted;
+}
+
+/* ---------- Ecuaciones ---------- */
+mjx-container[display="true"] { margin: 1.15rem 0 !important; }
+
+/* ---------- Pantallas estrechas ---------- */
+@media (max-width: 991.98px) {
+  .column-margin {
+    border-top: 1px solid $rule;
+    border-left: 2px solid $rule;
+    padding-left: 0.8rem;
+    margin: 1.2rem 0;
+  }
+  h1.title, .quarto-title h1.title { font-size: 2.125rem; }
+  .pregunta p { font-size: 1.25rem; }
+}

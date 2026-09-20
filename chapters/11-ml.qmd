@@ -1,0 +1,86 @@
+# Aprendizaje automático para macroeconomía {#sec-ml}
+
+::: {.pregunta}
+¿Qué aportan los métodos de aprendizaje automático cuando hay cientos de predictores y ochenta observaciones?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. Ver ridge, lasso y elastic net como priors y conectar el encogimiento con el @sec-bvar.
+2. Usar factores y métodos de reducción de dimensión con datos macro.
+3. Validar con datos dependientes en el tiempo sin contaminar la muestra.
+4. Interpretar un modelo no lineal sin atribuirle causalidad.
+:::
+
+**Requisitos previos.** @sec-bvar y @sec-pronostico.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| Panel amplio tipo FRED-MD | FRED | mensual | transformaciones estándar del panel |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## El problema de dimensión, otra vez
+
+*Por escribir:* muchos predictores, pocas observaciones y mucha correlación.
+
+## Regularización como prior
+
+*Por escribir:* ridge y la Minnesota; lasso y la doble exponencial.
+
+## Factores
+
+*Por escribir:* componentes principales, modelos de factores y FAVAR.
+
+## Métodos no lineales
+
+*Por escribir:* bosques aleatorios y boosting: qué ganan y qué pierden en macro.
+
+## Validación temporal
+
+*Por escribir:* por qué la validación cruzada aleatoria no sirve aquí.
+
+## Interpretación
+
+*Por escribir:* importancia de variables y dependencia parcial: descripción, no identificación.
+
+## Qué gana y qué no gana el aprendizaje automático
+
+*Por escribir:* la evidencia comparada en pronóstico macro.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. Casi todo método de aprendizaje automático útil en macro es una forma de encogimiento, y el encogimiento ya estaba en el capítulo 5.
+2. Las ganancias aparecen sobre todo en horizontes largos y en variables reales, y son modestas.
+3. La interpretabilidad no sustituye la identificación: un modelo predictivo no responde preguntas de política.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Goulet Coulombe et al. (2022)
+:   qué funciona y qué no al pronosticar macro con aprendizaje automático.
+
+Medeiros et al. (2021)
+:   pronóstico de inflación en un entorno rico en datos.
+
+Stock y Watson (2016)
+:   factores dinámicos y su lugar en la macroeconometría.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-ml-1}
+Compare lasso, ridge y un BVAR en el mismo ejercicio de pronóstico. ¿Cuál gana y a qué horizonte?
+:::
+
+::: {#exr-ml-2}
+Extraiga cuatro factores de un panel amplio y agréguelos a un VAR. ¿Mejora la respuesta al choque de política?
+:::
+

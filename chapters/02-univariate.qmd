@@ -1,0 +1,87 @@
+# Modelos univariados {#sec-univariado}
+
+::: {.pregunta}
+¿Cuánta memoria tiene una serie macroeconómica y cuánto de su futuro puede explicarse con su propio pasado?
+:::
+
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+
+::: {.aprendizajes}
+1. Cómo leer la función de autocorrelación de una serie macro y qué modelo sugiere.
+2. Cómo estimar y diagnosticar un AR(p) y un ARMA(p,q) en Python.
+3. Qué dice y qué no dice una prueba de raíz unitaria sobre la especificación.
+4. Por qué la caminata aleatoria es el rival a vencer en cualquier ejercicio de pronóstico.
+:::
+
+**Requisitos previos.** Álgebra matricial básica, estimación por máxima verosimilitud y @sec-datos.
+
+::: {.datos-usados}
+| Serie | Fuente | Frecuencia | Transformación |
+|:-------------------------------|:--------|:-----------|:--------------------------|
+| PBI real | BCRP | trimestral | var. % interanual |
+| Inflación | BCRP | mensual | var. % interanual |
+
+Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+:::
+
+## Estacionariedad en sentido débil
+
+*Por escribir:* qué exige y por qué casi ninguna serie macro en niveles la cumple.
+
+## Procesos AR, MA y ARMA
+
+*Por escribir:* representación, condiciones de estabilidad e invertibilidad, autocorrelaciones teóricas.
+
+## Estimación
+
+*Por escribir:* MCO condicional y máxima verosimilitud exacta; qué cambia en muestras cortas.
+
+## Selección de rezagos
+
+*Por escribir:* AIC, BIC y validación fuera de muestra: tres criterios que rara vez coinciden.
+
+## Raíces unitarias
+
+*Por escribir:* Dickey-Fuller aumentado, potencia baja y la decisión de diferenciar.
+
+## Pronóstico y evaluación
+
+*Por escribir:* pronóstico a h pasos, intervalos y comparación contra la caminata aleatoria.
+
+## Diagnósticos
+
+*Por escribir:* residuos, estabilidad de parámetros y qué hacer cuando fallan.
+
+
+## Ideas clave {.unnumbered}
+
+::: {.ideas-clave}
+1. Un AR(p) bien especificado ya es un pronosticador difícil de batir a horizontes cortos.
+2. Las pruebas de raíz unitaria tienen poca potencia: la decisión de diferenciar es, en parte, una decisión económica.
+3. Todo lo multivariado del libro es una extensión de este capítulo; conviene tener la intuición univariada firme.
+:::
+
+## Lecturas recomendadas {.unnumbered}
+
+::: {.lecturas}
+Hamilton (1994), caps. 3-5
+:   el tratamiento de referencia de los procesos ARMA.
+
+Box y Jenkins (1970)
+:   la metodología original de identificación, estimación y diagnóstico.
+
+Dickey y Fuller (1979)
+:   la distribución del estimador bajo raíz unitaria.
+
+:::
+
+## Ejercicios {.unnumbered}
+
+::: {#exr-univariado-1}
+Estime un AR(4) para la inflación y compare su RECM fuera de muestra con la de una caminata aleatoria a horizontes 1, 4 y 8.
+:::
+
+::: {#exr-univariado-2}
+Simule 500 series de un AR(1) con coeficiente 0.95 y T = 80. ¿En qué fracción de los casos el ADF rechaza la raíz unitaria?
+:::
+
