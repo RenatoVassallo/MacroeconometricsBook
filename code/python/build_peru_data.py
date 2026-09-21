@@ -46,6 +46,23 @@ def build_monthly() -> pd.DataFrame:
     return table.rename(columns=MONTHLY_COLUMNS)
 
 
+QUARTERLY_RAW = "peru_trimestral_bcrp.csv"
+QUARTERLY_OUTPUT = "peru_quarterly.csv"
+
+
+def build_quarterly() -> pd.DataFrame:
+    """Quarterly real GDP, NOT seasonally adjusted.
+
+    Code PN02538AQ: real GDP in millions of 2007 soles, as published
+    by the BCRP (national accounts, not seasonally adjusted). The raw
+    file keeps the date of the first day of each quarter.
+    """
+    raw = pd.read_csv(data_path(QUARTERLY_RAW, raw=True),
+                      parse_dates=["date"])
+    raw["date"] = pd.PeriodIndex(raw["date"], freq="Q")
+    return raw.set_index("date").rename(columns={"pbi": "gdp_nsa"})
+
+
 def write(table: pd.DataFrame, output: str) -> None:
     target = data_path(output)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -57,3 +74,4 @@ def write(table: pd.DataFrame, output: str) -> None:
 if __name__ == "__main__":
     write(build(), OUTPUT)
     write(build_monthly(), MONTHLY_OUTPUT)
+    write(build_quarterly(), QUARTERLY_OUTPUT)

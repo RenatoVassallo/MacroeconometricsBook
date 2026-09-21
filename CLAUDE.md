@@ -194,11 +194,16 @@ Chapter-closing headings (`## Ideas clave`, `## Lecturas recomendadas`,
 `## Ejercicios`) carry `{.unnumbered}`.
 
 Chapter 0 simulates almost everything (fixed seeds) and uses Peru's monthly CPI;
-chapter 1 uses Uhlig (2005) for the US and BCRP series for Peru; chapter 3 uses
+chapter 1 opens with four FRED series (daily USD/EUR, monthly housing starts NSA,
+monthly fed funds, quarterly real GDP NSA) and seasonally adjusts Peru's quarterly
+GDP (BCRP `PN02538AQ`, NSA) with X-13; chapter 3 uses
 Peruvian data (BCRP); chapters 4 and 5 replicate the classic US
 datasets shipped with Stock and Watson (2001) and Blanchard and Quah (1989), so
 that the structural and Bayesian results can be checked against published
-numbers. `code/python/build_us_data.py` rebuilds both CSVs from `data/raw/`.
+numbers. `code/python/build_us_data.py` rebuilds the US CSVs (the replication
+samples and the FRED files) and `code/python/build_peru_data.py` the Peruvian ones,
+always from `data/raw/`. The Uhlig (2005) sample is kept in `data/raw/` for the
+sign-restriction replication; no chapter reads it yet.
 
 ## Chapter 0 (preliminaries)
 

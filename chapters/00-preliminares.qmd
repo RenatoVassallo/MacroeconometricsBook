@@ -414,7 +414,7 @@ print("variación mensual media por mes (%):")
 print(by_month.round(2).to_string())
 ```
 
-El promedio por mes es la versión más cruda de un factor estacional: marzo concentra el alza de precios de la temporada escolar, como encontró el X-13 del [capítulo 1](01-macro-data.qmd#sec-datos-desestacionalizar) con un método mucho más cuidadoso.
+El promedio por mes es la versión más cruda de un factor estacional: marzo concentra el alza de precios de la temporada escolar. El [capítulo 1](01-macro-data.qmd#sec-datos-desestacionalizar) explica cómo estimar ese factor con métodos que permiten que cambie de un año a otro.
 
 Un último ejemplo combina fechas y selección lógica. El BCRP adoptó metas de inflación en 2002, con una meta de 2.5 % y un rango de tolerancia de un punto, y en febrero de 2007 la bajó a 2 % con el mismo rango [@velarde2023]. Construir el rango como una serie con el mismo índice permite comparar mes a mes:
 

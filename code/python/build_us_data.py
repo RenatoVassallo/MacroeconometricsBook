@@ -1,7 +1,9 @@
-"""Build the classic US datasets used in the data and SVAR chapters.
+"""Build the US datasets used in the data and SVAR chapters.
 
 The three workbooks are the samples distributed with the replication material
-of Stock and Watson (2001), Blanchard and Quah (1989) and Uhlig (2005).
+of Stock and Watson (2001), Blanchard and Quah (1989) and Uhlig (2005). The
+four `fred_*.csv` files are FRED downloads, saved exactly as FRED serves them
+(https://fred.stlouisfed.org/graph/fredgraph.csv?id=<SERIES>).
 Raw files are never edited: the tidy CSVs the chapters read are rebuilt from
 `data/raw/` by running this script.
 
@@ -32,6 +34,37 @@ def periods(stamp: pd.Series) -> pd.PeriodIndex:
     return pd.PeriodIndex(text, freq="Q")
 
 
+# FRED series for the opening figure of chapter 1, grouped by frequency.
+FRED = {
+    "us_daily.csv": ("D", {"DEXUSEU": "usd_eur"}),
+    "us_monthly.csv": ("M", {"HOUSTNSA": "housing_nsa",
+                             "FEDFUNDS": "fed_funds"}),
+    "us_quarterly.csv": ("Q", {"ND000334Q": "gdp_nsa"}),
+}
+
+
+def build_fred(freq: str, codes: dict[str, str]) -> pd.DataFrame:
+    """Join FRED downloads of one frequency on a period index.
+
+    Units: DEXUSEU, US dollars per euro (noon buying rates in New
+    York; holidays are empty). HOUSTNSA, housing starts in thousands
+    of units, not seasonally adjusted. FEDFUNDS, effective federal
+    funds rate, monthly average, percent. ND000334Q, real GDP in
+    billions of chained 2017 dollars, not seasonally adjusted and not
+    annualised.
+    """
+    columns = {}
+    for code, name in codes.items():
+        raw = pd.read_csv(data_path(f"fred_{code}.csv", raw=True),
+                          parse_dates=["observation_date"])
+        values = raw.set_index("observation_date")[code]
+        values.index = pd.PeriodIndex(values.index, freq=freq)
+        columns[name] = values.astype(float)
+    table = pd.DataFrame(columns)
+    table.index.name = "date"
+    return table
+
+
 def build(raw_file: str, columns: list[str]) -> pd.DataFrame:
     raw = pd.read_excel(data_path(raw_file, raw=True), header=None,
                         skiprows=2, names=["date"] + columns)
@@ -44,6 +77,12 @@ if __name__ == "__main__":
         table = build(raw_file, columns)
         target = data_path(output)
         target.parent.mkdir(parents=True, exist_ok=True)
+        table.to_csv(target, float_format="%.6f")
+        print(f"{len(table)} obs, {table.index[0]} a {table.index[-1]}"
+              f" -> {target}")
+    for output, (freq, codes) in FRED.items():
+        table = build_fred(freq, codes)
+        target = data_path(output)
         table.to_csv(target, float_format="%.6f")
         print(f"{len(table)} obs, {table.index[0]} a {table.index[-1]}"
               f" -> {target}")

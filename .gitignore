@@ -21,6 +21,8 @@ data/raw/*
 !data/raw/BQ1989_Data.xlsx
 !data/raw/Uhlig2005_Data.xlsx
 !data/raw/peru_mensual_bcrp.csv
+!data/raw/peru_trimestral_bcrp.csv
+!data/raw/fred_*.csv
 data/processed/*
 !data/processed/.gitkeep
 # el CSV derivado sí se versiona: es pequeño y permite compilar el libro
@@ -30,6 +32,10 @@ data/processed/*
 !data/processed/bq1989.csv
 !data/processed/uhlig2005.csv
 !data/processed/peru_monthly.csv
+!data/processed/peru_quarterly.csv
+!data/processed/us_daily.csv
+!data/processed/us_monthly.csv
+!data/processed/us_quarterly.csv
 
 # Figuras generadas por scripts (las de los capítulos las escribe Quarto)
 figures/generated/*
