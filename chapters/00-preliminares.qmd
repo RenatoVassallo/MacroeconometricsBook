@@ -7,7 +7,7 @@
 ::: {.aprendizajes}
 1. Leer y escribir el código del libro: NumPy, pandas, matplotlib, funciones y clases.
 2. Repasar el álgebra matricial que sostiene a los VAR: productos, potencias, autovalores, Cholesky, Kronecker y el operador vec.
-3. Simular de las distribuciones que usa el libro y entender, en su versión más simple, el Monte Carlo, el bootstrap y el muestreo de Gibbs.
+3. Simular de las distribuciones que usa el libro y entender, en su versión más simple, el Monte Carlo y el bootstrap.
 :::
 
 **Requisitos previos.** Un curso de álgebra lineal y uno de estadística. No hace falta haber programado en Python.
@@ -15,7 +15,8 @@
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Código |
 |:-------------------------------|:--------|:-----------|:--------------|
-| IPC de Lima Metropolitana | BCRP | mensual | `PN38705PM` |
+| Índice de precios al consumidor de EE.UU. (sin desestacionalizar) | FRED | mensual | `CPIAUCNS` |
+| Índice de precios del gasto de consumo personal (PCE) | FRED | mensual | `PCEPI` |
 | Series simuladas | este capítulo | | |
 
 Todo lo demás se simula con semilla fija, de modo que cada número del texto se reproduce exactamente al ejecutar el código.
@@ -39,7 +40,7 @@ Se puede leer de dos maneras. Quien empieza con Python conviene que lo lea de co
 | Módulos y clases | [0.9](#sec-prelim-clases) | `macrobook` y `MacroPy`, en todos los capítulos |
 | Normal multivariada, gamma, beta, inversa-Wishart | [0.10](#sec-prelim-distribuciones) | [prior de Minnesota](05-bvar.qmd#sec-bvar-minnesota), [prior de $\Sigma$](05-bvar.qmd#sec-bvar-gibbs) |
 | Monte Carlo y bootstrap | [0.11](#sec-prelim-simulacion) | [bandas](04-svar.qmd#sec-svar-bandas), [densidad predictiva](05-bvar.qmd#sec-bvar-pronostico) |
-| Bayes y Gibbs | [0.12](#sec-prelim-bayes) | todo el [capítulo 5](05-bvar.qmd) |
+| Bayes y Gibbs | [capítulo 2](02-univariate.qmd#sec-univariado-bayes) | todo el [capítulo 5](05-bvar.qmd) |
 
 : Qué herramienta se repasa dónde y en qué capítulo se usa
 
@@ -47,7 +48,7 @@ Un solo modelo recorre todo el capítulo: el autorregresivo de orden uno,
 
 $$ y_t = c + \phi\, y_{t-1} + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma^2), $$
 
-que es el VAR del [capítulo 3](03-var.qmd) con una sola variable. Si $|\phi| < 1$, el proceso es estacionario, con media $\mu = c/(1-\phi)$ y varianza $\sigma^2/(1-\phi^2)$. Cada sección le aplica una herramienta: se simula con un bucle, se estima por mínimos cuadrados con matrices, se estudia su estabilidad con autovalores, se construye su distribución muestral por bootstrap y se estima con un muestreador de Gibbs. Quien entiende el AR(1) con estas herramientas ya entiende el VAR: es el mismo cálculo con matrices en lugar de escalares.
+que es el VAR del [capítulo 3](03-var.qmd) con una sola variable. Si $|\phi| < 1$, el proceso es estacionario, con media $\mu = c/(1-\phi)$ y varianza $\sigma^2/(1-\phi^2)$. Cada sección le aplica una herramienta: se simula con un bucle, se estima por mínimos cuadrados con matrices, se estudia su estabilidad con autovalores y se construye su distribución muestral por bootstrap; el [capítulo 2](02-univariate.qmd#sec-univariado-bayes) lo estima además con un muestreador de Gibbs. Quien entiende el AR(1) con estas herramientas ya entiende el VAR: es el mismo cálculo con matrices en lugar de escalares.
 
 ## [0.2]{.header-section-number} Python en lo esencial {#sec-prelim-python .unnumbered}
 
@@ -376,13 +377,14 @@ import pandas as pd
 
 from macrobook import data_path
 
-peru = pd.read_csv(data_path("peru_monthly.csv"),
-                   index_col="date")
-peru.index = pd.PeriodIndex(peru.index, freq="M")
-cpi = peru["cpi"].dropna()
+usa = pd.read_csv(data_path("us_monthly.csv"),
+                  index_col="date")
+usa.index = pd.PeriodIndex(usa.index, freq="M")
+cpi = usa["cpi_nsa"]         # CPI, not seasonally adjusted
 
-print(type(peru).__name__, peru.shape)
+print(type(usa).__name__, usa.shape)
 print(cpi.tail(3))
+print("meses sin dato:", list(cpi.index[cpi.isna()]))
 ```
 
 El índice es un `PeriodIndex` de frecuencia mensual: cada elemento representa un **mes entero**, no un instante. Es la representación natural de datos macroeconómicos, que son flujos o promedios de un periodo. La alternativa, un `DatetimeIndex`, representa instantes, y es la que piden algunas funciones y los gráficos; se pasa de una a otra con `.to_timestamp()` y `.to_period()`. La aritmética con periodos respeta el calendario, de modo que sumar doce meses a abril de 2021 da abril de 2022.
@@ -397,43 +399,58 @@ print(april.quarter, april.year, april.days_in_month)
 print(datetime.date(2021, 4, 30) - datetime.date(2020, 4, 30))
 ```
 
-Las transformaciones del [capítulo 1](01-macro-data.qmd#sec-datos-transformaciones) son operaciones de una línea. `shift(k)` desplaza la serie $k$ periodos, de modo que `cpi / cpi.shift(12)` divide cada mes por el mismo mes del año anterior; `np.log(cpi).diff()` es la diferencia logarítmica; y la selección por fechas funciona con cadenas, `cpi["2002":]`. Para cambiar de frecuencia se usa `resample`, y para agrupar por una característica de la fecha, `groupby`.
+El índice de precios tiene un hueco: octubre de 2025, cuando el cierre del gobierno federal impidió a la Oficina de Estadísticas Laborales recoger los precios. pandas lo guarda como `NaN` y la fila sigue ahí, que es lo que conviene.
+
+Las transformaciones del [capítulo 1](01-macro-data.qmd#sec-datos-transformaciones) son operaciones de una línea. `shift(k)` desplaza la serie $k$ periodos, de modo que `cpi / cpi.shift(12)` divide cada mes por el mismo mes del año anterior; `np.log(cpi).diff()` es la diferencia logarítmica; y la selección por fechas funciona con cadenas, `cpi["2000":]`. Para cambiar de frecuencia se usa `resample`, y para agrupar por una característica de la fecha, `groupby`.
 
 ```{python}
 #| label: prelim-transformar
 infl_yoy = 100 * (cpi / cpi.shift(12) - 1)
 infl_mom = 100 * np.log(cpi).diff()
 cpi_q = cpi.resample("Q").mean()
-by_month = infl_mom.groupby(infl_mom.index.month).mean()
+recent = infl_mom["2000":]
+by_month = recent.groupby(recent.index.month).mean()
 
 print(f"inflación interanual, {infl_yoy.index[-1]}: "
       f"{infl_yoy.iloc[-1]:.2f} %")
 print(f"IPC trimestral: {len(cpi_q)} trimestres, "
       f"el último {cpi_q.index[-1]}")
-print("variación mensual media por mes (%):")
+print("variación mensual media por mes desde 2000 (%):")
 print(by_month.round(2).to_string())
 ```
 
-El promedio por mes es la versión más cruda de un factor estacional: marzo concentra el alza de precios de la temporada escolar. El [capítulo 1](01-macro-data.qmd#sec-datos-desestacionalizar) explica cómo estimar ese factor con métodos que permiten que cambie de un año a otro.
+El promedio por mes es la versión más cruda de un factor estacional. Desde 2000, los precios suben más en los primeros meses del año y bajan en noviembre y diciembre, con las liquidaciones de fin de año y el ciclo de la gasolina. El [capítulo 1](01-macro-data.qmd#sec-datos-desestacionalizar) explica cómo estimar ese factor con métodos que permiten que cambie de un año a otro.
 
-Un último ejemplo combina fechas y selección lógica. El BCRP adoptó metas de inflación en 2002, con una meta de 2.5 % y un rango de tolerancia de un punto, y en febrero de 2007 la bajó a 2 % con el mismo rango [@velarde2023]. Construir el rango como una serie con el mismo índice permite comparar mes a mes:
+::: {.cuidado}
+`shift` desplaza por posición, no por fecha. Si antes se borra el mes faltante con `dropna()`, cada mes entre noviembre de 2025 y octubre de 2026 queda comparado con el mes equivocado del año anterior, sin ningún aviso. Con el hueco en su lugar, la inflación interanual sale `NaN` en los dos meses que dependen de octubre de 2025, que es la respuesta correcta.
+:::
+
+```{python}
+#| label: prelim-hueco
+compact = cpi.dropna()
+wrong = 100 * (compact / compact.shift(12) - 1)
+error = (wrong - infl_yoy).abs()["2025-11":"2026-10"]
+print(f"error máximo por usar dropna: {error.max():.2f} "
+      f"puntos, en {error.idxmax()}")
+```
+
+Un último ejemplo combina fechas y selección lógica. En enero de 2012 la Reserva Federal anunció por primera vez una meta numérica: 2 % de inflación interanual, medida con el índice de precios del gasto de consumo personal (PCE) y no con el IPC [@fomc2012]. Con las dos series en el mismo `DataFrame` se comparan mes a mes:
 
 ```{python}
 #| label: prelim-meta
-since = infl_yoy["2002":]
-low = pd.Series(1.5, index=since.index)
-high = pd.Series(3.5, index=since.index)
-low["2007-02":] = 1.0
-high["2007-02":] = 3.0
+pce_yoy = 100 * (usa["pce_price"] / usa["pce_price"].shift(12)
+                 - 1)
+before = pce_yoy["2012":"2020"]
+after = pce_yoy["2021":].dropna()
+gap = (infl_yoy - pce_yoy)["2000":].mean()
 
-inside = (since >= low) & (since <= high)
-above = since > high
-print(f"dentro del rango: {inside.mean():.0%}, "
-      f"por encima: {above.mean():.0%}")
-print(f"máximo: {since.max():.2f} % en {since.idxmax()}")
+print(f"2012-2020, bajo la meta: {(before < 2).mean():.0%}")
+print(f"desde 2021, sobre la meta: {(after > 2).mean():.0%}")
+print(f"máximo: {after.max():.1f} % en {after.idxmax()}")
+print(f"IPC menos PCE, promedio desde 2000: {gap:.2f} puntos")
 ```
 
-La inflación estuvo dentro del rango en algo menos de la mitad de los meses desde 2002, y cuando salió fue sobre todo por arriba. Las salidas no son meses sueltos sino episodios largos, que coinciden con choques externos de precios: el alza mundial de alimentos y combustibles de 2007-2008 y la de 2021-2022, que dejó la inflación por encima del rango casi tres años. Es un dato para tener presente al leer los VAR peruanos del [capítulo 3](03-var.qmd), que tratan esos episodios como parte de la dinámica normal del sistema.
+Los dos tramos cuentan historias opuestas. Entre 2012 y 2020 la inflación estuvo por debajo de la meta en casi nueve de cada diez meses; desde 2021 estuvo por encima en casi todos, con un máximo de 7.2 % en junio de 2022. Y la elección del índice no es un detalle: desde 2000 la inflación del IPC supera en promedio a la del PCE en 0.36 puntos, de modo que medir la meta con el IPC cambiaría el diagnóstico: haría ver menor el incumplimiento por abajo de 2012-2020 y mayor el de arriba desde 2021.
 
 La referencia para pandas es el libro de su creador, [*Python for Data Analysis*](https://wesmckinney.com/book/) [@mckinney2022], gratuito en línea; la [guía de series de tiempo de pandas](https://pandas.pydata.org/docs/user_guide/timeseries.html) cubre fechas, frecuencias y ventanas móviles en detalle.
 
@@ -445,19 +462,24 @@ El libro agrega tres convenciones, reunidas en el paquete `macrobook`. `use_styl
 
 ```{python}
 #| label: fig-prelim-inflacion
-#| fig-cap: "Inflación interanual del Perú y el rango de la meta del BCRP: 1.5 a 3.5 % entre 2002 y enero de 2007, 1 a 3 % desde entonces."
-dates = since.index.to_timestamp(how="end")
+#| fig-cap: "Inflación interanual de Estados Unidos medida con el IPC y con el índice PCE, y la meta de 2 % de la Reserva Federal, explícita desde enero de 2012 y definida sobre el PCE."
+window = slice("2000", None)
+dates = infl_yoy[window].index.to_timestamp(how="end")
+target = pd.Series(2.0, index=pce_yoy["2012":].index)
 
 size = figsize(0.40)
 fig, ax = plt.subplots(figsize=size)
-ax.fill_between(dates, low, high, step="mid", lw=0,
-                color=PALETTE["surface_strong"],
-                label="rango de la meta")
-ax.plot(dates, since, color=PALETTE["accent"], lw=1.2,
-        label="inflación interanual")
+ax.plot(dates, infl_yoy[window], color=PALETTE["muted"],
+        lw=0.9, label="IPC")
+ax.plot(dates, pce_yoy[window], color=PALETTE["accent"],
+        lw=1.3, label="PCE")
+ax.plot(target.index.to_timestamp(how="end"), target,
+        color=PALETTE["ink"], lw=0.9, ls=(0, (4, 2)),
+        label="meta")
+charts.zero_line(ax)
 ax.set_ylabel("%")
-charts.year_ticks(ax, every=4)
-charts.legend_outside(ax, ncol=2)
+charts.year_ticks(ax, every=5)
+charts.legend_outside(ax, ncol=3)
 plt.show()
 ```
 
@@ -538,7 +560,7 @@ $$ p(x) = (2\pi)^{-n/2}\, |\Sigma|^{-1/2} \exp\!\Big(-\tfrac{1}{2}(x - \mu)'\Sig
 
 Es el supuesto sobre los errores de todos los VAR del libro, y la verosimilitud de un VAR es la suma de los logaritmos de esta densidad sobre las observaciones. Se simula con Cholesky, como en la [sección 0.5](#sec-prelim-factorizaciones), o con `rng.multivariate_normal(mu, Sigma)`. Toda combinación lineal de una normal multivariada es normal, y sus marginales y condicionales también lo son: esa propiedad es la que hace manejable al filtro de Kalman del [capítulo 7](07-state-space.qmd).
 
-**Gamma e inversa-gamma.** La gamma, $x \sim \text{Gamma}(a, \theta)$ con forma $a$ y escala $\theta$, vive en los positivos y tiene media $a\theta$. Si $x$ es gamma con forma $a$ y **tasa** $b$ (escala $1/b$), su inversa $1/x$ es **inversa-gamma** con forma $a$ y escala $b$, $\mathcal{IG}(a, b)$, con media $b/(a-1)$ para $a > 1$. La inversa-gamma es el prior conjugado de una varianza en un modelo normal: con un prior $\mathcal{IG}$ para $\sigma^2$, la posterior también lo es, y por eso aparece en la [sección 0.12](#sec-prelim-bayes) y en los modelos de espacio de estados y volatilidad de los capítulos 7 a 9.
+**Gamma e inversa-gamma.** La gamma, $x \sim \text{Gamma}(a, \theta)$ con forma $a$ y escala $\theta$, vive en los positivos y tiene media $a\theta$. Si $x$ es gamma con forma $a$ y **tasa** $b$ (escala $1/b$), su inversa $1/x$ es **inversa-gamma** con forma $a$ y escala $b$, $\mathcal{IG}(a, b)$, con media $b/(a-1)$ para $a > 1$. La inversa-gamma es el prior conjugado de una varianza en un modelo normal: con un prior $\mathcal{IG}$ para $\sigma^2$, la posterior también lo es, y por eso aparece en la [estimación bayesiana del AR(1)](02-univariate.qmd#sec-univariado-bayes) y en los modelos de espacio de estados y volatilidad de los capítulos 7 a 9.
 
 **Beta.** La beta, $x \sim \text{Beta}(a, b)$, vive en el intervalo $(0, 1)$, con media $a/(a+b)$. Es el prior natural para un parámetro acotado, como la persistencia de un componente cíclico o una probabilidad de transición entre regímenes. Una $\text{Beta}(8, 2)$ tiene media 0.8 y desvío 0.12: dice "persistente, pero no tanto como una raíz unitaria".
 
@@ -733,86 +755,7 @@ El bootstrap estima un sesgo de $-0.047$ y el verdadero, calculado por Monte Car
 El bootstrap tiene que reproducir la estructura de dependencia de los datos. Remuestrear observaciones de una serie de tiempo, o sumar residuos remuestreados a los valores ajustados sin iterar el modelo, produce muestras artificiales con otra dinámica y bandas que no significan nada. Cerca de una raíz unitaria el bootstrap también falla, porque la distribución del estimador cambia de forma de manera discontinua justo en $\phi = 1$.
 :::
 
-## [0.12]{.header-section-number} Bayes y el muestreo de Gibbs {#sec-prelim-bayes .unnumbered}
-
-El teorema de Bayes combina lo que se sabía antes de ver los datos, el **prior**, con lo que dicen los datos, la **verosimilitud**:
-
-$$ p(\theta \mid y) \propto p(y \mid \theta)\, p(\theta) . $$
-
-El [capítulo 5](05-bvar.qmd#sec-bvar-bayes) muestra el caso más simple, un parámetro con prior normal, en el que la media posterior es un promedio de la del prior y la del dato ponderado por sus precisiones. Aquí el objetivo es el paso siguiente: estimar el AR(1) con **todos** sus parámetros desconocidos, $\beta = (c, \phi)'$ y $\sigma^2$.
-
-La posterior conjunta de $(\beta, \sigma^2)$ no tiene una forma conocida, pero las dos condicionales sí. Con un prior normal $\beta \sim N(\beta_0, V_0)$ y uno inversa-gamma $\sigma^2 \sim \mathcal{IG}(a_0, d_0)$,
-
-$$ \beta \mid \sigma^2, y \sim N(\bar{\beta}, \bar{V}), \qquad \bar{V} = \big(V_0^{-1} + \sigma^{-2} X'X\big)^{-1}, \qquad \bar{\beta} = \bar{V}\big(V_0^{-1}\beta_0 + \sigma^{-2} X'Y\big), $$
-
-$$ \sigma^2 \mid \beta, y \sim \mathcal{IG}\Big(a_0 + \tfrac{T-1}{2},\ d_0 + \tfrac{1}{2}(Y - X\beta)'(Y - X\beta)\Big). $$
-
-El **muestreador de Gibbs** alterna entre las dos: extrae $\beta$ dada la última $\sigma^2$, extrae $\sigma^2$ dado el último $\beta$, y repite. Después de un periodo inicial que se descarta, las extracciones se distribuyen según la posterior conjunta. Estas son exactamente las dos etapas del [algoritmo del capítulo 5](05-bvar.qmd#sec-bvar-gibbs) con una sola variable: $\Sigma^{-1} \otimes X'X$ se vuelve $\sigma^{-2}X'X$ y la inversa-Wishart se vuelve una inversa-gamma.
-
-El prior para $\phi$ se centra en uno con desvío 0.2, que es la idea del prior de Minnesota del [capítulo 5](05-bvar.qmd#sec-bvar-minnesota): a falta de evidencia en contra, una serie macroeconómica se parece a una caminata aleatoria. El de la constante es difuso.
-
-```{python}
-#| label: prelim-gibbs
-X = np.column_stack([np.ones(len(y_short) - 1), y_short[:-1]])
-Y = y_short[1:]
-beta0 = np.array([0.0, 1.0])
-V0_inv = np.diag([1 / 10.0, 1 / 0.2**2])
-a0, d0 = 2.0, 1.0
-
-rng = np.random.default_rng(9)
-sigma2, keep = 1.0, []
-for step in range(6000):
-    V = np.linalg.inv(V0_inv + X.T @ X / sigma2)
-    mean = V @ (V0_inv @ beta0 + X.T @ Y / sigma2)
-    beta = rng.multivariate_normal(mean, V)
-    e = Y - X @ beta
-    sigma2 = stats.invgamma.rvs(a0 + len(Y) / 2,
-                                scale=d0 + e @ e / 2,
-                                random_state=rng)
-    keep.append([beta[0], beta[1], sigma2])
-
-draws = np.array(keep)[1000:]            # discard burn-in
-phi_draws = draws[:, 1]
-print(f"media posterior de phi: {phi_draws.mean():.3f} "
-      f"(MCO {b_hat[1]:.3f})")
-print("intervalo al 68 %:",
-      np.round(np.quantile(phi_draws, [0.16, 0.84]), 3))
-print("intervalo al 95 %:",
-      np.round(np.quantile(phi_draws, [0.025, 0.975]), 3))
-print(f"P(phi >= 1 | y) = {(phi_draws >= 1).mean():.3f}")
-```
-
-```{python}
-#| label: fig-prelim-gibbs
-#| fig-cap: "Muestreador de Gibbs del AR(1). Izquierda: la cadena de $\\phi$, con el periodo inicial descartado sombreado. Derecha: la posterior de $\\phi$, la densidad del prior y la estimación de mínimos cuadrados."
-all_phi = np.array(keep)[:, 1]
-grid = np.linspace(0.4, 1.4, 300)
-
-size = figsize(0.38)
-fig, axes = plt.subplots(1, 2, figsize=size)
-charts.trace(axes[0], all_phi, burn=1000)
-axes[0].set_title("cadena de φ", fontsize=8.5)
-axes[0].set_xlabel("iteración")
-prior_pdf = stats.norm(1, 0.2).pdf(grid)
-charts.prior_posterior(axes[1], phi_draws,
-                       prior_density=prior_pdf,
-                       grid=grid, ols_value=b_hat[1])
-axes[1].set_xlim(0.4, 1.4)
-axes[1].set_yticks([])
-axes[1].set_title("posterior de φ", fontsize=8.5)
-charts.legend_outside(axes[1], ncol=3)
-plt.show()
-```
-
-La media posterior de $\phi$, 0.877, queda entre el prior y la estimación de mínimos cuadrados, 0.863, mucho más cerca de esta porque 79 observaciones informan más que un prior con desvío 0.2. Y la posterior responde una pregunta que el estimador clásico no puede responder directamente: la probabilidad de que el proceso tenga una raíz unitaria o sea explosivo, $P(\phi \geq 1 \mid y)$, que aquí es de 2 %. El [capítulo 5](05-bvar.qmd#sec-bvar-gibbs) descarta esas extracciones cuando necesita respuestas al impulso bien definidas; aquí se reportan, porque son información.
-
-::: {.intuicion}
-El muestreador de Gibbs cambia un problema difícil, extraer de una distribución conjunta sin forma conocida, por una sucesión de problemas fáciles, extraer de cada condicional sabiendo el resto. Funciona siempre que cada condicional se pueda muestrear, y esa es la razón por la que los priors conjugados, normal para los coeficientes e inversa-gamma o inversa-Wishart para las varianzas, dominan la macroeconometría bayesiana aplicada.
-:::
-
-El [repaso bayesiano](../appendices/b-bayes.qmd) del apéndice B trata lo que queda fuera de este capítulo: el algoritmo de Metropolis-Hastings, el diagnóstico de convergencia de las cadenas y la elección de los priors.
-
-## [0.13]{.header-section-number} Otros temas {#sec-prelim-otros .unnumbered}
+## [0.12]{.header-section-number} Otros temas {#sec-prelim-otros .unnumbered}
 
 ### Optimización y máxima verosimilitud
 
@@ -837,7 +780,7 @@ Un proyecto empírico reproducible tiene tres piezas: el código bajo control de
 2. En NumPy, `@` es el producto matricial y `*` el producto elemento a elemento; los sistemas se resuelven con `solve`, y $\operatorname{vec}$ se escribe con `order="F"`.
 3. Los autovalores deciden la estabilidad y la forma de las respuestas: módulo menor que uno para que decaigan, parte imaginaria para que oscilen.
 4. La factorización de Cholesky simula normales correlacionadas y es la identificación recursiva; que $LQ$ sirva igual que $L$ es el problema de identificación.
-5. Monte Carlo aproxima esperanzas con promedios, el bootstrap aproxima distribuciones muestrales reestimando sobre muestras que respetan la dinámica, y el muestreo de Gibbs aproxima posteriores alternando entre condicionales conocidas.
+5. Monte Carlo aproxima esperanzas con promedios, y el bootstrap aproxima distribuciones muestrales reestimando sobre muestras que respetan la dinámica.
 :::
 
 ## Lecturas recomendadas {.unnumbered}
@@ -891,7 +834,7 @@ Efron y Tibshirani (1993)
    `def unvec(v, rows): return v.reshape((rows, -1), order="F")`. La verificación es `np.allclose(vec(X @ B), np.kron(np.eye(3), X) @ vec(B))`. Si se olvida `order="F"` en cualquiera de los dos lados, la comparación falla aunque las formas coincidan.
    :::
 
-4. Con el IPC peruano, calcule la inflación trimestral anualizada a partir de los promedios trimestrales del índice, $400\,\Delta \ln \bar{P}_q$, y compárela gráficamente con la inflación interanual del último mes de cada trimestre. ¿Cuál reacciona antes a los cambios de tendencia de 2021 y 2023?
+4. Con el IPC de Estados Unidos, calcule la inflación trimestral anualizada a partir de los promedios trimestrales del índice, $400\,\Delta \ln \bar{P}_q$, y compárela gráficamente con la inflación interanual del último mes de cada trimestre. ¿Cuál reacciona antes a los cambios de tendencia de 2021 y 2023?
 
    ::: {.solucion}
    `cpi_q = cpi.resample("Q").mean()` y `400 * np.log(cpi_q).diff()`. La tasa trimestral anualizada sube y baja antes que la interanual, porque compara contra el trimestre anterior y no promedia los últimos doce meses; a cambio, es más ruidosa y conserva algo de estacionalidad, que habría que remover con los métodos del [capítulo 1](01-macro-data.qmd#sec-datos-desestacionalizar).
@@ -903,8 +846,3 @@ Efron y Tibshirani (1993)
    El sesgo se reduce aproximadamente a la mitad cada vez que $T$ se duplica, y la aproximación es buena salvo en la muestra más corta. Veinte años de datos trimestrales son 80 observaciones: el sesgo en la persistencia es del orden de cinco centésimas, suficiente para que las respuestas al impulso estimadas decaigan más rápido que las verdaderas. Es una de las razones para el bootstrap con corrección de sesgo y para el prior de Minnesota, que empuja la persistencia hacia arriba.
    :::
 
-6. Repita el muestreador de Gibbs con un prior para $\phi$ centrado en cero con desvío 0.5. Compare la media posterior con la de la [sección 0.12](#sec-prelim-bayes) y relacione la diferencia con el papel de $\delta_i$ y $\lambda_1$ en el prior de Minnesota.
-
-   ::: {.solucion}
-   Con el prior centrado en cero la media posterior de $\phi$ baja por debajo de la estimación de mínimos cuadrados, porque el prior empuja hacia la ausencia de persistencia; con el prior centrado en uno sube por encima. La media del prior es el papel de $\delta_i$, que fija hacia qué valor se encoge el primer rezago propio, y el desvío es el de $\lambda_1$, que fija con cuánta fuerza. Con 79 observaciones la diferencia es de unas pocas centésimas; con 30 sería mucho mayor.
-   :::

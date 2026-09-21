@@ -34,12 +34,15 @@ def periods(stamp: pd.Series) -> pd.PeriodIndex:
     return pd.PeriodIndex(text, freq="Q")
 
 
-# FRED series for the opening figure of chapter 1, grouped by frequency.
+# FRED series used in chapters 0 and 1, grouped by frequency.
 FRED = {
     "us_daily.csv": ("D", {"DEXUSEU": "usd_eur"}),
-    "us_monthly.csv": ("M", {"HOUSTNSA": "housing_nsa",
-                             "FEDFUNDS": "fed_funds"}),
-    "us_quarterly.csv": ("Q", {"ND000334Q": "gdp_nsa"}),
+    "us_monthly.csv": ("M", {"UNRATENSA": "unemployment_nsa",
+                             "FEDFUNDS": "fed_funds",
+                             "CPIAUCNS": "cpi_nsa",
+                             "PCEPI": "pce_price"}),
+    "us_quarterly.csv": ("Q", {"GDPC1": "gdp",
+                               "ND000334Q": "gdp_nsa"}),
 }
 
 
@@ -47,11 +50,16 @@ def build_fred(freq: str, codes: dict[str, str]) -> pd.DataFrame:
     """Join FRED downloads of one frequency on a period index.
 
     Units: DEXUSEU, US dollars per euro (noon buying rates in New
-    York; holidays are empty). HOUSTNSA, housing starts in thousands
-    of units, not seasonally adjusted. FEDFUNDS, effective federal
-    funds rate, monthly average, percent. ND000334Q, real GDP in
-    billions of chained 2017 dollars, not seasonally adjusted and not
-    annualised.
+    York; holidays are empty). UNRATENSA, unemployment rate, percent,
+    not seasonally adjusted. FEDFUNDS, effective federal funds rate,
+    monthly average, percent. CPIAUCNS, CPI for all urban consumers,
+    1982-84 = 100, not seasonally adjusted. PCEPI, price index of
+    personal consumption expenditures, 2017 = 100, seasonally
+    adjusted. GDPC1, real GDP in billions of chained 2017 dollars,
+    seasonally adjusted at annual rate. ND000334Q, the same concept
+    not seasonally adjusted and not annualised (BEA publishes it
+    only from 2002). October 2025 is missing in UNRATENSA and
+    CPIAUCNS: the federal shutdown stopped data collection.
     """
     columns = {}
     for code, name in codes.items():

@@ -193,10 +193,13 @@ Code tab titles inside `::: {.panel-tabset}` use level-4 headings (`####`).
 Chapter-closing headings (`## Ideas clave`, `## Lecturas recomendadas`,
 `## Ejercicios`) carry `{.unnumbered}`.
 
-Chapter 0 simulates almost everything (fixed seeds) and uses Peru's monthly CPI;
-chapter 1 opens with four FRED series (daily USD/EUR, monthly housing starts NSA,
-monthly fed funds, quarterly real GDP NSA) and seasonally adjusts Peru's quarterly
-GDP (BCRP `PN02538AQ`, NSA) with X-13; chapter 3 uses
+Chapter 0 simulates almost everything (fixed seeds) and uses the US CPI (NSA,
+with the October 2025 gap left in place) and the PCE price index; chapter 1 opens
+with four FRED series (daily USD/EUR, monthly unemployment NSA, monthly fed funds,
+quarterly real GDP SA) and seasonally adjusts Peru's quarterly GDP (BCRP
+`PN02538AQ`, NSA) and US GDP NSA (`ND000334Q`, only from 2002) with X-13;
+chapter 2 so far has only its Bayesian estimation section (the AR(1) Gibbs
+sampler moved there from chapter 0); chapter 3 uses
 Peruvian data (BCRP); chapters 4 and 5 replicate the classic US
 datasets shipped with Stock and Watson (2001) and Blanchard and Quah (1989), so
 that the structural and Bayesian results can be checked against published
@@ -234,6 +237,13 @@ is numbered by hand:
 
 The running example is the AR(1), the one-variable VAR: every tool is applied to
 it before the main chapters apply it to matrices.
+
+## Numbers in the prose
+
+Every number in the text must come from executed code. When a number would only
+clutter the page as printed output, compute it in a cell with `#| include: false`
+and quote it inline with `` `{python} f["key"]` `` (chapter 1's stylized facts do
+this). Format negative numbers with a real minus sign (U+2212).
 
 ## Known typesetting quirks
 

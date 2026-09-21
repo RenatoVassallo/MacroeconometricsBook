@@ -1,7 +1,7 @@
 # Datos macroeconómicos {#sec-datos}
 
 ::: {.pregunta}
-¿Qué mide en realidad la serie que estamos a punto de modelar, y qué le hicimos antes de verla?
+El desempleo de Estados Unidos sube en promedio siete décimas cada enero, sin que la economía empeore. Cuando una serie macroeconómica sube o baja, ¿qué parte del movimiento es un cambio en la economía y qué parte es tendencia, calendario o la forma en que se mide?
 :::
 
 ::: {.aprendizajes}
@@ -17,8 +17,9 @@
 | Serie | Fuente | Frecuencia | Código |
 |:-------------------------------|:--------|:-----------|:--------------|
 | Tipo de cambio, dólares por euro | FRED | diaria | `DEXUSEU` |
-| Inicios de construcción de viviendas (sin desestacionalizar) | FRED | mensual | `HOUSTNSA` |
+| Tasa de desempleo de EE.UU. (sin desestacionalizar) | FRED | mensual | `UNRATENSA` |
 | Tasa efectiva de fondos federales | FRED | mensual | `FEDFUNDS` |
+| PBI real de EE.UU. (desestacionalizado) | FRED | trimestral | `GDPC1` |
 | PBI real de EE.UU. (sin desestacionalizar) | FRED | trimestral | `ND000334Q` |
 | PBI real del Perú (sin desestacionalizar) | BCRP | trimestral | `PN02538AQ` |
 
@@ -45,23 +46,19 @@ def read(name, freq):
 
 daily = read("us_daily.csv", "D")
 monthly = read("us_monthly.csv", "M")["2000":]
+quarterly = read("us_quarterly.csv", "Q")
 
 fx = daily["usd_eur"]["2000":].dropna()   # sin feriados
-housing = monthly["housing_nsa"]
+unemployment = monthly["unemployment_nsa"]
 fed_funds = monthly["fed_funds"]
-gdp_us = read("us_quarterly.csv", "Q")["gdp_nsa"]
+gdp_us = quarterly["gdp"]["2000":]        # desestacionalizado
+gdp_us_nsa = quarterly["gdp_nsa"].dropna()  # desde 2002
 gdp_pe = read("peru_quarterly.csv", "Q")["gdp_nsa"]
-
-samples = {"dólar/euro": fx, "viviendas": housing,
-           "fondos": fed_funds, "PBI EE.UU.": gdp_us,
-           "PBI Perú": gdp_pe}
-for name, series in samples.items():
-    print(f"{name:11} {series.index[0]} a {series.index[-1]}")
 ```
 
 ```{python}
 #| label: fig-datos-formas
-#| fig-cap: "Cuatro series de Estados Unidos desde 2000. El tipo de cambio es diario y no tiene tendencia; los inicios de viviendas, mensuales y sin desestacionalizar, combinan un patrón que se repite cada año con un ciclo largo; la tasa de fondos federales se mueve por escalones y pasa años en su piso; el PBI real trimestral, también sin desestacionalizar, suma tendencia, estacionalidad y la caída de 2020."
+#| fig-cap: "Cuatro series de Estados Unidos desde 2000. El tipo de cambio es diario, no tiene tendencia y alterna años tranquilos con años agitados; el desempleo, mensual y sin desestacionalizar, sube en cada recesión y además oscila con el calendario; la tasa de fondos federales se mueve por escalones, en sentido contrario al desempleo, y pasa años en su piso; el PBI real trimestral crece con tendencia y cae en 2008-2009 y en 2020."
 import matplotlib.pyplot as plt
 
 from macrobook import use_style, figsize, PALETTE, charts
@@ -69,81 +66,84 @@ from macrobook import use_style, figsize, PALETTE, charts
 use_style()
 
 panels = [(fx, "dólares por euro, diario"),
-          (housing, "inicios de viviendas (miles), mensual"),
+          (unemployment, "desempleo (%), mensual"),
           (fed_funds, "fondos federales (%), mensual"),
-          (gdp_us, "PBI real (miles de millones), trimestral")]
+          (gdp_us / 1000, "PBI real (billones), trimestral")]
+start = pd.Timestamp("2000-01-01")
+end = pd.Timestamp("2026-12-31")
 
-fig, axes = plt.subplots(2, 2, sharex=True,
-                         figsize=figsize(0.62))
+fig, axes = plt.subplots(2, 2, figsize=figsize(0.62))
 for ax, (series, title) in zip(axes.ravel(), panels):
     dates = series.index.to_timestamp(how="end")
     ax.plot(dates, series, color=PALETTE["ink"], lw=0.8)
-    charts.year_ticks(ax, every=10)
+    ax.set_xlim(start, end)
+    charts.year_ticks(ax, every=5)
     ax.set_title(title, fontsize=8.5)
-axes[1, 1].yaxis.set_major_formatter(charts.thousands)
+fig.tight_layout()
 plt.show()
 ```
 
-Las cuatro difieren en casi todo. Difieren en la **frecuencia**: los precios de mercado se observan todos los días, los indicadores de actividad cada mes y las cuentas nacionales cada trimestre, con semanas de rezago. Difieren en la **tendencia**: el PBI crece de manera sostenida, mientras que el tipo de cambio y la tasa de interés deambulan sin una dirección definida. Y difieren en lo que pasa en el **corto plazo**: los inicios de viviendas y el PBI sin ajustar suben y bajan con el calendario; la tasa de fondos federales es una variable de política que cambia por decisiones discretas; el tipo de cambio es un precio financiero que se mueve todos los días.
+```{python}
+#| label: hechos
+#| include: false
+# Numbers quoted in the text below; computed here, not shown.
+d_fx = 100 * np.log(fx).diff().dropna()
+d_unemp = unemployment.diff().dropna()
+calm = d_unemp.drop(d_unemp["2020":"2021"].index)
+month_mean = calm.groupby(calm.index.month).transform("mean")
+seasonal = 1 - ((calm - month_mean) ** 2).sum() / (
+    (calm - calm.mean()) ** 2).sum()
+by_month = calm.groupby(calm.index.month).mean()
+vol = d_fx.groupby(d_fx.index.year).std() * np.sqrt(252)
+co = pd.concat([unemployment.diff(12), fed_funds.diff(12)],
+               axis=1).dropna().corr().iloc[0, 1]
+levels = [fx, unemployment, fed_funds, gdp_us]
+growth = (gdp_us.iloc[-1] / gdp_us.iloc[0]) ** (
+    4 / (len(gdp_us) - 1)) - 1
+
+
+def fall(peak, trough):
+    return -100 * (gdp_us[trough] / gdp_us[peak] - 1)
+
+
+f = {
+    "ac_min": f"{min(s.autocorr(1) for s in levels):.2f}",
+    "ac_fx": f"{d_fx.autocorr(1):.2f}",
+    "ac_ff": f"{fed_funds.diff().autocorr(1):.2f}",
+    "seasonal": f"{100 * seasonal:.0f}",
+    "jan": f"{by_month[1]:.1f}",
+    "jun": f"{by_month[6]:.1f}",
+    "apr": f"{-by_month[4]:.1f}",
+    "u_2007": f"{unemployment['2007'].min():.1f}",
+    "u_gfc": f"{unemployment['2008':'2010'].max():.1f}",
+    "u_mar20": f"{unemployment['2020-03']:.1f}",
+    "u_apr20": f"{unemployment['2020-04']:.1f}",
+    "corr": f"{co:.2f}".replace("-", "\u2212"),
+    "gdp_gfc": f"{fall('2008Q2', '2009Q2'):.1f}",
+    "gdp_cov": f"{fall('2019Q4', '2020Q2'):.1f}",
+    "growth": f"{100 * growth:.1f}",
+    "vol_min": f"{vol.min():.1f}",
+    "vol_min_y": f"{vol.idxmin()}",
+    "vol_max": f"{vol.max():.1f}",
+    "vol_max_y": f"{vol.idxmax()}",
+    "floor": f"{(fed_funds <= 0.25).sum()}",
+    "months": f"{fed_funds.notna().sum()}",
+}
+```
+
+Las cuatro difieren en casi todo. Difieren en la **frecuencia**: los precios de mercado se observan todos los días, el desempleo cada mes y las cuentas nacionales cada trimestre, con semanas de rezago. Difieren en la **tendencia**: el PBI crece de manera sostenida, mientras que el tipo de cambio, el desempleo y la tasa de interés vuelven una y otra vez a los mismos niveles. Y difieren en lo que pasa en el **corto plazo**: el desempleo sin ajustar sube y baja con el calendario; la tasa de fondos federales es una variable de política que cambia por decisiones discretas; el tipo de cambio es un precio financiero que se mueve todos los días. El PBI de la figura ya viene desestacionalizado por la oficina de estadística; la versión sin ajustar, que la BEA publica recién desde 2002, aparece en la @sec-datos-desestacionalizar.
 
 ### Hechos estilizados
 
-```{python}
-#| label: tbl-datos-hechos
-#| tbl-cap: "Rasgos de las cuatro series. El cambio es la diferencia logarítmica en por ciento (en puntos de tasa para los fondos federales). La columna estacional es la parte de la varianza del cambio que explican las medias por mes, o por trimestre en el PBI."
-def traits(level, change, season):
-    calendar = change.groupby(season).transform("mean")
-    explained = 1 - ((change - calendar) ** 2).sum() / (
-        (change - change.mean()) ** 2).sum()
-    return {"obs.": len(level),
-            "autocorr. nivel": level.autocorr(1),
-            "autocorr. cambio": change.autocorr(1),
-            "% estacional": 100 * explained}
+Cuatro rasgos de la @fig-datos-formas reaparecen en todo el libro.
 
+**Los niveles son muy persistentes; los cambios, mucho menos.** La autocorrelación de primer orden del nivel es de al menos `{python} f["ac_min"]` en las cuatro series: el valor de hoy es casi el de ayer. La de los cambios cuenta otra historia en cada serie. Es `{python} f["ac_fx"]` en el tipo de cambio, cuya variación diaria es casi impredecible, y `{python} f["ac_ff"]` en la tasa de fondos federales, que la Reserva Federal mueve de a poco y en la misma dirección varios meses seguidos. Que los niveles se parezcan a una caminata aleatoria es la razón de que el @sec-univariado discuta raíces unitarias y de que casi todos los modelos se estimen sobre cambios.
 
-d_fx = 100 * np.log(fx).diff().dropna()
-d_housing = 100 * np.log(housing).diff().dropna()
-d_rate = fed_funds.diff().dropna()
-d_gdp = 100 * np.log(gdp_us).diff().dropna()
+**Sin ajustar, el calendario domina el corto plazo.** Dejando fuera 2020 y 2021, el desempleo sube en promedio `{python} f["jan"]` puntos en enero, cuando terminan los contratos de fin de año, y `{python} f["jun"]` en junio, cuando los estudiantes salen a buscar trabajo, y baja `{python} f["apr"]` en abril. Las medias por mes explican `{python} f["seasonal"]` % de la varianza de su variación mensual. Separar esa parte es el tema de la @sec-datos-desestacionalizar.
 
-table = pd.DataFrame({
-    "dólar/euro": traits(fx, d_fx, d_fx.index.month),
-    "viviendas": traits(housing, d_housing,
-                        d_housing.index.month),
-    "fondos federales": traits(fed_funds, d_rate,
-                               d_rate.index.month),
-    "PBI": traits(gdp_us, d_gdp, d_gdp.index.quarter)}).T
-table = table.round({"autocorr. nivel": 2,
-                     "autocorr. cambio": 2, "% estacional": 0})
-table.astype({"obs.": int, "% estacional": int})
-```
+**Las series se mueven juntas a lo largo del ciclo.** El desempleo pasa de `{python} f["u_2007"]` % en 2007 a `{python} f["u_gfc"]` % tras la crisis financiera, y de `{python} f["u_mar20"]` % a `{python} f["u_apr20"]` % entre marzo y abril de 2020; en los mismos episodios el PBI cae `{python} f["gdp_gfc"]` % y `{python} f["gdp_cov"]` %, y la Reserva Federal lleva la tasa a su piso. La correlación entre las variaciones a doce meses del desempleo y de la tasa es `{python} f["corr"]`. Entre tanto el PBI crece `{python} f["growth"]` % por año en promedio. Ninguna serie se entiende sola, y esa es la motivación del VAR del @sec-var.
 
-```{python}
-#| label: hechos-numeros
-vol = d_fx.groupby(d_fx.index.year).std() * np.sqrt(252)
-floor = (fed_funds <= 0.25).sum()
-starts = housing.groupby(housing.index.year).sum()
-print(f"volatilidad mínima: {vol.min():.1f} % en {vol.idxmin()}")
-print(f"volatilidad máxima: {vol.max():.1f} % en {vol.idxmax()}")
-print(f"meses con la tasa en 0.25 % o menos: {floor} "
-      f"de {len(fed_funds)}")
-print(f"inicios de viviendas, 2009 contra 2005: "
-      f"{100 * (starts[2009] / starts[2005] - 1):.0f} %")
-print("PBI sin ajustar, cambio medio por trimestre (%):",
-      d_gdp.groupby(d_gdp.index.quarter).mean().round(1)
-      .to_dict())
-print("mayor cambio trimestral del PBI:", d_gdp.abs().idxmax())
-```
-
-El @tbl-datos-hechos resume cuatro hechos que reaparecen en todo el libro.
-
-**Los niveles son muy persistentes; los cambios, mucho menos.** La autocorrelación del nivel está entre 0.95 y 1 en las cuatro series. La de los cambios es nula en el tipo de cambio; es 0.71 en la tasa de fondos federales, que la Reserva Federal mueve de a poco y en la misma dirección; y es negativa en el PBI sin ajustar, donde a una caída estacional le sigue una subida. Por eso el @sec-univariado discute raíces unitarias y casi todos los modelos se estiman sobre cambios.
-
-**Sin ajustar, el calendario domina el corto plazo.** Las medias por trimestre explican 79 % de la varianza de la variación del PBI, y las medias por mes, 39 % de la de los inicios de viviendas. Un primer trimestre típico cae 3.6 % sin que la economía se contraiga.
-
-**La volatilidad cambia en el tiempo.** La del tipo de cambio va de 4.7 % anual en 2019 a 14.2 % en 2008, y un modelo con varianza constante describe mal ambos años (@sec-volatilidad).
-
-**Hay pisos y quiebres.** La tasa de fondos federales pasó 109 de los 320 meses desde 2000 en 0.25 % o menos, un piso que ningún modelo lineal respeta; los inicios de viviendas cayeron 73 % entre 2005 y 2009; y la pandemia produjo el mayor cambio trimestral del PBI en la muestra (@sec-datos-otros).
+**La volatilidad cambia y hay pisos.** La volatilidad anualizada del tipo de cambio va de `{python} f["vol_min"]` % en `{python} f["vol_min_y"]` a `{python} f["vol_max"]` % en `{python} f["vol_max_y"]`, y un modelo con varianza constante describe mal ambos años (@sec-volatilidad). La tasa de fondos federales pasó `{python} f["floor"]` de los `{python} f["months"]` meses desde 2000 en 0.25 % o menos, un piso que ningún modelo lineal respeta. Y un episodio como la pandemia domina cualquier estimación si no se trata explícitamente (@sec-datos-otros).
 
 ## La descomposición de una serie {#sec-datos-descomposicion}
 
@@ -204,7 +204,7 @@ plt.show()
 
 ## Ajuste estacional {#sec-datos-desestacionalizar}
 
-La estacionalidad es un fenómeno económico real: en diciembre se produce y se compra más, en marzo empiezan las clases, la pesca depende de las vedas. No es un error de medición. El problema es que domina la variación de corto plazo, como mostró el @tbl-datos-hechos, y esconde justamente lo que interesa: si la economía se está acelerando o desacelerando ahora. Ajustar por estacionalidad es estimar ese componente y restarlo de la serie.
+La estacionalidad es un fenómeno económico real: en diciembre se produce y se compra más, en marzo empiezan las clases, la pesca depende de las vedas. No es un error de medición. El problema es que domina la variación de corto plazo, como se vio en la @sec-datos-hechos, y esconde justamente lo que interesa: si la economía se está acelerando o desacelerando ahora. Ajustar por estacionalidad es estimar ese componente y restarlo de la serie.
 
 ```{python}
 #| label: fig-datos-peru
@@ -291,10 +291,13 @@ print(f"2021T2: interanual {yoy['2021Q2']:.1f} %, "
 print(f"2021T2 ajustado: {qoq_sa['2021Q2']:.1f} % contra "
       f"2021T1, {two_years['2021Q2']:.1f} % contra 2019T2")
 
-adj_us = seasonal_adjust(gdp_us, method="x13", outlier=True)
-sa_us = pd.Series(adj_us.seasadj.values, index=gdp_us.index)
-q_us = pd.DataFrame({"sin ajustar": 100 * gdp_us.pct_change(),
-                     "ajustado": 100 * sa_us.pct_change()})
+adj_us = seasonal_adjust(gdp_us_nsa, method="x13",
+                         outlier=True)
+sa_us = pd.Series(adj_us.seasadj.values,
+                  index=gdp_us_nsa.index)
+q_us = pd.DataFrame(
+    {"sin ajustar": 100 * gdp_us_nsa.pct_change(),
+     "ajustado": 100 * sa_us.pct_change()})
 print(q_us.loc["2020Q1":"2020Q2"].round(1))
 print("mayor caída ajustada:", q_us["ajustado"].idxmin())
 print("Perú ajustado, 2020T2 y 2020T3 (%):",
@@ -303,7 +306,7 @@ print("Perú ajustado, 2020T2 y 2020T3 (%):",
 
 En el segundo trimestre de 2021 el PBI peruano creció 42.1 % interanual, una cifra histórica. La serie desestacionalizada de la @fig-datos-peru cuenta otra cosa: el nivel era prácticamente el de dos años antes ($-0.1$ %) y había crecido 0.5 % respecto del trimestre anterior. La interanual comparaba contra el peor trimestre del confinamiento y hablaba, sobre todo, del pasado.
 
-El error opuesto es mirar la variación trimestral sin ajustar. El PBI de Estados Unidos sin ajustar cae 5.5 % en el primer trimestre de 2020 y 5.4 % en el segundo; ajustado, cae 1.1 y 7.7 %. Sin ajustar, los dos trimestres parecen igual de malos; ajustado, uno es una desaceleración y el otro la caída más grande de la muestra.
+El error opuesto es mirar la variación trimestral sin ajustar. El PBI de Estados Unidos sin ajustar, que la BEA publica desde 2002, cae 5.5 % en el primer trimestre de 2020 y 5.4 % en el segundo; ajustado, cae 1.1 y 7.7 %. Sin ajustar, los dos trimestres parecen igual de malos; ajustado, uno es una desaceleración y el otro la caída más grande de la muestra.
 
 ::: {.cuidado}
 Usar la variación interanual como si fuera una desestacionalización es un error frecuente. La diferencia de un año elimina el patrón estacional, pero introduce una media móvil que crea autocorrelación artificial, desplaza los puntos de quiebre y arrastra los efectos base. Para describir la coyuntura, la serie desestacionalizada; para comparar con el año anterior, la interanual, sabiendo lo que mide.
@@ -393,7 +396,7 @@ def sd_growth(level, first, second):
 print("Perú, 2011-2026 contra 1996-2010 (%):",
       sd_growth(gdp_pe, "2010", "2011"))
 print("EE.UU., 2014-2026 contra 2002-2013 (%):",
-      sd_growth(gdp_us, "2013", "2014"))
+      sd_growth(gdp_us_nsa, "2013", "2014"))
 ```
 En el PBI peruano sin ajustar, y dejando fuera 2020 y 2021, la desviación estándar de la variación trimestral es 98 % mayor en 2011-2026 que en 1996-2010 medida en soles, y sólo 2 % mayor medida en logaritmos. Pero es una hipótesis que se contrasta serie por serie, no una propiedad del logaritmo: en el PBI de Estados Unidos la misma comparación da 49 y 16 %.
 
@@ -508,7 +511,7 @@ Tome la serie mensual del IPC peruano y calcule la inflación de tres maneras: i
 :::
 
 ::: {#exr-datos-3}
-Desestacionalice los inicios de viviendas de Estados Unidos con `seasonal_adjust` y estime el factor de cada mes en dos submuestras, 2000-2012 y 2013-2026. ¿Cambió el patrón? Relacione el resultado con el argumento contra las variables dummy estacionales.
+Desestacionalice la tasa de desempleo de Estados Unidos con `seasonal_adjust` (interpole antes el dato faltante de octubre de 2025) y estime el factor de cada mes en dos submuestras, 2000-2012 y 2013-2026. ¿Cambió el patrón? Relacione el resultado con el argumento contra las variables dummy estacionales.
 :::
 
 ::: {#exr-datos-4}

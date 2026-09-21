@@ -13,7 +13,7 @@
 4. Cómo extraer trayectorias del estado con el suavizador y con el simulador de Carter y Kohn.
 :::
 
-**Requisitos previos.** @sec-var; la normal multivariada ([sección 0.10](00-preliminares.qmd#sec-prelim-distribuciones)); el muestreo de Gibbs ([0.12](00-preliminares.qmd#sec-prelim-bayes)) y el repaso bayesiano del @sec-bayes.
+**Requisitos previos.** @sec-var; la normal multivariada ([sección 0.10](00-preliminares.qmd#sec-prelim-distribuciones)); el muestreo de Gibbs (@sec-univariado-bayes) y el repaso bayesiano del @sec-bayes.
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Transformación |

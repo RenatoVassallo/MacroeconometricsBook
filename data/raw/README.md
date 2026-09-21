@@ -9,11 +9,14 @@ reconstruye a partir de ellos con los scripts de `code/python/`, que escriben en
 | `SW2001_Data.xlsx` | Muestra trimestral de Stock y Watson (2001): inflación, desempleo y tasa de fondos federales, 1960Q1 a 2000Q4. | @sec-svar, @sec-bvar |
 | `BQ1989_Data.xlsx` | Muestra trimestral de Blanchard y Quah (1989): crecimiento del PBI y desempleo. | @sec-svar |
 | `Uhlig2005_Data.xlsx` | Muestra mensual de Uhlig (2005): PBI real interpolado, deflactor, precios de materias primas, reservas y tasa de fondos, 1965M1 a 2003M12. | reservada para las restricciones de signo |
-| `peru_mensual_bcrp.csv` | Series mensuales del BCRP: PBI desestacionalizado (`PN01773AM`), IPC de Lima (`PN38705PM`), tipo de cambio (`PN01210PM`) y tasa de referencia (`PD04722MM`). | @sec-datos |
+| `peru_mensual_bcrp.csv` | Series mensuales del BCRP: PBI desestacionalizado (`PN01773AM`), IPC de Lima (`PN38705PM`), tipo de cambio (`PN01210PM`) y tasa de referencia (`PD04722MM`). | ejercicios de @sec-datos |
 | `peru_trimestral_bcrp.csv` | PBI real trimestral del BCRP (`PN02538AQ`), en millones de soles de 2007, sin desestacionalizar, 1996T1 a 2026T2. | @sec-datos |
 | `fred_DEXUSEU.csv` | Tipo de cambio diario, dólares por euro (FRED `DEXUSEU`); los feriados vienen vacíos. | @sec-datos |
-| `fred_HOUSTNSA.csv` | Inicios de construcción de viviendas en EE.UU., miles de unidades, sin desestacionalizar (FRED `HOUSTNSA`). | @sec-datos |
+| `fred_UNRATENSA.csv` | Tasa de desempleo de EE.UU., en por ciento, sin desestacionalizar (FRED `UNRATENSA`); falta octubre de 2025 por el cierre del gobierno federal. | @sec-datos |
 | `fred_FEDFUNDS.csv` | Tasa efectiva de fondos federales, promedio mensual, en por ciento (FRED `FEDFUNDS`). | @sec-datos |
+| `fred_GDPC1.csv` | PBI real de EE.UU., miles de millones de dólares encadenados de 2017, desestacionalizado y anualizado (FRED `GDPC1`). | @sec-datos |
+| `fred_CPIAUCNS.csv` | Índice de precios al consumidor de EE.UU., 1982-84 = 100, sin desestacionalizar (FRED `CPIAUCNS`); falta octubre de 2025. | @sec-prelim |
+| `fred_PCEPI.csv` | Índice de precios del gasto de consumo personal, 2017 = 100, desestacionalizado (FRED `PCEPI`). | @sec-prelim |
 | `fred_ND000334Q.csv` | PBI real de EE.UU., miles de millones de dólares encadenados de 2017, sin desestacionalizar ni anualizar (FRED `ND000334Q`). | @sec-datos |
 | `database_peru.xlsx` | Base trimestral del BCRP, **no versionada** por su tamaño (11 MB). | @sec-var |
 

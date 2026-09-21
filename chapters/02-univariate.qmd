@@ -4,7 +4,7 @@
 ¿Cuánta memoria tiene una serie macroeconómica y cuánto de su futuro puede explicarse con su propio pasado?
 :::
 
-*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición.*
+*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición; la estimación bayesiana (@sec-univariado-bayes) ya está escrita.*
 
 ::: {.aprendizajes}
 1. Cómo leer la función de autocorrelación de una serie macro y qué modelo sugiere.
@@ -13,13 +13,14 @@
 4. Por qué la caminata aleatoria es el rival a vencer en cualquier ejercicio de pronóstico.
 :::
 
-**Requisitos previos.** Álgebra matricial básica ([sección 0.3](00-preliminares.qmd#sec-prelim-numpy)), estimación por máxima verosimilitud y @sec-datos.
+**Requisitos previos.** Álgebra matricial básica ([sección 0.3](00-preliminares.qmd#sec-prelim-numpy)), distribuciones y simulación ([secciones 0.10](00-preliminares.qmd#sec-prelim-distribuciones) y [0.11](00-preliminares.qmd#sec-prelim-simulacion)), estimación por máxima verosimilitud y @sec-datos.
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Transformación |
 |:-------------------------------|:--------|:-----------|:--------------------------|
 | PBI real | BCRP | trimestral | var. % interanual |
 | Inflación | BCRP | mensual | var. % interanual |
+| AR(1) simulado | este capítulo | | estimación bayesiana |
 
 Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
 :::
@@ -35,6 +36,125 @@ Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `
 ## Estimación
 
 *Por escribir:* MCO condicional y máxima verosimilitud exacta; qué cambia en muestras cortas.
+
+### Estimación bayesiana {#sec-univariado-bayes}
+
+La estimación clásica trata los parámetros como constantes desconocidas y describe la incertidumbre con la distribución del estimador en muestras repetidas. La bayesiana trata los parámetros como variables aleatorias y describe la incertidumbre con una distribución sobre ellos. El teorema de Bayes combina lo que se sabía antes de ver los datos, el **prior**, con lo que dicen los datos, la **verosimilitud**:
+
+$$ p(\theta \mid y) \propto p(y \mid \theta)\, p(\theta) . $$ {#eq-univariado-bayes}
+
+La @sec-bvar-bayes muestra el caso más simple, un parámetro con prior normal, en el que la media posterior es un promedio de la del prior y la del dato ponderado por sus precisiones. Aquí el objetivo es el paso siguiente: estimar el AR(1),
+
+$$ y_t = c + \phi\, y_{t-1} + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma^2), $$
+
+con **todos** sus parámetros desconocidos, $\beta = (c, \phi)'$ y $\sigma^2$. Con $Y$ el vector de $y_2, \dots, y_T$ y $X$ la matriz con una columna de unos y otra con $y_1, \dots, y_{T-1}$, el modelo es la regresión $Y = X\beta + \varepsilon$.
+
+La posterior conjunta de $(\beta, \sigma^2)$ no tiene una forma conocida, pero las dos condicionales sí. Con un prior normal $\beta \sim N(\beta_0, V_0)$ y uno inversa-gamma $\sigma^2 \sim \mathcal{IG}(a_0, d_0)$ ([sección 0.10](00-preliminares.qmd#sec-prelim-distribuciones)),
+
+$$
+\begin{aligned}
+\beta \mid \sigma^2, y &\sim N(\bar{\beta}, \bar{V}), \\
+\bar{V} &= \big(V_0^{-1} + \sigma^{-2} X'X\big)^{-1}, \qquad \bar{\beta} = \bar{V}\big(V_0^{-1}\beta_0 + \sigma^{-2} X'Y\big), \\
+\sigma^2 \mid \beta, y &\sim \mathcal{IG}\Big(a_0 + \tfrac{T-1}{2},\ d_0 + \tfrac{1}{2}(Y - X\beta)'(Y - X\beta)\Big).
+\end{aligned}
+$$ {#eq-univariado-condicionales}
+
+::: {#alg-univariado-gibbs}
+1. Fijar un valor inicial $\sigma^{2(0)}$.
+2. Para $j = 1, \dots, J$: extraer $\beta^{(j)}$ de $N(\bar{\beta}, \bar{V})$, con $\bar{\beta}$ y $\bar{V}$ evaluadas en $\sigma^{2(j-1)}$, y luego $\sigma^{2(j)}$ de la inversa-gamma de la @eq-univariado-condicionales evaluada en $\beta^{(j)}$.
+3. Descartar las primeras $J_0$ extracciones, el periodo inicial, y tratar las restantes como una muestra de la posterior conjunta.
+
+Muestreador de Gibbs para el AR(1)
+:::
+
+El @alg-univariado-gibbs alterna entre las dos condicionales. Después del periodo inicial, las extracciones se distribuyen según la posterior conjunta. Son exactamente las dos etapas del algoritmo de la @sec-bvar-gibbs con una sola variable: $\Sigma^{-1} \otimes X'X$ se vuelve $\sigma^{-2}X'X$ y la inversa-Wishart se vuelve una inversa-gamma.
+
+Para ver el algoritmo en acción conviene un caso en que se conoce la respuesta: 80 observaciones simuladas de un AR(1) con $c = 0.5$, $\phi = 0.9$ y $\sigma = 1$, las mismas del bootstrap de la [sección 0.11](00-preliminares.qmd#sec-prelim-simulacion). El prior para $\phi$ se centra en uno con desvío 0.2, que es la idea del prior de Minnesota de la @sec-bvar-minnesota: a falta de evidencia en contra, una serie macroeconómica se parece a una caminata aleatoria. El de la constante es difuso.
+
+```{python}
+#| label: univariado-gibbs
+import numpy as np
+from scipy import stats
+
+
+def simulate_ar1(c, phi, sigma, T, seed=None):
+    """Simulate an AR(1) starting at its unconditional mean."""
+    rng = np.random.default_rng(seed)
+    y = np.empty(T)
+    y[0] = c / (1 - phi)
+    for t in range(1, T):
+        shock = sigma * rng.standard_normal()
+        y[t] = c + phi * y[t - 1] + shock
+    return y
+
+
+y = simulate_ar1(0.5, 0.9, 1.0, T=80, seed=6)
+X = np.column_stack([np.ones(len(y) - 1), y[:-1]])
+Y = y[1:]
+b_ols = np.linalg.solve(X.T @ X, X.T @ Y)
+
+beta0 = np.array([0.0, 1.0])
+V0_inv = np.diag([1 / 10.0, 1 / 0.2**2])
+a0, d0 = 2.0, 1.0
+
+rng = np.random.default_rng(9)
+sigma2, keep = 1.0, []
+for step in range(6000):
+    V = np.linalg.inv(V0_inv + X.T @ X / sigma2)
+    mean = V @ (V0_inv @ beta0 + X.T @ Y / sigma2)
+    beta = rng.multivariate_normal(mean, V)
+    e = Y - X @ beta
+    sigma2 = stats.invgamma.rvs(a0 + len(Y) / 2,
+                                scale=d0 + e @ e / 2,
+                                random_state=rng)
+    keep.append([beta[0], beta[1], sigma2])
+
+draws = np.array(keep)[1000:]            # discard burn-in
+phi_draws = draws[:, 1]
+print(f"media posterior de phi: {phi_draws.mean():.3f} "
+      f"(MCO {b_ols[1]:.3f})")
+print("intervalo al 68 %:",
+      np.round(np.quantile(phi_draws, [0.16, 0.84]), 3))
+print("intervalo al 95 %:",
+      np.round(np.quantile(phi_draws, [0.025, 0.975]), 3))
+print(f"P(phi >= 1 | y) = {(phi_draws >= 1).mean():.3f}")
+```
+
+```{python}
+#| label: fig-univariado-gibbs
+#| fig-cap: "Muestreador de Gibbs del AR(1). Izquierda: la cadena de $\\phi$, con el periodo inicial descartado sombreado. Derecha: la posterior de $\\phi$, la densidad del prior y la estimación de mínimos cuadrados."
+import matplotlib.pyplot as plt
+
+from macrobook import use_style, figsize, charts
+
+use_style()
+
+all_phi = np.array(keep)[:, 1]
+grid = np.linspace(0.4, 1.4, 300)
+
+fig, axes = plt.subplots(1, 2, figsize=figsize(0.38))
+charts.trace(axes[0], all_phi, burn=1000)
+axes[0].set_title("cadena de φ", fontsize=8.5)
+axes[0].set_xlabel("iteración")
+prior_pdf = stats.norm(1, 0.2).pdf(grid)
+charts.prior_posterior(axes[1], phi_draws,
+                       prior_density=prior_pdf,
+                       grid=grid, ols_value=b_ols[1])
+axes[1].set_xlim(0.4, 1.4)
+axes[1].set_yticks([])
+axes[1].set_title("posterior de φ", fontsize=8.5)
+charts.legend_outside(axes[1], ncol=3)
+plt.show()
+```
+
+La media posterior de $\phi$, 0.877, queda entre el prior y la estimación de mínimos cuadrados, 0.863, mucho más cerca de esta porque 79 observaciones informan más que un prior con desvío 0.2. Y la posterior responde una pregunta que el estimador clásico no puede responder directamente: la probabilidad de que el proceso tenga una raíz unitaria o sea explosivo, $P(\phi \geq 1 \mid y)$, que aquí es de 2 %. La @sec-bvar-gibbs descarta esas extracciones cuando necesita respuestas al impulso bien definidas; aquí se reportan, porque son información.
+
+::: {.intuicion}
+El muestreador de Gibbs cambia un problema difícil, extraer de una distribución conjunta sin forma conocida, por una sucesión de problemas fáciles, extraer de cada condicional sabiendo el resto. Funciona siempre que cada condicional se pueda muestrear, y esa es la razón por la que los priors conjugados, normal para los coeficientes e inversa-gamma o inversa-Wishart para las varianzas, dominan la macroeconometría bayesiana aplicada.
+:::
+
+El @sec-bayes trata lo que queda fuera de esta sección: el algoritmo de Metropolis-Hastings, el diagnóstico de convergencia de las cadenas y la elección de los priors.
+
 
 ## Selección de rezagos
 
@@ -73,6 +193,9 @@ Box y Jenkins (1970)
 Dickey y Fuller (1979)
 :   la distribución del estimador bajo raíz unitaria.
 
+Gelman et al. (2013)
+:   [*Bayesian Data Analysis*](https://sites.stat.columbia.edu/gelman/book/), gratuito en línea; el tratamiento de referencia de la inferencia bayesiana y del muestreo de Gibbs.
+
 :::
 
 ## Ejercicios {.unnumbered}
@@ -85,3 +208,10 @@ Estime un AR(4) para la inflación y compare su RECM fuera de muestra con la de 
 Simule 500 series de un AR(1) con coeficiente 0.95 y T = 80. ¿En qué fracción de los casos el ADF rechaza la raíz unitaria?
 :::
 
+::: {#exr-univariado-3}
+Repita el muestreador de Gibbs de la @sec-univariado-bayes con un prior para $\phi$ centrado en cero con desvío 0.5. Compare la media posterior con la del texto y relacione la diferencia con el papel de $\delta_i$ y $\lambda_1$ en el prior de Minnesota.
+:::
+
+::: {.solucion}
+Con el prior centrado en cero la media posterior de $\phi$ queda por debajo de la estimación de mínimos cuadrados, porque el prior empuja hacia la ausencia de persistencia; con el prior centrado en uno queda por encima. La media del prior es el papel de $\delta_i$, que fija hacia qué valor se encoge el primer rezago propio, y el desvío es el de $\lambda_1$, que fija con cuánta fuerza. Con las 79 observaciones del texto la media posterior pasa de 0.877 a 0.852, una diferencia de dos centésimas y media; con sólo las primeras 30 la diferencia supera las ocho centésimas, porque el prior pesa más cuando los datos informan menos.
+:::

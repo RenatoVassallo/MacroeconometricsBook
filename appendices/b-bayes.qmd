@@ -2,7 +2,7 @@
 
 *Apéndice en preparación.*
 
-Las bases, el teorema de Bayes, las distribuciones de uso frecuente con su parametrización y un muestreador de Gibbs de dos bloques, están en el capítulo 0: [distribuciones](../chapters/00-preliminares.qmd#sec-prelim-distribuciones), [Monte Carlo](../chapters/00-preliminares.qmd#sec-prelim-simulacion) y [Gibbs](../chapters/00-preliminares.qmd#sec-prelim-bayes). Este apéndice reúne lo que piden los capítulos 7 a 10.
+Las bases están en otros capítulos: las distribuciones de uso frecuente con su parametrización y el Monte Carlo en el capítulo 0 ([distribuciones](../chapters/00-preliminares.qmd#sec-prelim-distribuciones) y [Monte Carlo](../chapters/00-preliminares.qmd#sec-prelim-simulacion)), y el teorema de Bayes con un muestreador de Gibbs de dos bloques en la @sec-univariado-bayes. Este apéndice reúne lo que piden los capítulos 7 a 10.
 
 ## Qué se necesita saber
 
