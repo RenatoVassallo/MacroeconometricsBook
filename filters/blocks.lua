@@ -13,6 +13,7 @@
       cuando `mostrar-soluciones: false`.
    3. Sustituye los paréntesis del nombre en las cabeceras de los entornos
       numerados por un punto medio: "Supuesto 5.1 (nombre)" -> "Supuesto 5.1 · nombre".
+   4. Numera el capítulo 0 en el PDF (véase `Header` más abajo).
 
   Convención: dentro de un .panel-tabset los títulos de pestaña se escriben
   como encabezados de nivel 4 (####). Con number-depth: 2 y toc-depth: 2 salen
@@ -97,4 +98,57 @@ function Span(el)
   return el
 end
 
-return { { Meta = Meta }, { Div = Div, Span = Span } }
+--[[ Capítulo 0.
+  Quarto numera los capítulos de un libro desde 1 y trata el 0 como "sin
+  número", así que el capítulo de preliminares se declara .unnumbered y lleva
+  el número escrito a mano: [0]{.chapter-number} en el título y
+  [0.x]{.header-section-number} en cada sección de nivel 2. En HTML eso
+  reproduce exactamente el marcado de un capítulo numerado. En LaTeX, este
+  filtro lo convierte en un \chapter numerado con el contador en -1 (sale
+  "Capítulo 0") y en \section numeradas (0.1, 0.2, ...), de modo que el PDF
+  usa la misma tipografía y el mismo índice que el resto del libro.
+--]]
+local function span_with_class(inlines, class)
+  for _, il in ipairs(inlines) do
+    if il.t == "Span" and has_class(il, class) then return il end
+  end
+  return nil
+end
+
+local function without_number(inlines)
+  local out = pandoc.Inlines({})
+  local skipping = false
+  for _, il in ipairs(inlines) do
+    if il.t == "Span" and (has_class(il, "header-section-number")
+                            or has_class(il, "chapter-number")) then
+      skipping = true
+    elseif skipping and (il.t == "Space"
+                          or (il.t == "Str" and il.text == "\u{a0}")) then
+      -- separator between the number and the title: drop it
+    else
+      skipping = false
+      out:insert(il)
+    end
+  end
+  return out
+end
+
+function Header(el)
+  if not quarto.doc.is_format("latex") then return nil end
+  if el.level == 1 and has_class(el, "capitulo-cero") then
+    local title = span_with_class(el.content, "chapter-title")
+    local inlines = title and title.content or without_number(el.content)
+    local tex = pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), "latex")
+    return pandoc.RawBlock("latex",
+      "\\setcounter{chapter}{-1}\n\\chapter{" .. tex .. "}\\label{"
+      .. el.identifier .. "}")
+  end
+  if el.level == 2 and span_with_class(el.content, "header-section-number") then
+    el.content = without_number(el.content)
+    el.classes = el.classes:filter(function(c) return c ~= "unnumbered" end)
+    return el
+  end
+  return nil
+end
+
+return { { Meta = Meta }, { Div = Div, Span = Span, Header = Header } }

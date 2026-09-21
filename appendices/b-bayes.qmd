@@ -2,13 +2,11 @@
 
 *Apéndice en preparación.*
 
+Las bases, el teorema de Bayes, las distribuciones de uso frecuente con su parametrización y un muestreador de Gibbs de dos bloques, están en el capítulo 0: [distribuciones](../chapters/00-preliminares.qmd#sec-prelim-distribuciones), [Monte Carlo](../chapters/00-preliminares.qmd#sec-prelim-simulacion) y [Gibbs](../chapters/00-preliminares.qmd#sec-prelim-bayes). Este apéndice reúne lo que piden los capítulos 7 a 10.
+
 ## Qué se necesita saber
 
-*Por escribir:* verosimilitud, prior, posterior y el papel de la constante de normalización; por qué en este libro casi nunca hace falta calcularla.
-
-## Distribuciones de uso frecuente
-
-*Por escribir:* normal multivariada, inversa-Wishart, gamma inversa y la normal-inversa-Wishart conjugada del @sec-bvar.
+*Por escribir:* el papel de la constante de normalización y por qué en este libro casi nunca hace falta calcularla; la normal-inversa-Wishart conjugada del @sec-bvar y su relación con las observaciones ficticias.
 
 ## Muestreo
 

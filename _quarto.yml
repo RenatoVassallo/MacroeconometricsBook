@@ -31,6 +31,7 @@ book:
   chapters:
     - index.qmd
     - prefacio.qmd
+    - chapters/00-preliminares.qmd
     - chapters/01-macro-data.qmd
     - chapters/02-univariate.qmd
     - chapters/03-var.qmd

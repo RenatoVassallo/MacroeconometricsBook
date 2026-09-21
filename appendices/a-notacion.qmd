@@ -16,6 +16,9 @@
 | $b$ | $\operatorname{vec}(B)$, apilado por columnas (ecuación por ecuación) |
 | $T$, $n$, $p$, $h$ | tamaño de muestra, número de variables, rezagos y horizonte |
 | $\otimes$ | producto de Kronecker |
+| $\operatorname{vec}(M)$ | columnas de $M$ apiladas en un vector |
+| $\lambda_i(A)$, $\rho(A)$ | autovalores de $A$ y radio espectral, $\rho(A) = \max_i \lvert\lambda_i(A)\rvert$ |
+| $L$, $Q$ | factor de Cholesky ($\Sigma = LL'$, triangular inferior) y matriz ortogonal ($QQ' = I$) |
 | $F$, $J$ | matriz companion $np \times np$ y selector $n \times np$ |
 | $\Psi_j$ | pesos de Wold de la forma reducida, $\Psi_j = J F^j J'$ |
 | $\mu$ | media incondicional, $(I_n - \Phi_1 - \cdots - \Phi_p)^{-1}c$ |
@@ -44,10 +47,15 @@ El ciclo $c_t$ lleva subíndice temporal y no debe confundirse con el vector de 
 
 ## Distribuciones
 
+La parametrización es la de `scipy.stats`; la [sección 0.10](../chapters/00-preliminares.qmd#sec-prelim-distribuciones) muestra la correspondencia y cómo verificarla.
+
 | Símbolo | Significado |
 |:--------|:------------|
 | $N(\mu, \Omega)$ | normal multivariada |
-| $\mathcal{IW}(S, \nu)$ | inversa-Wishart con matriz de escala $S$ y $\nu$ grados de libertad |
+| $\text{Gamma}(a, \theta)$ | gamma con forma $a$ y escala $\theta$; media $a\theta$ |
+| $\mathcal{IG}(a, b)$ | inversa-gamma con forma $a$ y escala $b$; media $b/(a-1)$ |
+| $\text{Beta}(a, b)$ | beta en $(0, 1)$; media $a/(a+b)$ |
+| $\mathcal{IW}(S, \nu)$ | inversa-Wishart con matriz de escala $S$ y $\nu$ grados de libertad; media $S/(\nu - n - 1)$ |
 | $b_0$, $H$ | media y varianza a priori de $b$ |
 | $S_0$, $\nu_0$ | escala y grados de libertad a priori de $\Sigma$ |
 

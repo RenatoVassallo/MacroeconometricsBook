@@ -10,7 +10,7 @@
 3. Reconocer qué parte de la incertidumbre reportan las bandas y cuál no.
 :::
 
-**Requisitos previos.** @sec-var; descomposición de Cholesky; nociones de identificación en modelos de ecuaciones simultáneas.
+**Requisitos previos.** @sec-var; la factorización de Cholesky y las matrices ortogonales ([sección 0.5](00-preliminares.qmd#sec-prelim-factorizaciones)); el bootstrap ([0.11](00-preliminares.qmd#sec-prelim-simulacion)); nociones de identificación en modelos de ecuaciones simultáneas.
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Transformación |

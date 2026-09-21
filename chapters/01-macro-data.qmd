@@ -10,7 +10,7 @@
 3. Elegir la transformación con un criterio, y explicar por qué los economistas trabajan casi siempre en logaritmos.
 :::
 
-**Requisitos previos.** Nociones de series de tiempo y manejo básico de `pandas`.
+**Requisitos previos.** Nociones de series de tiempo; `pandas`, fechas y gráficos (secciones [0.7](00-preliminares.qmd#sec-prelim-pandas) y [0.8](00-preliminares.qmd#sec-prelim-graficos)).
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Código |

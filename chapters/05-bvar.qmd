@@ -10,7 +10,7 @@
 3. Producir pronósticos por densidad y evaluarlos fuera de muestra contra mínimos cuadrados y contra la caminata aleatoria.
 :::
 
-**Requisitos previos.** @sec-var y @sec-svar; distribución normal multivariada e inversa-Wishart; producto de Kronecker y el operador $\operatorname{vec}$; el repaso bayesiano del @sec-bayes.
+**Requisitos previos.** @sec-var y @sec-svar; la normal multivariada y la inversa-Wishart ([sección 0.10](00-preliminares.qmd#sec-prelim-distribuciones)); el producto de Kronecker y el operador $\operatorname{vec}$ ([0.6](00-preliminares.qmd#sec-prelim-kronecker)); el muestreo de Gibbs en una dimensión ([0.12](00-preliminares.qmd#sec-prelim-bayes)).
 
 ::: {.datos-usados}
 El mismo sistema del @sec-svar: inflación, desempleo y tasa de fondos federales de Estados Unidos, trimestrales de 1960Q1 a 2000Q4, cuatro rezagos, en `data/processed/sw2001.csv`. Mantener los datos fijos entre capítulos permite comparar lo que cambia por el método y no por la muestra.

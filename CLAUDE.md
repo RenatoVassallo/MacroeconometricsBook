@@ -9,8 +9,9 @@ The book should bridge economic intuition, econometric theory,
 computation, and empirical macroeconomic applications.
 
 **Language: the first edition is written in Spanish.** Prose, headings, figure
-labels, code comments and block labels are in Spanish. This file and the
-technical scaffolding stay in English.
+labels and block labels are in Spanish; code, including its comments and
+docstrings, is in English (see Figures). This file and the technical
+scaffolding stay in English.
 
 ## Audience
 
@@ -192,10 +193,50 @@ Code tab titles inside `::: {.panel-tabset}` use level-4 headings (`####`).
 Chapter-closing headings (`## Ideas clave`, `## Lecturas recomendadas`,
 `## Ejercicios`) carry `{.unnumbered}`.
 
-Chapters 3 uses Peruvian data (BCRP); chapters 4 and 5 replicate the classic US
+Chapter 0 simulates almost everything (fixed seeds) and uses Peru's monthly CPI;
+chapter 1 uses Uhlig (2005) for the US and BCRP series for Peru; chapter 3 uses
+Peruvian data (BCRP); chapters 4 and 5 replicate the classic US
 datasets shipped with Stock and Watson (2001) and Blanchard and Quah (1989), so
 that the structural and Bayesian results can be checked against published
 numbers. `code/python/build_us_data.py` rebuilds both CSVs from `data/raw/`.
+
+## Chapter 0 (preliminaries)
+
+`chapters/00-preliminares.qmd` is a guided review of the Python, linear algebra
+and probability the other chapters assume. Every section ends by linking to
+where the tool is used, and every chapter's **Requisitos previos** line links
+back to the relevant section. Keep both directions in sync when a chapter adds a
+new prerequisite: add the tool to chapter 0 and to its map table (section 0.1).
+
+Quarto numbers book chapters from 1 and treats 0 as "unnumbered", so chapter 0
+is numbered by hand:
+
+- The heading is
+  `# [0]{.chapter-number}&nbsp; [Title]{.chapter-title} {#sec-prelim .unnumbered .capitulo-cero}`
+  and each level-2 heading carries its number:
+  `## [0.4]{.header-section-number} Title {#sec-prelim-x .unnumbered}`.
+  In HTML this reproduces the markup of a numbered chapter. In LaTeX,
+  `filters/blocks.lua` (the `Header` function) turns them into a numbered
+  `\chapter` with the counter at -1 ("Capítulo 0") and numbered `\section`s.
+- Links into chapter 0 are explicit Markdown links,
+  `[texto](00-preliminares.qmd#sec-prelim-x)`, never `@sec-prelim-x`: Quarto does
+  not index sections of an unnumbered chapter. Inside chapter 0, links to other
+  chapters also use explicit links, so the text reads the same in both formats.
+- Figures may be labelled (`fig-prelim-*`): both formats number them "Figura 1,
+  2, ...". Equations must **not** be labelled (HTML gives "(1)", the PDF
+  "(0.1)"), and exercises are a plain numbered list with `.solucion` divs, not
+  `#exr-` blocks, for the same reason.
+
+The running example is the AR(1), the one-variable VAR: every tool is applied to
+it before the main chapters apply it to matrices.
+
+## Known typesetting quirks
+
+- In the PDF, math operator names containing "ct" (e.g. `\arctan`) render the
+  "ct" as a ligature glyph from the math font. Avoid them or give the operator
+  font `Ligatures=NoCommon` if one becomes necessary.
+- Inline code that is long and unbreakable stretches justified lines in the PDF;
+  put code longer than about 30 characters in a code block instead.
 
 ## Reproducibility
 

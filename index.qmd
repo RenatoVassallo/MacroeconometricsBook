@@ -21,6 +21,7 @@ Está escrito para estudiantes de maestría y de los primeros años de doctorado
 ## Cómo está organizado
 
 ::: {.indice-capitulos}
+0. **Python, álgebra y probabilidad.** [Las herramientas que el resto del libro da por sabidas.]{.descripcion}
 1. **Datos macroeconómicos.** [Qué mide cada serie y qué le hicimos antes de modelarla.]{.descripcion}
 2. **Modelos univariados.** [Memoria, estacionariedad y la referencia difícil de batir.]{.descripcion}
 3. **Vectores autorregresivos.** [Dinámica conjunta sin imponer una teoría completa.]{.descripcion}
@@ -56,7 +57,7 @@ Quien prefiera `pip` puede usar `environment/requirements.txt`, que fija las mis
 
 Primera edición **en preparación**, en español. Esta versión se publica mientras se escribe, de modo que los capítulos aparecen a medida que quedan listos y el texto puede cambiar de un día para otro.
 
-**Completos y revisados:** los capítulos 1 (datos macroeconómicos), 3 (vectores autorregresivos), 4 (VAR estructurales) y 5 (VAR bayesianos), más el apéndice de notación.
+**Completos y revisados:** el capítulo 0, un repaso de Python, álgebra matricial y probabilidad pensado como apoyo del resto; los capítulos 1 (datos macroeconómicos), 3 (vectores autorregresivos), 4 (VAR estructurales) y 5 (VAR bayesianos); y el apéndice de notación.
 
 **En preparación:** los capítulos 2 y 6 a 11. De cada uno se publica el esqueleto, con la pregunta que responde y el orden de la exposición, para que se vea el alcance del libro completo.
 

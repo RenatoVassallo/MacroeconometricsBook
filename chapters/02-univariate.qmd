@@ -13,7 +13,7 @@
 4. Por qué la caminata aleatoria es el rival a vencer en cualquier ejercicio de pronóstico.
 :::
 
-**Requisitos previos.** Álgebra matricial básica, estimación por máxima verosimilitud y @sec-datos.
+**Requisitos previos.** Álgebra matricial básica ([sección 0.3](00-preliminares.qmd#sec-prelim-numpy)), estimación por máxima verosimilitud y @sec-datos.
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Transformación |

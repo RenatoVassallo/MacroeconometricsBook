@@ -4,7 +4,7 @@
 
 A quien ya tomó un curso de econometría y quiere usar series de tiempo macroeconómicas para responder preguntas de política: estudiantes de maestría y de doctorado, y economistas de bancos centrales, ministerios y organismos internacionales.
 
-Se asume econometría de pregrado, álgebra matricial, probabilidad y algo de Python. No se asume experiencia previa con métodos bayesianos: el @sec-bayes reúne lo necesario.
+Se asume econometría de pregrado, álgebra matricial, probabilidad y algo de Python. Quien necesite refrescar cualquiera de las tres cosas encontrará en el [capítulo 0](chapters/00-preliminares.qmd) un repaso dirigido: sólo lo que el libro usa, con un ejemplo ejecutable y un enlace al capítulo donde vuelve a aparecer. No se asume experiencia previa con métodos bayesianos: el capítulo 0 cubre lo necesario para el VAR bayesiano, y el @sec-bayes, lo que piden los capítulos posteriores.
 
 ## Por qué otro libro
 
@@ -26,7 +26,7 @@ La progresión es siempre la misma: modelo simple, límite del modelo simple, mo
 
 ## Convenciones
 
-Los vectores van en negrita ($\mathbf{y}_t$, $\mathbf{u}_t$) para no confundirlos con el PBI ($y_t$); las matrices en mayúscula ($A_\ell$, $\Sigma$). Los bloques marcados **Supuesto** contienen restricciones de identificación: son el lugar donde el modelo deja de hablar de los datos y empieza a hablar de economía. El @sec-notacion reúne la notación completa.
+Los vectores van en negrita ($\mathbf{y}_t$, $\mathbf{u}_t$) para no confundirlos con el PBI ($y_t$); las matrices en mayúscula ($\Phi_\ell$, $\Sigma$). Los bloques marcados **Supuesto** contienen restricciones de identificación: son el lugar donde el modelo deja de hablar de los datos y empieza a hablar de economía. El @sec-notacion reúne la notación completa.
 
 El código privilegia la transparencia sobre la eficiencia: primero el algoritmo escrito a mano, luego la versión de biblioteca.
 

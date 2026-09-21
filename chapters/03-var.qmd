@@ -10,7 +10,7 @@
 3. Entender por qué los residuos de la forma reducida no son choques económicos.
 :::
 
-**Requisitos previos.** @sec-univariado; álgebra matricial (inversa, valores propios, matrices particionadas); distribución normal multivariada.
+**Requisitos previos.** @sec-univariado; álgebra matricial, en particular productos, sistemas lineales y autovalores (secciones [0.3](00-preliminares.qmd#sec-prelim-numpy) y [0.4](00-preliminares.qmd#sec-prelim-autovalores)); la normal multivariada ([0.10](00-preliminares.qmd#sec-prelim-distribuciones)).
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Transformación |
