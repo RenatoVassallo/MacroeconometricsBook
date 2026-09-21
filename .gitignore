@@ -23,6 +23,7 @@ data/raw/*
 !data/raw/peru_mensual_bcrp.csv
 !data/raw/peru_trimestral_bcrp.csv
 !data/raw/fred_*.csv
+!data/raw/fredmd_2026-07.csv
 data/processed/*
 !data/processed/.gitkeep
 # el CSV derivado sí se versiona: es pequeño y permite compilar el libro
@@ -36,6 +37,9 @@ data/processed/*
 !data/processed/us_daily.csv
 !data/processed/us_monthly.csv
 !data/processed/us_quarterly.csv
+!data/processed/fredmd_panel.csv
+!data/processed/ml_backtest.csv
+!data/processed/ml_hyperparameters.csv
 
 # Figuras generadas por scripts (las de los capítulos las escribe Quarto)
 figures/generated/*

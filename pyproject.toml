@@ -22,6 +22,7 @@ dependencies = [
     "scipy>=1.15",
     "matplotlib>=3.8",
     "statsmodels>=0.14",
+    "scikit-learn>=1.5",          # capítulo 11
     # motor de ejecución de Quarto
     "jupyter>=1.0",
     "ipykernel>=6.29",

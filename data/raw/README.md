@@ -18,6 +18,7 @@ reconstruye a partir de ellos con los scripts de `code/python/`, que escriben en
 | `fred_CPIAUCNS.csv` | Índice de precios al consumidor de EE.UU., 1982-84 = 100, sin desestacionalizar (FRED `CPIAUCNS`); falta octubre de 2025. | @sec-prelim |
 | `fred_PCEPI.csv` | Índice de precios del gasto de consumo personal, 2017 = 100, desestacionalizado (FRED `PCEPI`). | @sec-prelim |
 | `fred_ND000334Q.csv` | PBI real de EE.UU., miles de millones de dólares encadenados de 2017, sin desestacionalizar ni anualizar (FRED `ND000334Q`). | @sec-datos |
+| `fredmd_2026-07.csv` | Base FRED-MD de McCracken y Ng (2016), edición de julio de 2026: 126 series mensuales de EE.UU. hasta junio de 2026, con el código de transformación de cada una en la segunda fila. | @sec-ml |
 | `database_peru.xlsx` | Base trimestral del BCRP, **no versionada** por su tamaño (11 MB). | @sec-var |
 
 Los tres primeros vienen de los materiales de replicación de cada artículo. Los
@@ -34,4 +35,5 @@ Para reconstruirlos:
 ```bash
 uv run python code/python/build_us_data.py
 uv run python code/python/build_peru_data.py
+uv run python code/python/build_ml_backtest.py   # capítulo 11, unos diez minutos
 ```

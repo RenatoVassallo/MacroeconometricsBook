@@ -1,9 +1,11 @@
-"""Build the US datasets used in the data and SVAR chapters.
+"""Build the US datasets used in chapters 0-2, 4, 5 and 11.
 
 The three workbooks are the samples distributed with the replication material
 of Stock and Watson (2001), Blanchard and Quah (1989) and Uhlig (2005). The
 four `fred_*.csv` files are FRED downloads, saved exactly as FRED serves them
-(https://fred.stlouisfed.org/graph/fredgraph.csv?id=<SERIES>).
+(https://fred.stlouisfed.org/graph/fredgraph.csv?id=<SERIES>). The FRED-MD
+file (McCracken and Ng, 2016) is the vintage of July 2026, with data through
+June 2026, saved unchanged as `fredmd_2026-07.csv`.
 Raw files are never edited: the tidy CSVs the chapters read are rebuilt from
 `data/raw/` by running this script.
 
@@ -12,9 +14,11 @@ Raw files are never edited: the tidy CSVs the chapters read are rebuilt from
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from macrobook import data_path
+from macrobook.ml import load_fredmd
 
 SOURCES = {
     "SW2001_Data.xlsx": ("sw2001.csv", ["unemp", "infl", "ff"]),
@@ -73,6 +77,29 @@ def build_fred(freq: str, codes: dict[str, str]) -> pd.DataFrame:
     return table
 
 
+# FRED-MD (McCracken and Ng, 2016), vintage 2026-07, for chapter 11.
+FREDMD_RAW = "fredmd_2026-07.csv"
+FREDMD_SAMPLE = ("1960-03", "2025-09")
+
+
+def build_fredmd() -> pd.DataFrame:
+    """Transformed FRED-MD panel with no missing values.
+
+    Each series gets its McCracken-Ng transformation code. The sample
+    ends in 2025-09 because the federal shutdown left October 2025
+    without CPI; the seven series with any gap inside the sample are
+    dropped (ACOGNO, ANDENOx, TWEXAFEGSMTHx, UMCSENTx, VIXCLSx, CP3Mx,
+    COMPAPFFx). INFL is CPI inflation, 1200 * dlog(CPIAUCSL).
+    """
+    raw, _, transformed = load_fredmd(data_path(FREDMD_RAW, raw=True))
+    first, last = FREDMD_SAMPLE
+    panel = transformed.loc[first:last].dropna(axis=1)
+    inflation = 1200 * np.log(raw["CPIAUCSL"]).diff()
+    panel = panel.assign(INFL=inflation.loc[first:last])
+    panel.index.name = "date"
+    return panel
+
+
 def build(raw_file: str, columns: list[str]) -> pd.DataFrame:
     raw = pd.read_excel(data_path(raw_file, raw=True), header=None,
                         skiprows=2, names=["date"] + columns)
@@ -88,6 +115,11 @@ if __name__ == "__main__":
         table.to_csv(target, float_format="%.6f")
         print(f"{len(table)} obs, {table.index[0]} a {table.index[-1]}"
               f" -> {target}")
+    table = build_fredmd()
+    target_file = data_path("fredmd_panel.csv")
+    table.to_csv(target_file, float_format="%.8g")
+    print(f"{len(table)} obs, {table.shape[1] - 1} series + INFL"
+          f" -> {target_file}")
     for output, (freq, codes) in FRED.items():
         table = build_fred(freq, codes)
         target = data_path(output)

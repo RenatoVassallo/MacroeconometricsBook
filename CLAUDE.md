@@ -157,7 +157,10 @@ matrix, OLS, companion, roots, Wold weights, forecasting, simulation) live in
 `code/python/macrobook/var.py`; identification, impulse responses, FEVD,
 historical decomposition, bootstrap bands and local projections live in
 `code/python/macrobook/svar.py`; the Minnesota prior, the Gibbs sampler and the
-predictive density live in `code/python/macrobook/bvar.py`.
+predictive density live in `code/python/macrobook/bvar.py`; FRED-MD loading
+(transformation codes and groups), features, direct targets, the six forecasting
+models, time-ordered tuning, the expanding-window backtest, the Diebold-Mariano
+test and grouped permutation importance live in `code/python/macrobook/ml.py`.
 
 **Figures never hardcode a width.** Quarto sets `figure.figsize` per format
 (7 in for the web, 4.5 in for the PDF) and chapters call
@@ -208,6 +211,17 @@ numbers. `code/python/build_us_data.py` rebuilds the US CSVs (the replication
 samples and the FRED files) and `code/python/build_peru_data.py` the Peruvian ones,
 always from `data/raw/`. The Uhlig (2005) sample is kept in `data/raw/` for the
 sign-restriction replication; no chapter reads it yet.
+
+Chapter 11 uses the FRED-MD panel (vintage 2026-07, `data/raw/fredmd_2026-07.csv`,
+sample 1960-03 to 2025-09, series with gaps dropped), which `build_us_data.py`
+writes to `data/processed/fredmd_panel.csv` together with CPI inflation. Its
+pseudo out-of-sample forecasts take about ten minutes, so
+`code/python/build_ml_backtest.py` writes them to `data/processed/ml_backtest.csv`
+and `ml_hyperparameters.csv`, and the chapter only reads those files. Rerun the
+script whenever the panel, `macrobook.ml` or the design change. The chapter
+guards its interpretive prose with `assert`s (which groups matter, which
+coefficients the lasso keeps): if a rerun changes them, the render fails
+instead of printing a sentence that is no longer true.
 
 ## Chapter 0 (preliminaries)
 

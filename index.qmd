@@ -57,8 +57,8 @@ Quien prefiera `pip` puede usar `environment/requirements.txt`, que fija las mis
 
 Primera edición **en preparación**, en español. Esta versión se publica mientras se escribe, de modo que los capítulos aparecen a medida que quedan listos y el texto puede cambiar de un día para otro.
 
-**Completos y revisados:** el capítulo 0, un repaso de Python, álgebra matricial y probabilidad pensado como apoyo del resto; los capítulos 1 (datos macroeconómicos), 2 (modelos univariados), 3 (vectores autorregresivos), 4 (VAR estructurales) y 5 (VAR bayesianos); y el apéndice de notación.
+**Completos y revisados:** el capítulo 0, un repaso de Python, álgebra matricial y probabilidad pensado como apoyo del resto; los capítulos 1 (datos macroeconómicos), 2 (modelos univariados), 3 (vectores autorregresivos), 4 (VAR estructurales), 5 (VAR bayesianos) y 11 (aprendizaje automático); y el apéndice de notación.
 
-**En preparación:** los capítulos 6 a 11. De cada uno se publica el esqueleto, con la pregunta que responde y el orden de la exposición, para que se vea el alcance del libro completo.
+**En preparación:** los capítulos 6 a 10. De cada uno se publica el esqueleto, con la pregunta que responde y el orden de la exposición, para que se vea el alcance del libro completo.
 
 Los resultados numéricos se verifican contra fuentes publicadas siempre que es posible: el capítulo 4 replica @stock2001 y el 5 parte de esa misma muestra. El texto, las cifras y el código están en revisión permanente. Si encuentras un error, el enlace de la barra lateral abre el repositorio y puedes reportarlo como *issue*.
