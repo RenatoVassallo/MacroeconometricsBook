@@ -198,8 +198,9 @@ with the October 2025 gap left in place) and the PCE price index; chapter 1 open
 with four FRED series (daily USD/EUR, monthly unemployment NSA, monthly fed funds,
 quarterly real GDP SA) and seasonally adjusts Peru's quarterly GDP (BCRP
 `PN02538AQ`, NSA) and US GDP NSA (`ND000334Q`, only from 2002) with X-13;
-chapter 2 so far has only its Bayesian estimation section (the AR(1) Gibbs
-sampler moved there from chapter 0); chapter 3 uses
+chapter 2 uses US real GDP growth (`GDPC1`) and PCE inflation (`PCEPI`),
+quarterly, estimated on 1960Q1-2019Q4, with 2020-2023 held out (it also holds the
+AR(1) Gibbs sampler moved from chapter 0); chapter 3 uses
 Peruvian data (BCRP); chapters 4 and 5 replicate the classic US
 datasets shipped with Stock and Watson (2001) and Blanchard and Quah (1989), so
 that the structural and Bayesian results can be checked against published

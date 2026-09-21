@@ -1,41 +1,296 @@
 # Modelos univariados {#sec-univariado}
 
 ::: {.pregunta}
-¿Cuánta memoria tiene una serie macroeconómica y cuánto de su futuro puede explicarse con su propio pasado?
+Un trimestre de crecimiento bajo en Estados Unidos dice muy poco sobre el crecimiento de dentro de un año; un trimestre de inflación alta dice bastante sobre la inflación del año siguiente. ¿Cómo se mide esa memoria, y cuánto del futuro de una serie se explica con su propio pasado?
 :::
-
-*Capítulo en preparación. El esqueleto de secciones fija el alcance y el orden de la exposición; la estimación bayesiana (@sec-univariado-bayes) ya está escrita.*
 
 ::: {.aprendizajes}
-1. Cómo leer la función de autocorrelación de una serie macro y qué modelo sugiere.
-2. Cómo estimar y diagnosticar un AR(p) y un ARMA(p,q) en Python.
-3. Qué dice y qué no dice una prueba de raíz unitaria sobre la especificación.
-4. Por qué la caminata aleatoria es el rival a vencer en cualquier ejercicio de pronóstico.
+1. Leer la memoria de una serie en su función de autocorrelación y en las raíces de su polinomio de rezagos.
+2. Pasar de un AR($p$) a su forma companion y a su representación de Wold, que son el esqueleto del VAR y de sus respuestas al impulso.
+3. Estimar un AR($p$), elegir el número de rezagos y pronosticar con intervalos que salen de los pesos de Wold.
+4. Entender qué dice una prueba de raíz unitaria y por qué la caminata aleatoria es el rival a vencer.
 :::
 
-**Requisitos previos.** Álgebra matricial básica ([sección 0.3](00-preliminares.qmd#sec-prelim-numpy)), distribuciones y simulación ([secciones 0.10](00-preliminares.qmd#sec-prelim-distribuciones) y [0.11](00-preliminares.qmd#sec-prelim-simulacion)), estimación por máxima verosimilitud y @sec-datos.
+**Requisitos previos.** Álgebra matricial y autovalores ([secciones 0.3](00-preliminares.qmd#sec-prelim-numpy) y [0.4](00-preliminares.qmd#sec-prelim-autovalores)), distribuciones y simulación ([0.10](00-preliminares.qmd#sec-prelim-distribuciones) y [0.11](00-preliminares.qmd#sec-prelim-simulacion)) y @sec-datos.
 
 ::: {.datos-usados}
 | Serie | Fuente | Frecuencia | Transformación |
 |:-------------------------------|:--------|:-----------|:--------------------------|
-| PBI real | BCRP | trimestral | var. % interanual |
-| Inflación | BCRP | mensual | var. % interanual |
+| PBI real de EE.UU. (`GDPC1`) | FRED | trimestral | $400\,\Delta \ln$, % anualizado |
+| Índice de precios PCE (`PCEPI`) | FRED | mensual, promediado por trimestre | $400\,\Delta \ln$, % anualizado |
 | AR(1) simulado | este capítulo | | estimación bayesiana |
 
-Los datos crudos se descargan a `data/raw/` y las series construidas quedan en `data/processed/`.
+La muestra de estimación es 1960T1-2019T4. La pandemia produce variaciones del PBI de otra escala (@sec-datos-otros), y los trimestres de 2020 a 2023 se reservan para evaluar un pronóstico.
 :::
 
-## Estacionariedad en sentido débil
+## Memoria y estacionariedad {#sec-univariado-memoria}
 
-*Por escribir:* qué exige y por qué casi ninguna serie macro en niveles la cumple.
+La @fig-univariado-series muestra las dos series del capítulo, el crecimiento del PBI real y la inflación medida con el índice de precios del consumo personal (PCE), la que usa la Reserva Federal para su meta. Las dos oscilan alrededor de un promedio parecido, cerca de 3 %, pero lo hacen de manera muy distinta: el crecimiento salta de un trimestre a otro sin mucho patrón; la inflación se desplaza lentamente, con episodios que duran años.
 
+```{python}
+#| label: univariado-datos
+import numpy as np
+import pandas as pd
+
+from macrobook import data_path, var
+
+
+def read(name, freq):
+    table = pd.read_csv(data_path(name), index_col="date")
+    table.index = pd.PeriodIndex(table.index, freq=freq)
+    return table
+
+
+gdp = read("us_quarterly.csv", "Q")["gdp"]
+pce = read("us_monthly.csv", "M")["pce_price"]
+pce_q = pce.resample("Q").mean()[:"2026Q2"]
+
+growth_all = 400 * np.log(gdp).diff()      # % anualizado
+infl_all = 400 * np.log(pce_q).diff()
+growth = growth_all["1960":"2019"]
+infl = infl_all["1960":"2019"]
+series = {"crecimiento": growth, "inflación": infl}
+
+for name, x in series.items():
+    print(f"{name:11} T = {len(x)}, media {x.mean():.2f}, "
+          f"desvío {x.std():.2f}")
+```
+
+La memoria de una serie se mide con sus autocovarianzas, y para que ese objeto tenga sentido hace falta que no dependa de la fecha.
+
+::: {#def-univariado-estacionariedad}
+## Estacionariedad en covarianza y autocorrelación
+
+Un proceso $\{y_t\}$ es estacionario en covarianza si $\mathbb{E}[y_t] = \mu$ y $\operatorname{Cov}(y_t, y_{t-j}) = \gamma_j$ para todo $t$ y todo $j \geq 0$, con $\gamma_0$ finita. Su función de autocorrelación es $\rho_j = \gamma_j / \gamma_0$, y se estima con
+
+$$ \hat{\rho}_j = \frac{\sum_{t=j+1}^{T} (y_t - \bar{y})(y_{t-j} - \bar{y})}{\sum_{t=1}^{T} (y_t - \bar{y})^2} . $$ {#eq-univariado-acf}
+:::
+
+Si la serie fuera ruido blanco, es decir, sin ninguna autocorrelación, cada $\hat{\rho}_j$ sería aproximadamente normal con media cero y varianza $1/T$, de modo que la banda $\pm 1.96/\sqrt{T}$ separa lo que es memoria de lo que puede ser azar. El @sec-var extiende la definición a vectores (@def-estacionariedad), con matrices de autocovarianza en lugar de números.
+
+```{python}
+#| label: fig-univariado-series
+#| fig-cap: "Crecimiento del PBI real y de los precios PCE de Estados Unidos, 1960-2019, en % anualizado (arriba), y sus autocorrelaciones muestrales hasta 20 trimestres (abajo). La banda gris es $\\pm 1.96/\\sqrt{T}$: lo que cae dentro es compatible con ausencia de memoria."
+import matplotlib.pyplot as plt
+
+from macrobook import use_style, figsize, PALETTE, charts
+
+use_style()
+
+
+def acf(x, lags):
+    """Sample autocorrelations rho_1, ..., rho_lags."""
+    z = np.asarray(x) - np.mean(x)
+    return np.array([z[j:] @ z[:len(z) - j] / (z @ z)
+                     for j in range(1, lags + 1)])
+
+
+lags = np.arange(1, 21)
+band = 1.96 / np.sqrt(len(growth))
+fig, axes = plt.subplots(2, 2, figsize=figsize(0.62))
+for col, (name, x) in enumerate(series.items()):
+    top, bottom = axes[0, col], axes[1, col]
+    top.plot(x.index.to_timestamp(how="end"), x,
+             color=PALETTE["ink"], lw=0.7)
+    charts.zero_line(top)
+    charts.year_ticks(top, every=10)
+    top.set_title(f"{name} (%)", fontsize=8.5)
+    rho = acf(x, 20)
+    bottom.axhspan(-band, band, color=PALETTE["surface_strong"],
+                   lw=0)
+    bottom.vlines(lags, 0, rho, color=PALETTE["accent"], lw=1.2)
+    bottom.plot(lags, rho, "o", ms=2.5, color=PALETTE["accent"])
+    charts.zero_line(bottom)
+    bottom.set_ylim(-0.3, 1.0)
+    bottom.set_xlabel("rezago (trimestres)")
+    bottom.set_title("autocorrelación", fontsize=8.5)
+fig.tight_layout()
+plt.show()
+```
+
+```{python}
+#| label: univariado-memoria
+#| include: false
+rho_g, rho_p = acf(growth, 12), acf(infl, 12)
+m = {"g1": f"{rho_g[0]:.2f}", "g4": f"{rho_g[3]:.2f}",
+     "p1": f"{rho_p[0]:.2f}", "p8": f"{rho_p[7]:.2f}",
+     "p12": f"{rho_p[11]:.2f}", "band": f"{band:.2f}",
+     "infl_7079": f"{infl['1970':'1979'].mean():.1f}",
+     "infl_1019": f"{infl['2010':'2019'].mean():.1f}"}
+```
+
+Las autocorrelaciones confirman lo que se ve a simple vista. La del crecimiento es `{python} m["g1"]` a un trimestre y cae dentro de la banda de `{python} m["band"]` antes de los cuatro trimestres: un trimestre malo apenas informa sobre el siguiente año. La de la inflación es `{python} m["p1"]` a un trimestre y todavía `{python} m["p8"]` a dos años. Esa memoria larga es también la razón para dudar de la estacionariedad de la inflación: su promedio fue `{python} m["infl_7079"]` % en los años setenta y `{python} m["infl_1019"]` % en 2010-2019, y ninguna prueba sobre una sola muestra distingue con seguridad entre una media que cambia y una memoria muy larga. La @sec-univariado-raices vuelve sobre esto.
+
+## Procesos AR, MA y ARMA {#sec-univariado-arma}
+
+El operador de rezagos $L$ desplaza una serie un periodo, $L y_t = y_{t-1}$, y permite escribir la dinámica como un polinomio: $\phi(L) = 1 - \phi_1 L - \cdots - \phi_p L^p$.
+
+::: {#def-univariado-arma}
 ## Procesos AR, MA y ARMA
 
-*Por escribir:* representación, condiciones de estabilidad e invertibilidad, autocorrelaciones teóricas.
+Con $\varepsilon_t$ ruido blanco de varianza $\sigma^2$,
 
-## Estimación
+- un **AR($p$)** es $y_t = c + \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + \varepsilon_t$, es decir, $\phi(L)\, y_t = c + \varepsilon_t$;
+- un **MA($q$)** es $y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \cdots + \theta_q \varepsilon_{t-q}$, es decir, $y_t = \mu + \theta(L)\, \varepsilon_t$;
+- un **ARMA($p, q$)** combina ambos: $\phi(L)\, y_t = c + \theta(L)\, \varepsilon_t$.
+:::
 
-*Por escribir:* MCO condicional y máxima verosimilitud exacta; qué cambia en muestras cortas.
+El AR($p$) es el caso que más importa en este libro, porque es un VAR con una sola variable: todo lo que sigue sobre estabilidad, memoria y pronóstico reaparece en el @sec-var con matrices en lugar de números. Como allí, conviene escribirlo en forma companion, apilando el presente y los $p - 1$ rezagos:
+
+$$
+\underbrace{\begin{bmatrix} y_t \\ y_{t-1} \\ \vdots \\ y_{t-p+1} \end{bmatrix}}_{\tilde{y}_t}
+=
+\begin{bmatrix} c \\ 0 \\ \vdots \\ 0 \end{bmatrix}
++
+\underbrace{\begin{bmatrix}
+ \phi_1 & \phi_2 & \cdots & \phi_{p-1} & \phi_p \\
+ 1 & 0 & \cdots & 0 & 0 \\
+ \vdots & & \ddots & & \vdots \\
+ 0 & 0 & \cdots & 1 & 0
+\end{bmatrix}}_{F}
+\tilde{y}_{t-1}
++
+\begin{bmatrix} \varepsilon_t \\ 0 \\ \vdots \\ 0 \end{bmatrix} .
+$$ {#eq-univariado-companion}
+
+Es la @eq-companion con $n = 1$. Un AR($p$) es así un AR(1) de dimensión $p$, y su comportamiento queda determinado por las potencias de $F$.
+
+::: {#prp-univariado-estabilidad}
+## Estabilidad del AR($p$)
+
+El AR($p$) es estacionario en covarianza si y sólo si todas las raíces de $\phi(z) = 0$ están fuera del círculo unitario, lo que equivale a que todos los valores propios de $F$ tengan módulo menor que uno. Su media es entonces $\mu = c / \phi(1) = c / (1 - \phi_1 - \cdots - \phi_p)$.
+:::
+
+La equivalencia es algebraica: los valores propios de $F$ resuelven $\lambda^p - \phi_1 \lambda^{p-1} - \cdots - \phi_p = 0$, que es $\phi(z) = 0$ con $z = 1/\lambda$. Si hay valores propios complejos, la memoria oscila: es la forma más simple de generar un ciclo, y el @exr-univariado-4 lo muestra.
+
+La estabilidad permite sustituir hacia atrás indefinidamente y escribir la serie como una suma de choques pasados. Ese resultado vale para cualquier proceso estacionario, no sólo para los AR.
+
+::: {#thm-univariado-wold}
+## Descomposición de Wold
+
+Todo proceso estacionario en covarianza y sin componente determinista se puede escribir como
+
+$$ y_t = \mu + \sum_{j=0}^{\infty} \psi_j\, \varepsilon_{t-j}, \qquad \psi_0 = 1, \qquad \sum_{j=0}^{\infty} \psi_j^2 < \infty , $$ {#eq-univariado-wold}
+
+donde $\varepsilon_t$ es el error del mejor pronóstico lineal de $y_t$ con su propio pasado [@hamilton1994, cap. 4]. En un AR($p$) estable, $\psi_j = [F^j]_{11}$.
+:::
+
+Los pesos $\psi_j$ tienen tres lecturas que el libro usa una y otra vez. Son la **respuesta al impulso**: cuánto cambia $y_{t+j}$ si hoy llega un choque de una unidad; el @sec-svar les da a esos choques una interpretación económica, y las proyecciones locales de la @sec-svar-lp los estiman directamente. Determinan el **error de pronóstico**, como se verá en la @sec-univariado-pronostico. Y su suma resume la **persistencia**:
+
+$$ \sum_{j=0}^{\infty} \psi_j = \frac{1}{\phi(1)} = \frac{1}{1 - \rho}, \qquad \rho = \phi_1 + \cdots + \phi_p . $$ {#eq-univariado-largo-plazo}
+
+La suma de los coeficientes $\rho$ es la medida de persistencia más usada, y $1/(1-\rho)$ es el efecto acumulado de un choque. Si $y_t$ es una tasa de crecimiento, ese acumulado es el efecto permanente sobre el nivel, que es exactamente lo que fijan las restricciones de largo plazo de la @sec-svar-largo-plazo.
+
+::: {.intuicion}
+Wold dice que los modelos AR y MA no son una elección arbitraria: cualquier serie estacionaria es un MA($\infty$), y la tarea es aproximar sus pesos $\psi_j$ con pocos parámetros. Un MA($q$) los corta en $q$; un AR($p$) los genera con una recursión que decae geométricamente; un ARMA combina ambas cosas.
+:::
+
+El MA($q$) tiene memoria exacta: $\rho_j = 0$ para $j > q$, y es estacionario para cualquier valor de los $\theta$. Se le exige otra condición, la **invertibilidad** (raíces de $\theta(z)$ fuera del círculo unitario), para que los choques se puedan recuperar del pasado observado de la serie; en los VAR estructurales esa misma condición deja de estar garantizada (@sec-svar-otros). Los ARMA son más parsimoniosos que los AR, pero su verosimilitud no es lineal en los parámetros y se evalúa con el filtro de Kalman del @sec-estado. En macroeconometría aplicada dominan los AR por tres razones prácticas: se estiman por mínimos cuadrados, se extienden sin cambios a varias variables, y con suficientes rezagos aproximan cualquier secuencia $\psi_j$ que decaiga.
+
+## Estimación {#sec-univariado-estimacion}
+
+### Mínimos cuadrados y verosimilitud
+
+Con errores normales y condicionando en las primeras $p$ observaciones, la log-verosimilitud del AR($p$) es
+
+$$ \ell(\phi, \sigma^2) = -\frac{T - p}{2} \ln(2\pi\sigma^2) - \frac{1}{2\sigma^2} \sum_{t=p+1}^{T} \big(y_t - c - \phi_1 y_{t-1} - \cdots - \phi_p y_{t-p}\big)^2 , $$ {#eq-univariado-verosimilitud}
+
+y maximizarla en los coeficientes es minimizar la suma de cuadrados: **mínimos cuadrados ordinarios es el estimador de máxima verosimilitud condicional**. La verosimilitud exacta agrega la densidad de las primeras $p$ observaciones, que depende de la estacionariedad; la diferencia sólo importa en muestras cortas o cerca de una raíz unitaria, y se calcula con el filtro de Kalman.
+
+Mínimos cuadrados es consistente y asintóticamente normal si el proceso es estable, pero en muestras finitas subestima la persistencia. En un AR(1), el sesgo es aproximadamente $-(1 + 3\phi)/T$ [@kendall1954], el mismo que la [sección 0.11](00-preliminares.qmd#sec-prelim-simulacion) midió por Monte Carlo y por bootstrap. Con $T = 240$ y $\phi = 0.9$ es de dos centésimas, pero crece rápido cuando la muestra se acorta, y por eso las respuestas al impulso de los VAR se corrigen por sesgo [@kilian1998].
+
+El código usa la misma función que el @sec-var para estimar un VAR, con una sola variable. La matriz de regresores, los coeficientes y la varianza residual son exactamente los mismos objetos.
+
+```{python}
+#| label: univariado-mco
+orders = {"crecimiento": 2, "inflación": 3}
+fits = {}
+for name, x in series.items():
+    p = orders[name]
+    fits[name] = var.ols(x.to_numpy().reshape(-1, 1), p)
+    B = fits[name]["B"].ravel()
+    sigma = np.sqrt(fits[name]["Sigma"][0, 0])
+    print(f"{name}: AR({p}), c = {B[0]:.2f}, "
+          f"phi = {np.round(B[1:], 3)}, sigma = {sigma:.2f}")
+```
+
+Los órdenes, dos rezagos para el crecimiento y tres para la inflación, salen de la subsección siguiente. La desviación estándar residual, $\hat{\sigma}$, es un insumo que reaparece: el prior de Minnesota de la @sec-bvar-minnesota la usa para poner en la misma escala las ecuaciones de un VAR.
+
+### Cuántos rezagos {#sec-univariado-rezagos}
+
+Los criterios de información comparan el ajuste con el número de parámetros. Con $\tilde{\sigma}^2_p$ la varianza residual del AR($p$) dividida por $T$,
+
+$$ \text{AIC}(p) = \ln \tilde{\sigma}^2_p + \frac{2(p+1)}{T}, \qquad \text{BIC}(p) = \ln \tilde{\sigma}^2_p + \frac{(p+1)\ln T}{T} , $$ {#eq-univariado-criterios}
+
+y se elige el $p$ que minimiza cada uno. El BIC penaliza más y elige modelos más cortos; es consistente para el orden verdadero, mientras que el AIC tiende a elegir modelos que pronostican mejor en muestras cortas. La regla práctica que más errores evita es comparar todos los órdenes sobre la **misma muestra efectiva**, descartando las primeras $p_{\max}$ observaciones para todos.
+
+```{python}
+#| label: univariado-rezagos
+def criteria(x, p_max=8):
+    y = x.to_numpy().reshape(-1, 1)
+    Y, X_all = var.lag_matrix(y, p_max)     # common sample
+    T = len(Y)
+    rows = []
+    for p in range(p_max + 1):
+        X = X_all[:, :1 + p]
+        e = Y - X @ np.linalg.lstsq(X, Y, rcond=None)[0]
+        s2 = (e ** 2).mean()
+        rows.append({"AIC": np.log(s2) + 2 * (p + 1) / T,
+                     "BIC": np.log(s2)
+                     + (p + 1) * np.log(T) / T})
+    return pd.DataFrame(rows)
+
+
+for name, x in series.items():
+    table = criteria(x)
+    print(f"{name}: AIC elige p = {table['AIC'].idxmin()}, "
+          f"BIC elige p = {table['BIC'].idxmin()}")
+```
+
+Los dos criterios coinciden en las dos series, lo que no siempre ocurre. El @sec-var discute la versión multivariada y qué criterio conviene según el objetivo (@sec-var-otros).
+
+### Lo que dicen los modelos estimados {#sec-univariado-memoria-estimada}
+
+```{python}
+#| label: univariado-raices
+#| include: false
+est = {}
+for name, fit in fits.items():
+    p = fit["p"]
+    lam = var.roots(fit["B"], 1, p)
+    rho_sum = fit["B"][1:, 0].sum()
+    psi = var.ma_weights(fit["B"], 1, p, 40)[:, 0, 0]
+    est[name] = {"max": f"{np.abs(lam).max():.2f}",
+                 "rho": f"{rho_sum:.2f}",
+                 "lr": f"{1 / (1 - rho_sum):.2f}",
+                 "psi2": f"{psi[2]:.2f}",
+                 "psi8": f"{psi[8]:.2f}",
+                 "psi20": f"{psi[20]:.2f}",
+                 "sigma": f"{np.sqrt(fit['Sigma'][0, 0]):.1f}",
+                 "level": f"{0.25 / (1 - rho_sum):.2f}"}
+g, pi = est["crecimiento"], est["inflación"]
+```
+
+Los dos modelos son estables, pero con márgenes muy distintos. El mayor valor propio de la matriz companion mide `{python} g["max"]` en el crecimiento y `{python} pi["max"]` en la inflación, y la suma de coeficientes es `{python} g["rho"]` y `{python} pi["rho"]`. La @fig-univariado-irf muestra lo que eso significa: tras un choque, el crecimiento conserva `{python} g["psi2"]` de su efecto a los dos trimestres y prácticamente nada a los dos años; la inflación conserva `{python} pi["psi8"]` a los dos años y `{python} pi["psi20"]` a los cinco.
+
+```{python}
+#| label: fig-univariado-irf
+#| fig-cap: "Pesos de Wold $\\psi_j$ de los modelos estimados: la respuesta de cada serie a un choque de una unidad en el trimestre 0. El crecimiento olvida el choque en un año; la inflación lo arrastra por varios."
+horizon = np.arange(21)
+fig, ax = plt.subplots(figsize=figsize(0.40))
+for k, (name, fit) in enumerate(fits.items()):
+    psi = var.ma_weights(fit["B"], 1, fit["p"], 20)[:, 0, 0]
+    ax.plot(horizon, psi, color=PALETTE["shocks"][k],
+            ls=PALETTE["shock_linestyle"][k], lw=1.3,
+            marker="o", ms=2.5, label=name)
+charts.zero_line(ax)
+ax.set_xticks(range(0, 21, 4))
+ax.set_xlabel("trimestres después del choque")
+charts.legend_outside(ax, ncol=2)
+plt.show()
+```
+
+La @eq-univariado-largo-plazo da la otra lectura. En el crecimiento, el efecto acumulado de un choque es `{python} g["lr"]` veces el impacto. Como la serie es la tasa anualizada, un choque que la sube un punto eleva el nivel del PBI en 0.25 % al impacto y, si el crecimiento es de verdad un AR estacionario, en `{python} g["level"]` % para siempre. El nivel no vuelve a su senda anterior: eso es una raíz unitaria en el nivel, y que el efecto permanente supere al del impacto es el hallazgo de @campbell1987. En la inflación el acumulado es `{python} pi["lr"]`: con una suma de coeficientes tan cerca de uno, el efecto de largo plazo es grande y además muy impreciso, porque pequeños cambios en $\rho$ mueven mucho $1/(1-\rho)$.
 
 ### Estimación bayesiana {#sec-univariado-bayes}
 
@@ -156,36 +411,285 @@ El muestreador de Gibbs cambia un problema difícil, extraer de una distribució
 El @sec-bayes trata lo que queda fuera de esta sección: el algoritmo de Metropolis-Hastings, el diagnóstico de convergencia de las cadenas y la elección de los priors.
 
 
-## Selección de rezagos
+## Raíces unitarias {#sec-univariado-raices}
 
-*Por escribir:* AIC, BIC y validación fuera de muestra: tres criterios que rara vez coinciden.
+El caso límite de la persistencia es la **caminata aleatoria**, $y_t = y_{t-1} + \varepsilon_t$, un AR(1) con $\phi = 1$ cuya raíz está exactamente en el círculo unitario. Tres propiedades la separan de un AR estable. Su varianza crece con el tiempo, $\operatorname{Var}(y_t \mid y_0) = t\sigma^2$, de modo que no tiene media ni varianza incondicionales. Sus pesos de Wold son todos iguales a uno: cada choque es permanente. Y su mejor pronóstico, a cualquier horizonte, es el último dato. La serie en diferencias, $\Delta y_t = \varepsilon_t$, sí es estacionaria, y por eso se dice que la caminata es integrada de orden uno, I(1).
 
-## Raíces unitarias
+Las tres propiedades vuelven más adelante. El prior de Minnesota de la @sec-bvar-minnesota centra cada ecuación de un VAR en una caminata aleatoria, porque las series macroeconómicas en niveles suelen comportarse casi como una. Y el último dato es el pronóstico contra el que se compara cualquier modelo (@sec-univariado-pronostico).
 
-*Por escribir:* Dickey-Fuller aumentado, potencia baja y la decisión de diferenciar.
+Para el PBI, la pregunta tiene contenido económico. Si el logaritmo del PBI es **estacionario alrededor de una tendencia**, una recesión es una desviación transitoria y la economía vuelve a su senda; si tiene una **raíz unitaria**, parte de la caída es permanente. @nelson1982 encontraron que la mayoría de las series macroeconómicas de Estados Unidos no permiten rechazar la raíz unitaria, y el @sec-tendencias muestra cuánto depende de esa elección la medición del ciclo.
 
-## Pronóstico y evaluación
+La prueba estándar es la de Dickey y Fuller aumentada (ADF). Se estima
 
-*Por escribir:* pronóstico a h pasos, intervalos y comparación contra la caminata aleatoria.
+$$ \Delta y_t = \alpha + \delta t + \gamma\, y_{t-1} + \sum_{i=1}^{k} \beta_i\, \Delta y_{t-i} + \varepsilon_t $$ {#eq-univariado-adf}
 
-## Diagnósticos
+y se contrasta $H_0: \gamma = 0$ (raíz unitaria) contra $\gamma < 0$ (estacionaria). Los rezagos de $\Delta y_t$ absorben la autocorrelación restante, y la tendencia $\delta t$ se incluye cuando la alternativa es la estacionariedad alrededor de una tendencia. Bajo la hipótesis nula el estadístico $t$ de $\gamma$ no tiene distribución normal sino la de @dickey1979, con valores críticos más negativos: al 5 %, cerca de $-2.87$ con constante y $-3.43$ con constante y tendencia.
 
-*Por escribir:* residuos, estabilidad de parámetros y qué hacer cuando fallan.
+```{python}
+#| label: tbl-univariado-adf
+#| tbl-cap: "Pruebas ADF, 1960T1-2019T4. Los rezagos de la regresión los elige el AIC; el valor p es el de MacKinnon."
+from statsmodels.tsa.stattools import adfuller
 
+log_gdp = np.log(gdp["1960":"2019"])
+tests = [("log PBI", log_gdp, "ct"),
+         ("inflación", infl, "c"),
+         ("crecimiento", growth, "c")]
+terms = {"ct": "constante y tendencia", "c": "constante"}
+rows = []
+for name, x, regression in tests:
+    stat, pvalue, k, *_ = adfuller(x, regression=regression,
+                                   autolag="AIC")
+    rows.append({"serie": name, "términos": terms[regression],
+                 "estadístico": round(stat, 2),
+                 "valor p": round(pvalue, 3), "rezagos": k})
+pd.DataFrame(rows).set_index("serie")
+```
+
+Según la @tbl-univariado-adf, el logaritmo del PBI no permite rechazar la raíz unitaria, el crecimiento la rechaza con holgura, y la inflación queda al borde del 5 %. Ese último resultado es el típico, y para interpretarlo hay que saber cuánto puede ver la prueba. La @fig-univariado-potencia simula series AR(1) estacionarias con distintos valores de $\phi$ y cuenta en qué fracción de los casos la prueba rechaza correctamente la raíz unitaria.
+
+```{python}
+#| label: fig-univariado-potencia
+#| fig-cap: "Potencia de la prueba de Dickey-Fuller al 5 % (con constante): fracción de series AR(1) estacionarias en las que se rechaza la raíz unitaria, con 1000 simulaciones por punto. Con 60 años de datos trimestrales, una serie con $\\phi = 0.95$ se confunde con una caminata aleatoria alrededor de la mitad de las veces."
+from statsmodels.tsa.adfvalues import mackinnoncrit
+
+
+def df_stat(paths):
+    """Dickey-Fuller t statistic (constant, no lags), by row."""
+    dy, lag = np.diff(paths, axis=1), paths[:, :-1]
+    out = np.empty(len(paths))
+    for r in range(len(paths)):
+        X = np.column_stack([np.ones(lag.shape[1]), lag[r]])
+        b, ssr, *_ = np.linalg.lstsq(X, dy[r], rcond=None)
+        s2 = ssr[0] / (len(dy[r]) - 2)
+        se = np.sqrt(s2 * np.linalg.inv(X.T @ X)[1, 1])
+        out[r] = b[1] / se
+    return out
+
+
+def simulate_ar1_paths(phi, T, reps, rng, burn=100):
+    e = rng.standard_normal((reps, T + burn))
+    y = np.zeros_like(e)
+    for t in range(1, T + burn):
+        y[:, t] = phi * y[:, t - 1] + e[:, t]
+    return y[:, burn:]
+
+
+rng = np.random.default_rng(12)
+phis = np.round(np.arange(0.80, 1.001, 0.01), 2)
+power = {}
+for T in (80, 240):
+    critical = mackinnoncrit(N=1, regression="c", nobs=T)[1]
+    power[T] = [(df_stat(simulate_ar1_paths(f, T, 1000, rng))
+                 < critical).mean() for f in phis]
+
+fig, ax = plt.subplots(figsize=figsize(0.40))
+for k, T in enumerate(power):
+    ax.plot(phis, power[T], color=PALETTE["shocks"][k],
+            ls=PALETTE["shock_linestyle"][k], lw=1.3,
+            label=f"T = {T} ({T // 4} años)")
+ax.axhline(0.05, color=PALETTE["muted"], lw=0.8, ls=(0, (2, 2)))
+ax.set_xlabel("$\\phi$ verdadero")
+ax.set_ylabel("rechazos de $H_0$")
+charts.legend_outside(ax, ncol=2)
+plt.show()
+```
+
+```{python}
+#| label: univariado-potencia-numeros
+#| include: false
+at = {T: dict(zip(phis, power[T])) for T in power}
+pw = {"95_240": f"{100 * at[240][0.95]:.0f}",
+      "98_240": f"{100 * at[240][0.98]:.0f}",
+      "90_80": f"{100 * at[80][0.90]:.0f}"}
+```
+
+Con 240 trimestres, una serie con $\phi = 0.95$ se detecta como estacionaria sólo en `{python} pw["95_240"]` % de los casos, y una con $\phi = 0.98$ en `{python} pw["98_240"]` %; con 20 años de datos, incluso $\phi = 0.9$ se detecta en apenas `{python} pw["90_80"]` %. Una prueba con tan poca potencia no puede cargar sola con la decisión.
+
+::: {.cuidado}
+No rechazar la raíz unitaria no prueba que exista: cerca de uno, la prueba casi no distingue entre una memoria larga y una infinita. La decisión de diferenciar es, en parte, económica. La inflación bajo una meta creíble no debería tener raíz unitaria aunque la prueba no lo confirme, y el nivel de precios sí la tiene aunque se estime en niveles. El @sec-var estima en niveles y explica por qué (@sec-var-otros).
+:::
+
+## Pronóstico {#sec-univariado-pronostico}
+
+Bajo pérdida cuadrática, el mejor pronóstico es la esperanza condicional, y en un AR($p$) se obtiene iterando el modelo con los choques futuros en cero, que es iterar la forma companion. La @eq-univariado-wold da el error: el pronóstico a $h$ periodos se equivoca por los choques que todavía no llegaron,
+
+$$ y_{T+h} - \hat{y}_{T+h|T} = \sum_{j=0}^{h-1} \psi_j\, \varepsilon_{T+h-j}, \qquad \operatorname{ECM}_h = \sigma^2 \sum_{j=0}^{h-1} \psi_j^2 . $$ {#eq-univariado-ecm}
+
+A medida que $h$ crece, el pronóstico converge a la media $\mu$ y el error cuadrático medio a la varianza incondicional $\gamma_0$: a horizontes largos, un modelo estable no sabe nada más que el promedio. Es el @alg-pronostico del @sec-var con una sola variable, y la misma función lo calcula.
+
+La @fig-univariado-pronostico pone a prueba el modelo de inflación con un caso difícil: el pronóstico hecho a fines de 2019 para los cuatro años siguientes.
+
+```{python}
+#| label: fig-univariado-pronostico
+#| fig-cap: "Inflación PCE: pronóstico del AR(3) estimado con datos hasta 2019T4, con intervalo al 95 %, y los datos observados de 2020 a 2023, que no entraron en la estimación. La línea punteada es la media del modelo."
+fit = fits["inflación"]
+y_in = infl.to_numpy().reshape(-1, 1)
+h = 16
+path, variance = var.forecast(y_in, fit["B"], fit["Sigma"],
+                              fit["p"], h)
+path, sd = path[:, 0], np.sqrt(variance[:, 0])
+realized = infl_all["2020Q1":"2023Q4"]
+outside = (np.abs(realized.to_numpy() - path) > 1.96 * sd)
+mu_infl = var.unconditional_mean(fit["B"], 1, fit["p"])[0]
+
+hist = infl["2014":]
+hist_dates = hist.index.to_timestamp(how="end")
+fc_dates = realized.index.to_timestamp(how="end")
+edge = np.r_[hist_dates[-1:], fc_dates]
+last = y_in[-1, 0]
+bands = [(np.r_[last, path - 1.96 * sd],
+          np.r_[last, path + 1.96 * sd])]
+
+fig, ax = plt.subplots(figsize=figsize(0.42))
+charts.fan_chart(ax, hist_dates, hist, edge, bands,
+                 np.r_[last, path], realized=realized,
+                 dates_realized=fc_dates,
+                 band_labels=["IC 95 %"])
+ax.axhline(mu_infl, color=PALETTE["accent"], lw=0.9,
+           ls=(0, (1, 2)))
+ax.set_ylabel("%")
+charts.legend_outside(ax, ncol=4)
+plt.show()
+```
+
+```{python}
+#| label: univariado-pronostico-numeros
+#| include: false
+out_q = [str(q).replace("Q", "T")
+         for q in realized.index[outside]]
+fc = {"mu": f"{mu_infl:.1f}", "first": f"{path[0]:.1f}",
+      "last": f"{path[-1]:.1f}", "n_out": f"{outside.sum()}",
+      "peak": f"{realized.max():.1f}",
+      "peak_q": str(realized.idxmax()).replace("Q", "T"),
+      "hi_peak": f"{(path + 1.96 * sd)[realized.argmax()]:.1f}",
+      "out_list": ", ".join(out_q)}
+```
+
+El pronóstico sube lentamente de `{python} fc["first"]` % a `{python} fc["last"]` %, atraído por la media del modelo, `{python} fc["mu"]` %, que promedia los años setenta con las décadas de inflación baja. La inflación real hizo algo que el modelo consideraba muy improbable: `{python} fc["n_out"]` de los 16 trimestres quedaron fuera del intervalo (`{python} fc["out_list"]`), y en `{python} fc["peak_q"]` llegó a `{python} fc["peak"]` %, por encima del límite superior de `{python} fc["hi_peak"]` %. El intervalo no es malo por construcción: supone que los coeficientes y la varianza de 1960-2019 siguen vigentes, y ese supuesto es el que fallaron la pandemia y el alza de precios que siguió. Los modelos con volatilidad y parámetros cambiantes de los capítulos [-@sec-volatilidad] y [-@sec-tvp] existen para relajarlo.
+
+### La caminata aleatoria como rival
+
+Un pronóstico sólo es bueno en comparación con otro. El rival natural es la caminata aleatoria, que pronostica el último dato a cualquier horizonte, y para la inflación una variante más fuerte: el promedio de los últimos cuatro trimestres, con el que @atkeson2001 mostraron que casi ningún modelo de la curva de Phillips mejoraba el pronóstico de la inflación de Estados Unidos. Para el crecimiento, cuya memoria es corta, el rival sensato es la media histórica.
+
+La comparación honesta es **pseudo fuera de muestra**: en cada trimestre desde 1985 se reestima el modelo sólo con los datos disponibles hasta ese momento, se pronostica, y se guarda el error. La @tbl-univariado-evaluacion reporta la raíz del error cuadrático medio (RECM) de cada pronóstico dividida por la de la caminata aleatoria.
+
+```{python}
+#| label: tbl-univariado-evaluacion
+#| tbl-cap: "RECM pseudo fuera de muestra, 1985-2019, relativa a la de la caminata aleatoria, por horizonte en trimestres. Un valor menor que uno significa que el pronóstico le gana a la caminata."
+def evaluate(x, p, start="1985Q1", horizons=(1, 4, 8)):
+    """Recursive pseudo out-of-sample RMSE relative to RW."""
+    values = x.to_numpy()
+    first = x.index.get_loc(pd.Period(start, "Q"))
+    errors = {h: {"AR": [], "prom. 4 trim.": [], "media": [],
+                  "caminata": []} for h in horizons}
+    for t in range(first - 1, len(values) - 1):
+        y = values[:t + 1].reshape(-1, 1)
+        fit = var.ols(y, p)
+        path, _ = var.forecast(y, fit["B"], fit["Sigma"], p,
+                               max(horizons))
+        for h in horizons:
+            if t + h >= len(values):
+                continue
+            actual = values[t + h]
+            errors[h]["AR"].append(actual - path[h - 1, 0])
+            errors[h]["prom. 4 trim."].append(
+                actual - y[-4:, 0].mean())
+            errors[h]["media"].append(actual - y[:, 0].mean())
+            errors[h]["caminata"].append(actual - y[-1, 0])
+    table = {}
+    for h in horizons:
+        rmse = {k: np.sqrt(np.mean(np.square(v)))
+                for k, v in errors[h].items()}
+        table[f"h = {h}"] = {k: rmse[k] / rmse["caminata"]
+                             for k in rmse if k != "caminata"}
+    return pd.DataFrame(table)
+
+
+ratios = pd.concat({name: evaluate(x, orders[name])
+                    for name, x in series.items()})
+ratios.round(2)
+```
+
+```{python}
+#| label: univariado-evaluacion-numeros
+#| include: false
+r = ratios.round(2)
+
+
+def cell(series_name, model, h):
+    return r.loc[(series_name, model), f"h = {h}"]
+
+
+ev = {"g_ar1": f"{cell('crecimiento', 'AR', 1):.2f}",
+      "g_ar8": f"{cell('crecimiento', 'AR', 8):.2f}",
+      "g_mean8": f"{cell('crecimiento', 'media', 8):.2f}",
+      "p_ar1": f"{cell('inflación', 'AR', 1):.2f}",
+      "p_ar4": f"{cell('inflación', 'AR', 4):.2f}",
+      "p_ao4": f"{cell('inflación', 'prom. 4 trim.', 4):.2f}",
+      "p_mean4": f"{cell('inflación', 'media', 4):.2f}",
+      "p_gain1": f"{100 - 100 * cell('inflación', 'AR', 1):.0f}"}
+```
+
+Las dos series cuentan historias distintas. En el crecimiento, el AR le gana con holgura a la caminata aleatoria (`{python} ev["g_ar1"]` a un trimestre, `{python} ev["g_ar8"]` a ocho), pero a dos años empata con la media histórica (`{python} ev["g_mean8"]`): cuando la memoria es corta, pronosticar consiste sobre todo en volver al promedio. En la inflación, el AR mejora a la caminata en apenas `{python} ev["p_gain1"]` % a un trimestre (`{python} ev["p_ar1"]`), y a un año el promedio de cuatro trimestres le gana al AR (`{python} ev["p_ao4"]` contra `{python} ev["p_ar4"]`), mientras que la media histórica es peor que la caminata (`{python} ev["p_mean4"]`). Es el resultado de @atkeson2001, y @stockwatson2007 lo explicaron: desde mediados de los ochenta, la inflación de Estados Unidos se parece a un componente permanente que se mueve lentamente más un ruido transitorio, y para esa estructura un promedio de los datos recientes es casi el pronóstico óptimo.
+
+::: {.intuicion}
+El rival a vencer depende de la memoria de la serie. Si es corta, el rival es la media; si es muy larga, el último dato. Un modelo que no le gana al rival correcto no está aportando información, y todo modelo de pronóstico del libro se evalúa así. El @sec-pronostico formaliza la comparación, con pruebas para decidir si una diferencia de RECM es estadísticamente distinta de cero.
+:::
+
+## Otros temas {#sec-univariado-otros}
+
+### Diagnóstico de residuos
+
+```{python}
+#| label: univariado-diagnostico
+#| include: false
+from statsmodels.stats.diagnostic import acorr_ljungbox
+
+diag = {}
+for key, name in [("g", "crecimiento"), ("p", "inflación")]:
+    resid = fits[name]["residuals"][:, 0]
+    test = acorr_ljungbox(resid, lags=[8],
+                          model_df=fits[name]["p"])
+    diag[key] = f"{test['lb_pvalue'].iloc[0]:.2f}"
+```
+
+Si el modelo capturó toda la memoria, los residuos no deberían estar autocorrelacionados. La prueba de Ljung y Box acumula las autocorrelaciones residuales al cuadrado hasta un rezago $m$ y las compara con una $\chi^2$; ante autocorrelación, lo primero es agregar rezagos. Los residuos de ambos modelos pasan la prueba a ocho rezagos (valores p de `{python} diag["g"]` y `{python} diag["p"]`). La heterocedasticidad condicional, varianza que cambia con el tiempo, es otra cosa: se detecta con la prueba ARCH de @engle1982 y se modela en el @sec-volatilidad.
+
+
+### Parámetros que cambian
+
+```{python}
+#| label: univariado-quiebre
+#| include: false
+halves = {}
+periods = [("pre", "1960", "1983"), ("post", "1984", "2019")]
+for label, a, b in periods:
+    part = infl[a:b].to_numpy().reshape(-1, 1)
+    halves[label] = f"{var.ols(part, 3)['B'][1:, 0].sum():.2f}"
+```
+
+Todo el capítulo supone que los coeficientes son los mismos en toda la muestra, y en la inflación no lo son. La suma de coeficientes del AR(3) es `{python} halves["pre"]` entre 1960 y 1983 y `{python} halves["post"]` entre 1984 y 2019: la inflación perdió buena parte de su memoria cuando la política monetaria cambió. Si esa caída es un quiebre, una deriva gradual o un efecto de la menor volatilidad de los choques es una pregunta abierta [@cogley2005], y es el tema del @sec-tvp.
+
+### Identificación de Box y Jenkins
+
+La metodología de @boxjenkins1970 elige el orden de un ARMA mirando la función de autocorrelación y la autocorrelación parcial: un AR($p$) tiene autocorrelación parcial nula después de $p$, un MA($q$) tiene autocorrelación nula después de $q$. Fue el método estándar antes de que los criterios de información se volvieran baratos de calcular, y sigue siendo útil como diagnóstico visual.
 
 ## Ideas clave {.unnumbered}
 
 ::: {.ideas-clave}
-1. Un AR(p) bien especificado ya es un pronosticador difícil de batir a horizontes cortos.
-2. Las pruebas de raíz unitaria tienen poca potencia: la decisión de diferenciar es, en parte, una decisión económica.
-3. Todo lo multivariado del libro es una extensión de este capítulo; conviene tener la intuición univariada firme.
+1. La memoria de una serie se lee en su autocorrelación y en las raíces de su polinomio de rezagos. En Estados Unidos, la del crecimiento del PBI dura pocos trimestres; la de la inflación, años.
+2. Un AR($p$) es un VAR con una variable. Su forma companion, su condición de estabilidad (valores propios dentro del círculo unitario) y sus pesos de Wold son los mismos objetos que el @sec-var usa con matrices.
+3. Los pesos de Wold son a la vez la respuesta al impulso y el ingrediente del error de pronóstico; su suma, $1/(1-\rho)$, es el efecto de largo plazo de un choque.
+4. Mínimos cuadrados es máxima verosimilitud condicional y subestima la persistencia en muestras cortas. Su varianza residual es un insumo del prior de Minnesota.
+5. Las pruebas de raíz unitaria tienen poca potencia cerca de uno: no rechazar no prueba una raíz unitaria, y la decisión de diferenciar es en parte económica.
+6. La caminata aleatoria, o el promedio de los últimos trimestres, es muy difícil de batir para la inflación. Todo modelo de pronóstico debe compararse contra el rival que corresponde a la memoria de la serie.
 :::
 
 ## Lecturas recomendadas {.unnumbered}
 
 ::: {.lecturas}
-Hamilton (1994), caps. 3-5
-:   el tratamiento de referencia de los procesos ARMA.
+Hamilton (1994), caps. 3-5 y 17
+:   el tratamiento de referencia de los procesos ARMA, de su estimación y de las raíces unitarias.
 
 Box y Jenkins (1970)
 :   la metodología original de identificación, estimación y diagnóstico.
@@ -193,19 +697,21 @@ Box y Jenkins (1970)
 Dickey y Fuller (1979)
 :   la distribución del estimador bajo raíz unitaria.
 
+Atkeson y Ohanian (2001); Stock y Watson (2007)
+:   por qué la inflación de Estados Unidos es tan difícil de pronosticar mejor que con un promedio de los datos recientes.
+
 Gelman et al. (2013)
 :   [*Bayesian Data Analysis*](https://sites.stat.columbia.edu/gelman/book/), gratuito en línea; el tratamiento de referencia de la inferencia bayesiana y del muestreo de Gibbs.
-
 :::
 
 ## Ejercicios {.unnumbered}
 
 ::: {#exr-univariado-1}
-Estime un AR(4) para la inflación y compare su RECM fuera de muestra con la de una caminata aleatoria a horizontes 1, 4 y 8.
+Repita la evaluación de la @sec-univariado-pronostico con ventanas móviles de 20 años en lugar de recursivas. ¿Mejora el AR frente al promedio de cuatro trimestres? Relacione el resultado con la caída de la persistencia después de 1984.
 :::
 
 ::: {#exr-univariado-2}
-Simule 500 series de un AR(1) con coeficiente 0.95 y T = 80. ¿En qué fracción de los casos el ADF rechaza la raíz unitaria?
+Simule 500 series de un AR(1) con coeficiente 0.95 y $T = 80$. ¿En qué fracción de los casos rechaza la prueba ADF la raíz unitaria? Repita con $T = 400$ y compare con la @fig-univariado-potencia.
 :::
 
 ::: {#exr-univariado-3}
@@ -214,4 +720,12 @@ Repita el muestreador de Gibbs de la @sec-univariado-bayes con un prior para $\p
 
 ::: {.solucion}
 Con el prior centrado en cero la media posterior de $\phi$ queda por debajo de la estimación de mínimos cuadrados, porque el prior empuja hacia la ausencia de persistencia; con el prior centrado en uno queda por encima. La media del prior es el papel de $\delta_i$, que fija hacia qué valor se encoge el primer rezago propio, y el desvío es el de $\lambda_1$, que fija con cuánta fuerza. Con las 79 observaciones del texto la media posterior pasa de 0.877 a 0.852, una diferencia de dos centésimas y media; con sólo las primeras 30 la diferencia supera las ocho centésimas, porque el prior pesa más cuando los datos informan menos.
+:::
+
+::: {#exr-univariado-4}
+Elija $\phi_1$ y $\phi_2$ para que el AR(2) tenga raíces complejas con módulo 0.9 (pista: los valores propios de $F$ son $0.9\,e^{\pm i\theta}$, de modo que $\phi_1 = 1.8\cos\theta$ y $\phi_2 = -0.81$). Grafique $\psi_j$ para $\theta = \pi/10$ y compruebe que la respuesta oscila con un periodo de $2\pi/\theta = 20$ trimestres, el largo típico de un ciclo económico.
+:::
+
+::: {#exr-univariado-5}
+Aplique la prueba ADF a la inflación por separado en 1960-1983 y en 1984-2019. ¿Cambia la conclusión? Discuta si una prueba con la potencia de la @fig-univariado-potencia puede distinguir entre las dos submuestras.
 :::
