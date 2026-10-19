@@ -19,12 +19,12 @@
 | Desempleo ($u_t$) | BLS | trimestral | tasa civil, promedio del trimestre |
 | Tasa de fondos federales ($R_t$) | Reserva Federal | trimestral | promedio del trimestre |
 
-Los datos de Estados Unidos entre 1960Q1 y 2000Q4 son los del material de replicación de @stock2001: `data/raw/SW2001_Data.xlsx`. El @sec-svar-largo-plazo usa además la muestra de @blanchard1989 (`data/raw/BQ1989_Data.xlsx`). Ambos CSV los construye `code/python/build_us_data.py`.
+Los datos de Estados Unidos entre 1960T1 y 2000T4 son los del material de replicación de @stock2001: `data/raw/SW2001_Data.xlsx`. La @sec-svar-largo-plazo usa además la muestra de @blanchard1989 (`data/raw/BQ1989_Data.xlsx`). Ambos CSV los construye `code/python/build_us_data.py`.
 :::
 
 ## De los residuos a los choques {#sec-svar-choques}
 
-El @sec-var terminó en un callejón deliberado. La forma reducida describe bien la dinámica conjunta, pronostica de manera razonable y no permite responder la pregunta que interesa a quien decide la política: qué pasa con la inflación y el producto si la tasa sube por una decisión propia del banco central y no como respuesta a lo que el banco central observa. El obstáculo es que los residuos $\mathbf{u}_t$ son errores de pronóstico correlacionados entre sí, no experimentos.
+El @sec-var terminó en un callejón deliberado. La forma reducida describe bien la dinámica conjunta, pronostica de manera razonable y no permite responder la pregunta que interesa a quien decide la política: qué pasa con la inflación y el desempleo si la tasa sube por una decisión propia del banco central y no como respuesta a lo que el banco central observa. El obstáculo es que los residuos $\mathbf{u}_t$ son errores de pronóstico correlacionados entre sí, no experimentos.
 
 La salida es suponer que esas sorpresas observadas son combinaciones lineales de un número igual de choques no observados con significado económico.
 
@@ -44,7 +44,7 @@ Sustituyendo el supuesto en la forma reducida,
 
 $$ \mathbf{y}_t = c + \Phi_1 \mathbf{y}_{t-1} + \cdots + \Phi_p \mathbf{y}_{t-p} + S \varepsilon_t . $$ {#eq-svar}
 
-La @eq-svar es el VAR estructural. Tiene dos piezas con estatus distinto. Las matrices $\Phi_\ell$ son la **dinámica**, y se estiman por mínimos cuadrados como en el @sec-var-mco. La matriz $S$ es el **impacto**, no se estima con los datos solos y es donde entra la economía.
+La @eq-svar es el VAR estructural. Tiene dos piezas con estatus distinto. Las matrices $\Phi_\ell$ son la **dinámica**, y se estiman por mínimos cuadrados como en la @sec-var-mco. La matriz $S$ es el **impacto**, no se estima con los datos solos y es donde entra la economía.
 
 ::: {.intuicion}
 El SVAR puede leerse como una aproximación lineal a la solución de un modelo estructural: la dinámica resume cómo se propagan las perturbaciones y la matriz de impacto dice quién empuja a quién en el momento cero. La diferencia con un DSGE es de dónde vienen las restricciones: allá, de la forma completa del modelo; aquí, de unos pocos supuestos que se declaran uno por uno.
@@ -78,7 +78,7 @@ Las secciones siguientes recorren los tres esquemas más usados: restricciones d
 
 ### El sistema de trabajo
 
-El @sec-var trabajó con datos peruanos para mostrar cómo se estima y se pronostica un VAR. Para el análisis estructural conviene un sistema con historia publicada, donde los resultados se puedan contrastar con los de otros, así que este capítulo replica el ejemplo de @stock2001: inflación, desempleo y tasa de fondos federales de Estados Unidos, datos trimestrales de 1960Q1 a 2000Q4, cuatro rezagos. Los ejercicios del final vuelven sobre los datos peruanos.
+El sistema es el del @sec-var, el ejemplo de @stock2001: inflación, desempleo y tasa de fondos federales de Estados Unidos, datos trimestrales de 1960T1 a 2000T4, cuatro rezagos. Mantenerlo tiene una ventaja para el análisis estructural: cada resultado se puede contrastar con una cifra publicada. El @exr-svar-5 lleva el análisis a los datos peruanos del @exr-var-7.
 
 ```{python}
 #| label: svar-setup
@@ -105,8 +105,18 @@ print("módulo máximo de las raíces:", max_root.round(3))
 ```
 
 ```{python}
+#| include: false
+def num(x, d=2):
+    """Format x with a real minus sign for the prose."""
+    return f"{x:.{d}f}".replace("-", "−")
+
+assert 0.9 < max_root < 1
+f = {"max_root": num(max_root)}
+```
+
+```{python}
 #| label: fig-svar-datos
-#| fig-cap: "Las tres series del sistema de Stock y Watson (2001), 1960Q1 a 2000Q4."
+#| fig-cap: "Las tres series del sistema de Stock y Watson (2001), 1960T1 a 2000T4."
 import matplotlib.pyplot as plt
 
 from macrobook import use_style, figsize, PALETTE, charts
@@ -117,7 +127,7 @@ labels = ["inflación (%)", "desempleo (%)",
           "fondos federales (%)"]
 names = ["inflación", "desempleo", "tasa"]
 
-size = figsize(0.62)
+size = figsize(0.72)
 fig, axes = plt.subplots(3, 1, sharex=True, figsize=size)
 for ax, column, label in zip(axes, order, labels):
     ax.plot(dates, sample[column], color=PALETTE["ink"], lw=1.0)
@@ -125,7 +135,7 @@ for ax, column, label in zip(axes, order, labels):
 plt.show()
 ```
 
-La muestra cubre la Gran Inflación de los años setenta, la desinflación de Volcker y la larga expansión de los noventa. El módulo máximo de las raíces, 0.97, avisa de entrada que el sistema es muy persistente: las respuestas van a decaer despacio y las bandas a horizontes largos serán anchas.
+La muestra cubre la Gran Inflación de los años setenta, la desinflación de Volcker y la larga expansión de los noventa. El módulo máximo de las raíces, `{python} f["max_root"]`, avisa de entrada que el sistema es muy persistente: las respuestas van a decaer despacio y las bandas a horizontes largos serán anchas.
 
 La matriz de covarianzas de los residuos vuelve a ser el objeto central. Conviene mirarla en correlaciones, que se leen más rápido.
 
@@ -135,7 +145,16 @@ corr = np.corrcoef(fit["residuals"].T)
 pd.DataFrame(corr.round(2), index=order, columns=order)
 ```
 
-La correlación relevante es la de $-0.45$ entre la sorpresa de desempleo y la sorpresa de tasa: cuando el desempleo sorprende al alza, la tasa sorprende a la baja. Eso es exactamente lo que se espera de una regla de política que reacciona al ciclo, y es también la razón por la que esa correlación no se puede leer como el efecto de la política sobre el desempleo.
+```{python}
+#| include: false
+off = {(0, 1): corr[0, 1], (0, 2): corr[0, 2],
+       (1, 2): corr[1, 2]}
+assert max(off, key=lambda ij: abs(off[ij])) == (1, 2)
+assert corr[1, 2] < 0
+f["rho_uR"] = num(corr[1, 2])
+```
+
+La correlación relevante es la de `{python} f["rho_uR"]` entre la sorpresa de desempleo y la sorpresa de tasa: cuando el desempleo sorprende al alza, la tasa sorprende a la baja. Eso es exactamente lo que se espera de una regla de política que reacciona al ciclo, y es también la razón por la que esa correlación no se puede leer como el efecto de la política sobre el desempleo.
 
 ## Identificación recursiva {#sec-svar-cholesky}
 
@@ -154,7 +173,9 @@ $$
 \begin{bmatrix} \varepsilon_{1,t} \\ \varepsilon_{2,t} \\ \varepsilon_{3,t}^{\,\text{pol}} \end{bmatrix}.
 $$ {#eq-svar-cholesky}
 
-Los tres ceros son exactamente las $n(n-1)/2 = 3$ restricciones que faltaban, y dicen dos cosas distintas. Hacia abajo: la tasa de fondos federales responde dentro del trimestre a la inflación y al desempleo, que es lo que hace un banco central que mira los datos al decidir. Hacia arriba: el choque de política no mueve la inflación ni el desempleo dentro del mismo trimestre, porque los precios y las decisiones de gasto y contratación tardan en reaccionar. El supuesto es fuerte en frecuencia mensual y bastante cómodo en frecuencia trimestral.
+Los tres ceros son exactamente las $n(n-1)/2 = 3$ restricciones que faltaban, y dicen dos cosas distintas. Hacia abajo: la tasa de fondos federales responde dentro del trimestre a la inflación y al desempleo, que es lo que hace un banco central que mira los datos al decidir. Hacia arriba: el choque de política no mueve la inflación ni el desempleo dentro del mismo trimestre, porque los precios y las decisiones de gasto y contratación tardan en reaccionar.
+
+Las dos mitades le piden cosas opuestas a la frecuencia de los datos. La segunda es más creíble cuanto más corto el período: que la política no toque los precios durante un mes es más fácil de aceptar que durante tres. La primera funciona al revés: dentro de un mes el banco central todavía no conoce la inflación ni el desempleo de ese mes, y dentro de un trimestre ya conoce buena parte. Con datos trimestrales, como aquí, la mitad que hay que defender es la segunda.
 
 ::: {#prp-cholesky}
 ## Identificación recursiva
@@ -191,7 +212,13 @@ np.allclose(S, S_package)
 ```
 :::
 
-La tercera columna es el choque de política: eleva la tasa de fondos federales en 0.78 puntos porcentuales en el trimestre del choque y, por construcción, no toca a la inflación ni al desempleo en ese momento. El elemento $s_{32} = -0.40$ es el que da contenido al orden: ante un choque de desempleo, la tasa baja cuatro décimas dentro del mismo trimestre. Los dos primeros choques llevan el nombre de la variable que encabezan, no el de una interpretación económica, y conviene que sea así: el orden elegido identifica con un argumento defendible el choque de política, y deja a los otros dos como las combinaciones que quedan. Ponerles nombre de choque de oferta o de demanda exigiría un argumento adicional que este esquema no aporta.
+```{python}
+#| include: false
+assert S[2, 1] < 0
+f.update({"s33": num(S[2, 2]), "s32": num(S[2, 1])})
+```
+
+La tercera columna es el choque de política: eleva la tasa de fondos federales en `{python} f["s33"]` puntos porcentuales en el trimestre del choque y, por construcción, no toca a la inflación ni al desempleo en ese momento. El elemento $s_{32}$, igual a `{python} f["s32"]`, es el que da contenido al orden: ante un choque de desempleo de una desviación estándar, la tasa baja dentro del mismo trimestre, como lo haría siguiendo una regla. Los dos primeros choques llevan el nombre de la variable que encabezan, no el de una interpretación económica, y conviene que sea así: el orden elegido identifica con un argumento defendible el choque de política, y deja a los otros dos como las combinaciones que quedan. Ponerles nombre de choque de oferta o de demanda exigiría un argumento adicional que este esquema no aporta.
 
 ::: {.cuidado}
 El orden de las variables es una restricción económica, no una convención de programación. Cambiarlo cambia los choques y puede cambiar las conclusiones. La práctica mínima es reportar el orden elegido, justificarlo y mostrar qué pasa con otro orden razonable. Cuando el resultado depende del orden, lo que hay que reportar es esa dependencia, no el orden más favorable.
@@ -208,7 +235,7 @@ La respuesta de las variables al choque estructural $k$ al cabo de $h$ períodos
 
 $$ \Theta_h = \frac{\partial \mathbf{y}_{t+h}}{\partial \varepsilon_t'} = \Psi_h S, \qquad \Psi_h = J F^h J', $$ {#eq-irf}
 
-donde $F$ es la matriz companion y $J$ el selector del @sec-var-companion. El elemento $(i,k)$ de $\Theta_h$ es la respuesta de la variable $i$ al choque $k$ en el horizonte $h$, manteniendo los demás choques en cero.
+donde $F$ es la matriz companion y $J$ el selector de la @sec-var-companion. El elemento $(i,k)$ de $\Theta_h$ es la respuesta de la variable $i$ al choque $k$ en el horizonte $h$, manteniendo los demás choques en cero.
 :::
 
 La derivación es la sustitución recursiva de siempre. Partiendo de $\mathbf{y}_t = \Phi_1 \mathbf{y}_{t-1} + S\varepsilon_t$ e iterando hacia adelante, el término que sobrevive del choque de hoy en $t+h$ es $\Phi_1^h S \varepsilon_t$; con $p > 1$, la potencia de la companion hace el mismo trabajo.
@@ -251,7 +278,7 @@ np.allclose(theta, theta_package)
 
 ## Bandas de confianza {#sec-svar-bandas}
 
-Las respuestas son funciones no lineales de los coeficientes estimados, así que su distribución muestral no tiene forma cerrada útil. La práctica estándar es el bootstrap [@kilian1998; @kilian2017, cap. 12].
+Las respuestas son funciones no lineales de los coeficientes estimados, así que su distribución muestral no tiene forma cerrada útil. La práctica estándar es el bootstrap [@kilian2017, cap. 12], en la versión de diseño recursivo del @alg-bootstrap.
 
 ::: {#alg-bootstrap}
 1. Estimar el VAR y guardar $\hat{B}$, $\hat{\Sigma}$ y los residuos $\hat{\mathbf{u}}_t$.
@@ -267,7 +294,9 @@ Las respuestas son funciones no lineales de los coeficientes estimados, así que
 Bandas bootstrap para las respuestas estructurales
 :::
 
-El paso 2 es el que suele salir mal. La muestra artificial tiene que generarse iterando el modelo, no sumando residuos remuestreados a los valores ajustados: si los regresores se dejan en sus valores originales mientras la variable dependiente se construye con ruido nuevo, los rezagos y la variable dependiente dejan de corresponderse y el estimador bootstrap queda sesgado hacia cero en la persistencia.
+El paso 2 es el que suele salir mal. Un atajo tentador es sumar los residuos remuestreados a los valores ajustados, $\mathbf{y}_t^{*} = \hat{\mathbf{y}}_t + \hat{\mathbf{u}}_t^{*}$, y reestimar el VAR con los rezagos de $\mathbf{y}^{*}$. Con eso los regresores ya no son los que generaron la muestra: cada rezago de $\mathbf{y}^{*}$ arrastra un ruido que la ecuación no contiene, y el estimador bootstrap se sesga hacia cero en la persistencia, como cualquier regresión con error de medida en los regresores. Existe una variante válida que no itera, el diseño fijo, que reutiliza los rezagos originales como regresores [@goncalves2004]; lo que no hace es reproducir el sesgo de mínimos cuadrados en muestras cortas, que el diseño recursivo sí reproduce.
+
+Ese sesgo es el de la [sección 0.11](00-preliminares.qmd#sec-prelim-simulacion): con raíces cerca de uno, mínimos cuadrados subestima la persistencia. @kilian1998 corrige las bandas por él con un bootstrap previo que estima el sesgo y lo descuenta; la versión de este capítulo es la más simple, percentil y sin corrección, y el @exr-svar-8 pide la otra.
 
 ```{python}
 #| label: bootstrap
@@ -280,7 +309,7 @@ print("  banda [%.2f, %.2f]" % (lower[8, 1, 2], upper[8, 1, 2]))
 
 ```{python}
 #| label: fig-svar-irf
-#| fig-cap: "Respuestas a un choque unitario bajo identificación recursiva, con bandas bootstrap al 95 %. Las filas son variables y las columnas, choques. Replica la Figura 1 de Stock y Watson (2001)."
+#| fig-cap: "Respuestas a un choque unitario bajo identificación recursiva, con bandas bootstrap al 95 %. Las filas son variables y las columnas, choques. Es la Figura 1 de Stock y Watson (2001) traspuesta, con bandas más anchas: el artículo traza ±1 error estándar."
 resp = [[theta[:, i, k] for k in range(n)] for i in range(n)]
 bands = [[[(lower[:, i, k], upper[:, i, k])] for k in range(n)]
          for i in range(n)]
@@ -289,9 +318,38 @@ axes[-1][1].set_xlabel("trimestres")
 plt.show()
 ```
 
-La columna de la derecha es el choque de política monetaria y reproduce el resultado central de @stock2001. Un aumento de un punto porcentual en la tasa de fondos federales eleva el desempleo, que alcanza un máximo de 0.20 puntos a los ocho trimestres con una banda de 0.11 a 0.30, y luego vuelve a cero hacia el sexto año. El signo, la forma de joroba y el rezago de dos años son los hechos estilizados que la literatura de política monetaria reporta desde entonces.
+```{python}
+#| include: false
+u_pol, pi_pol = theta[:, 1, 2], theta[:, 0, 2]
+peak = int(u_pol.argmax())
+back = peak + int(np.argmax(u_pol[peak:] <= 0))
+first_neg = int(np.argmax(pi_pol < 0))
+pi_band_zero = np.all((lower[1:, 0, 2] <= 0)
+                      & (upper[1:, 0, 2] >= 0))
+assert peak == 8 and u_pol[back] <= 0 and lower[peak, 1, 2] > 0
+assert pi_pol[1] > 0 and pi_band_zero and first_neg <= 4
+f.update({"u_peak": num(u_pol[peak]), "u_peak_h": f"{peak}",
+          "u_lo": num(lower[peak, 1, 2]),
+          "u_hi": num(upper[peak, 1, 2]),
+          "pi_h1": num(pi_pol[1]), "pi_neg": f"{first_neg}",
+          "pi_min": num(pi_pol.min())})
+years = {5: "quinto", 6: "sexto", 7: "séptimo"}
+f["u_back_year"] = years[back // 4 + 1]
 
-La respuesta de la inflación es el punto incómodo: sube un par de décimas durante el primer año antes de volverse negativa, y su banda contiene al cero durante todo el recorrido. Es el *price puzzle* del @sec-var-sigma, que aparece aquí a pesar de haber identificado. La lectura estándar es que el banco central reacciona a información sobre precios futuros que el sistema no contiene, de modo que parte de lo que el esquema llama choque de política es en realidad la respuesta a una presión inflacionaria que el VAR no ve [@christiano1999]. El remedio usual es ampliar el sistema con un índice de precios de materias primas, que actúa como indicador adelantado de la inflación.
+# 68 % band, close to the +/- 1 s.e. of the paper (same draws)
+_, upper68 = svar.bootstrap_bands(
+    y, p, h=24, draws=2000, level=0.68, unit=True, seed=7)
+below = upper68[:, 0, 2] < 0
+h68 = int(np.argmax(below))
+assert below.any() and below[h68:].all()
+f["pi_h68"] = f"{h68}"
+```
+
+La fila del desempleo, en la columna de la derecha, reproduce el resultado central de @stock2001. Un aumento de un punto porcentual en la tasa de fondos federales eleva el desempleo, que alcanza un máximo de `{python} f["u_peak"]` puntos a los `{python} f["u_peak_h"]` trimestres, con una banda de `{python} f["u_lo"]` a `{python} f["u_hi"]`, y vuelve a cero en el `{python} f["u_back_year"]` año. El signo, la forma de joroba y el rezago de dos años son los hechos estilizados que la literatura de política monetaria reporta desde entonces.
+
+La respuesta de la inflación es el punto incómodo: sube `{python} f["pi_h1"]` puntos en el trimestre siguiente al choque, se vuelve negativa desde el trimestre `{python} f["pi_neg"]` y se estabiliza alrededor de `{python} f["pi_min"]`, pero su banda al 95 % contiene al cero en todos los horizontes. Es el *price puzzle* de la @sec-var-sigma, que aparece aquí a pesar de haber identificado. La lectura estándar es que el banco central reacciona a información sobre precios futuros que el sistema no contiene, de modo que parte de lo que el esquema llama choque de política es en realidad la respuesta a una presión inflacionaria que el VAR no ve [@sims1992; @christiano1999]. El remedio usual es ampliar el sistema con un índice de precios de materias primas, que actúa como indicador adelantado de la inflación.
+
+El nivel de la banda decide aquí la lectura. @stock2001 trazan un error estándar a cada lado, cerca de un 68 % de cobertura; con la banda bootstrap al 68 %, la de la inflación queda entera por debajo de cero desde el trimestre `{python} f["pi_h68"]`, y al 95 % no lo hace en ningún horizonte. Por eso el nivel se declara siempre, como se discutió en la @sec-var-pronostico.
 
 ::: {.cuidado}
 La banda bootstrap recoge la incertidumbre de estimación de $\hat{B}$ y $\hat{\Sigma}$, y nada más. La incertidumbre sobre el esquema de identificación, que suele ser mayor, queda fuera por construcción: la banda se calcula manteniendo fijo el supuesto de triangularidad. Una banda estrecha alrededor de una respuesta mal identificada es precisión sobre el objeto equivocado.
@@ -306,10 +364,12 @@ La descomposición de varianza no depende de cómo se escale el choque, así que
 ::: {#def-fevd}
 ## Descomposición de varianza del error de pronóstico
 
-El error de pronóstico a $h$ períodos es $\mathbf{y}_{t+h} - \mathbb{E}_t[\mathbf{y}_{t+h}] = \sum_{j=0}^{h} \Theta_j \varepsilon_{t+h-j}$. Como los choques son ortogonales y de varianza unitaria, la varianza del error de la variable $i$ se parte sin residuo entre los choques:
+El error de pronóstico a $h$ períodos es $\mathbf{y}_{t+h} - \mathbb{E}_t[\mathbf{y}_{t+h}] = \sum_{j=0}^{h-1} \Theta_j \varepsilon_{t+h-j}$. Como los choques son ortogonales y de varianza unitaria, la varianza del error de la variable $i$ se parte sin residuo entre los choques:
 
-$$ \operatorname{FEVD}_{i,k}(h) = \frac{\sum_{j=0}^{h} \theta_{ik,j}^2}{\sum_{m=1}^{n}\sum_{j=0}^{h} \theta_{im,j}^2}, \qquad \sum_{k=1}^{n}\operatorname{FEVD}_{i,k}(h) = 1 . $$ {#eq-fevd}
+$$ \operatorname{FEVD}_{i,k}(h) = \frac{\sum_{j=0}^{h-1} \theta_{ik,j}^2}{\sum_{m=1}^{n}\sum_{j=0}^{h-1} \theta_{im,j}^2}, \qquad \sum_{k=1}^{n}\operatorname{FEVD}_{i,k}(h) = 1 . $$ {#eq-fevd}
 :::
+
+A un período, $h = 1$, sólo entra el impacto $\Theta_0 = S$: con la identificación recursiva la primera variable se explica entera por su propio choque. En el código, la suma acumulada hasta la fila $j$ corresponde al horizonte $h = j + 1$.
 
 ::: {.panel-tabset}
 #### Desde cero (NumPy)
@@ -327,7 +387,7 @@ rows = pd.MultiIndex.from_product([names, quarters],
 table = pd.DataFrame(
     [shares[q - 1, i, :] * 100 for i in range(n)
      for q in quarters], index=rows, columns=shocks)
-table.round(0)
+table.round().astype(int)
 ```
 
 #### macrobook
@@ -357,7 +417,7 @@ np.allclose(shares[11] * 100, fevd_macropy[11].T)
 #| fig-cap: "Descomposición de la varianza del error de pronóstico por horizonte. Cada panel reparte el 100 % de la varianza de una variable entre los tres choques."
 size = figsize(0.40)
 fig, axes = plt.subplots(1, 3, sharey=True, figsize=size)
-horizons = np.arange(shares.shape[0])
+horizons = np.arange(1, shares.shape[0] + 1)
 for i, (ax, name) in enumerate(zip(axes, names)):
     ax.stackplot(horizons, shares[:, i, :].T * 100,
                  colors=PALETTE["fills"][:n], labels=shocks,
@@ -371,9 +431,39 @@ charts.legend_outside(axes[1], ncol=3)
 plt.show()
 ```
 
-El cuadro es el de @stock2001 y sirve de verificación de la replicación. A doce trimestres el artículo reporta 82, 16 y 2 por ciento para la inflación y 16, 59 y 25 para la tasa de fondos federales, cifras que coinciden con las de arriba; para el desempleo reporta 16, 66 y 18 frente a 21, 60 y 19 aquí, una diferencia de unos pocos puntos que probablemente venga de la versión de la serie de desempleo, revisada desde 2001. Vale la pena registrar que una replicación puede ser correcta y aun así no coincidir en el último dígito.
+El cuadro de arriba es el Cuadro 1 de @stock2001 y sirve para verificar la replicación. La celda siguiente copia las cifras publicadas y mide, para cada variable y horizonte, la mayor diferencia entre los tres choques.
 
-La lectura económica es la misma en ambos casos. El choque de política explica alrededor de una quinta parte de la varianza del desempleo a tres años y casi nada de la inflación. Es poco, y es un resultado repetido en la literatura: los choques de política monetaria, entendidos como desviaciones respecto de la regla sistemática, explican una fracción pequeña de las fluctuaciones [@christiano1999; @ramey2016]. La afirmación no es que la política monetaria sea irrelevante, sino que casi todo lo que hace es sistemático, y lo sistemático no es un choque.
+```{python}
+#| label: fevd-sw2001
+# Stock and Watson (2001), Table 1B: rows are h = 1, 4, 8, 12
+published = np.array([
+    [[100, 0, 0], [88, 10, 2], [82, 17, 1], [82, 16, 2]],
+    [[1, 99, 0], [0, 98, 2], [7, 82, 11], [16, 66, 18]],
+    [[2, 19, 79], [9, 50, 41], [12, 60, 28], [16, 59, 25]]])
+ours = np.array([[shares[q - 1, i] * 100 for q in quarters]
+                 for i in range(n)])
+gap = np.abs(ours.round() - published).max(axis=2)
+pd.DataFrame(gap, index=names,
+             columns=[f"h={q}" for q in quarters]).astype(int)
+```
+
+```{python}
+#| include: false
+se_1 = np.sqrt(np.diag(fit["Sigma"]))      # one-step error
+assert gap[[0, 2]].max() <= 1 and gap[1, :2].max() <= 2
+assert gap[1, 2:].min() >= 4
+assert round(se_1[1], 2) == 0.23 and se_1[0] > 0.97
+u12 = shares[11, 1] * 100
+f.update({"gap_u": f"{gap[1].max():.0f}",
+          "se_pi": num(se_1[0]), "se_u": num(se_1[1]),
+          "u12_pi": f"{u12[0]:.0f}", "u12_u": f"{u12[1]:.0f}",
+          "u12_R": f"{u12[2]:.0f}",
+          "pi12_R": f"{shares[11, 0, 2] * 100:.0f}"})
+```
+
+Las dos descomposiciones coinciden dentro de un punto para la inflación y la tasa en todos los horizontes, y dentro de dos para el desempleo a uno y cuatro trimestres. La diferencia está en el desempleo a ocho y doce trimestres, de hasta `{python} f["gap_u"]` puntos: a doce, el artículo reporta 16, 66 y 18 por ciento, y aquí sale `{python} f["u12_pi"]`, `{python} f["u12_u"]` y `{python} f["u12_R"]`. El modelo, la muestra y el orden son los mismos, así que la sospecha recae en la versión de los datos, y la desviación estándar del error a un trimestre apunta a la inflación: coincide para el desempleo, `{python} f["se_u"]` en los dos casos, y no para la inflación, `{python} f["se_pi"]` aquí contra 0.96 en el artículo. Una convención distinta de grados de libertad escalaría las dos por igual. El deflactor del PBI, a diferencia del desempleo y de la tasa, cambia en cada revisión integral de las cuentas nacionales. Con este archivo no se puede probar, pero vale la pena registrar que una replicación puede ser correcta y aun así no coincidir en el último dígito.
+
+La lectura económica es la misma en ambos casos. El choque de política explica `{python} f["u12_R"]` % de la varianza del desempleo a tres años y `{python} f["pi12_R"]` % de la de la inflación. Es poco, y es un resultado repetido en la literatura: los choques de política monetaria, entendidos como desviaciones respecto de la regla sistemática, explican una fracción pequeña de las fluctuaciones [@christiano1999; @ramey2016]. La afirmación no es que la política monetaria sea irrelevante, sino que casi todo lo que hace es sistemático, y lo sistemático no es un choque.
 
 ## Descomposición histórica {#sec-svar-hd}
 
@@ -434,9 +524,60 @@ charts.legend_outside(ax, ncol=4)
 plt.show()
 ```
 
-La Gran Inflación se lee con claridad. Entre 1979 y 1981 la inflación estuvo cinco puntos por encima de la base del modelo, y el gráfico reparte esa desviación entre el choque propio de los precios, que aporta entre dos y tres puntos y medio, y el choque de política, que aporta cerca de dos. Ese segundo término es una afirmación fuerte y hay que leerla con cuidado: el modelo dice que las desviaciones acumuladas respecto de la regla estimada, es decir una política sistemáticamente más laxa de lo que la propia regla habría indicado, sostuvieron alrededor de dos puntos de inflación. Hacia 1983 esa contribución desaparece, que es como se ve la desinflación de Volcker desde este modelo.
+```{python}
+#| include: false
+periods = sample.index[p:]
+hd = pd.DataFrame({"dev": observed,
+                   "own": contributions[:, 0, 0],
+                   "unemp": contributions[:, 0, 1],
+                   "policy": contributions[:, 0, 2]},
+                  index=periods)
+gi = hd.loc["1979Q1":"1981Q4"].mean()
+assert gi["own"] > gi["policy"] > gi["unemp"] > 0
+f.update({"gi_dev": num(gi["dev"], 1),
+          "gi_own": num(gi["own"], 1),
+          "gi_pol": num(gi["policy"], 1),
+          "gi_u": num(gi["unemp"], 1)})
+```
 
-Conviene mirar también las décadas completas: el aporte medio del choque de política a la inflación es de $+0.8$ puntos en los setenta y de $-0.2$ en los noventa. Con los mismos coeficientes, el mismo choque cambia de papel según la época.
+La Gran Inflación se lee con claridad. Entre 1979 y 1981 la inflación estuvo en promedio `{python} f["gi_dev"]` puntos por encima de la base del modelo, y el gráfico reparte esa desviación entre el choque propio de los precios, que aporta `{python} f["gi_own"]`, el choque de política, que aporta `{python} f["gi_pol"]`, y el del desempleo, con `{python} f["gi_u"]`.
+
+El término de la política es una afirmación fuerte y conviene preguntarle de dónde viene. El aporte de un trimestre suma los efectos de todos los choques de política anteriores, y en este caso hay dos candidatos con signos opuestos: los choques expansivos de los setenta, que suben la inflación con rezago, y los contractivos de Volcker desde 1979, que por el *price puzzle* también la suben durante un par de trimestres antes de bajarla. Para distinguirlos, la descomposición se puede partir por la fecha del choque:
+
+```{python}
+#| label: hd-volcker
+cut = list(periods).index(pd.Period("1979Q1", freq="Q"))
+window = range(cut, cut + 12)      # 1979Q1 to 1981Q4
+w = weights[:, 0, 2]               # inflation, policy shock
+
+def policy_part(t, first, last):
+    """Effect at t of the policy shocks in [first, last)."""
+    dated = range(first, min(last, t + 1))
+    return sum(w[t - s] * eps[s, 2] for s in dated)
+
+before = np.mean([policy_part(t, 0, cut) for t in window])
+since = np.mean([policy_part(t, cut, T_eff) for t in window])
+print("choques anteriores a 1979: %.2f" % before)
+print("choques de 1979 en adelante: %.2f" % since)
+```
+
+```{python}
+#| include: false
+later = hd.loc["1983Q1":"1986Q4", "policy"].mean()
+decade = hd["policy"].groupby(periods.year // 10 * 10).mean()
+seventies = list(periods).index(pd.Period("1970Q1", freq="Q"))
+assert eps[seventies:cut, 2].sum() < 0
+assert eps[cut:cut + 12, 2].sum() > 0
+assert before > 0.8 * gi["policy"] and abs(since) < 0.3
+assert later < 0 and decade[1970] > 0 > decade[1990]
+f.update({"before": num(before, 1), "since": num(since, 1),
+          "later": num(later, 1), "d70": num(decade[1970], 1),
+          "d90": num(decade[1990], 1)})
+```
+
+Casi todo viene de antes: `{python} f["before"]` de los `{python} f["gi_pol"]` puntos los aportan choques de política anteriores a 1979. El modelo dice que las desviaciones acumuladas respecto de la regla estimada durante los setenta, una política más laxa de lo que la propia regla habría indicado, sostenían todavía esa inflación. Los choques contractivos de 1979 en adelante aportan apenas `{python} f["since"]` en esos tres años, porque la inflación responde tarde y al principio con el signo equivocado. Su efecto llega después: entre 1983 y 1986 el aporte de la política a la inflación es de `{python} f["later"]` puntos en promedio, que es como se ve la desinflación de Volcker desde este modelo.
+
+Conviene mirar también las décadas completas: el aporte medio del choque de política a la inflación es de `{python} f["d70"]` puntos en los setenta y de `{python} f["d90"]` en los noventa. Con los mismos coeficientes, el mismo choque cambia de papel según la época.
 
 ::: {.intuicion}
 Las tres lecturas de un SVAR responden preguntas distintas sobre el mismo objeto. La impulso-respuesta es un experimento: qué pasaría si. La descomposición de varianza es un promedio: cuánto importa este choque en general. La descomposición histórica es un relato: qué pasó en este trimestre concreto. Las tres se calculan con las mismas matrices $\Theta_j$.
@@ -464,7 +605,7 @@ que es observable. La matriz de impacto queda identificada como $S = A \cdot \op
 
 La matriz $S$ que resulta no es triangular: los efectos contemporáneos quedan libres y las restricciones actúan sobre el acumulado. Ese es justamente el atractivo del esquema y también su costo, porque el efecto de largo plazo es la parte del modelo peor estimada.
 
-El ejercicio clásico es el de @blanchard1989, y aquí se replica con su propia muestra: crecimiento trimestral del PBI y tasa de desempleo de Estados Unidos entre 1948Q2 y 1987Q4, ambos ya sin tendencia como en el artículo, con ocho rezagos. La única restricción es que el segundo choque no tenga efecto permanente sobre el nivel del producto. El primero queda sin restringir y se interpreta como choque de oferta; el segundo, como choque de demanda.
+El ejercicio clásico es el de @blanchard1989, y aquí se replica con su propia muestra: crecimiento trimestral del PBI y tasa de desempleo de Estados Unidos entre 1948T2 y 1987T4, ambos ya sin tendencia como en el artículo, con ocho rezagos. La única restricción es que el segundo choque no tenga efecto permanente sobre el nivel del producto. El primero queda sin restringir y se interpreta como choque de oferta; el segundo, como choque de demanda.
 
 ```{python}
 #| label: bq-estimacion
@@ -477,14 +618,24 @@ p_bq = 8
 fit_bq = var.ols(y_bq, p_bq)
 S_lr = svar.long_run_impact(fit_bq["Sigma"], fit_bq["B"],
                             2, p_bq)
-S_lr = S_lr * np.sign(S_lr[0])   # ambos elevan el producto
+phis_bq, _ = var.coefficients_by_lag(fit_bq["B"], 2, p_bq)
+A_bq = np.eye(2) - sum(phis_bq)
+long_run = np.linalg.solve(A_bq, S_lr)      # Theta_infinity
+
+# supply raises output for good, demand raises it on impact
+flip = np.sign([long_run[0, 0], S_lr[0, 1]])
+S_lr, long_run = S_lr * flip, long_run * flip
 
 bq_shocks = ["oferta", "demanda"]
-pd.DataFrame(S_lr.round(3), index=bq_order,
-             columns=bq_shocks)
+frames = {"impacto S": S_lr, "largo plazo": long_run}
+pd.concat({k: pd.DataFrame(v.round(3) + 0.0, index=bq_order,
+                           columns=bq_shocks)
+           for k, v in frames.items()}, axis=1)
 ```
 
-La normalización de la última línea fija el signo de cada choque, que la identificación no determina: se eligen los dos choques que elevan el producto al impacto. Hecho eso, el resto lo dicen los datos, y lo que dicen es el resultado que hizo famoso al artículo. El choque de demanda eleva el producto y baja el desempleo; el choque de oferta eleva el producto pero **también** el desempleo durante los primeros trimestres. Ese segundo hecho es el llamado puzzle de la productividad, y reaparece en la literatura posterior [@gali1999].
+El cero de la columna de largo plazo es la restricción: el choque de demanda no deja efecto acumulado sobre el crecimiento, es decir, sobre el nivel del producto. La matriz de impacto, en cambio, no tiene ceros. Los signos son una normalización que la identificación no determina, porque $\varepsilon$ y $-\varepsilon$ son el mismo choque: se elige el choque de oferta que eleva el producto en el largo plazo y el de demanda que lo eleva al impacto. La segunda fila de la matriz de largo plazo no tiene lectura útil, porque suma respuestas de un nivel, el desempleo, y no de una tasa de crecimiento.
+
+Hecho eso, el resto lo dicen los datos, y lo que dicen es el resultado que hizo famoso al artículo. El choque de demanda eleva el producto y baja el desempleo; el choque de oferta eleva el producto pero **también** el desempleo durante los primeros trimestres. Ese segundo hecho anticipa el debate posterior sobre tecnología y empleo, en el que @gali1999 encontró que una mejora tecnológica reduce las horas trabajadas en el corto plazo.
 
 ```{python}
 #| label: fig-svar-bq
@@ -510,9 +661,25 @@ charts.legend_outside(axes[0], ncol=2)
 plt.show()
 ```
 
-El panel izquierdo reproduce la figura del artículo. El choque de oferta lleva el nivel del producto a un máximo cercano a 0.8 % y lo deja permanentemente medio punto por encima; el de demanda produce una joroba que se agota y vuelve a cero, que es la restricción impuesta. El panel derecho muestra el puzzle: el desempleo sube dos décimas tras un choque de oferta favorable antes de empezar a caer.
+```{python}
+#| include: false
+supply, demand = cumulated[:, 0, 0], cumulated[:, 0, 1]
+u_supply = theta_lr[:, 1, 0]
+u_turn = int(np.argmax(u_supply < 0))
+assert supply.max() > supply[-1] > 0 and abs(demand[-1]) < 0.01
+assert u_supply[0] > 0 and 0 < u_turn <= 8
+f.update({"s_peak": num(supply.max()),
+          "s_peak_h": f"{supply.argmax()}",
+          "s_lr": num(long_run[0, 0]),
+          "d_peak": num(demand.max()),
+          "d_peak_h": f"{demand.argmax()}",
+          "u_s_max": num(u_supply[:u_turn].max()),
+          "u_turn": f"{u_turn}"})
+```
 
-La crítica seria a este esquema no es la aritmética sino la estadística: $A^{-1}$ depende de la suma de todos los coeficientes, que en muestras cortas se estima con poca precisión, y pequeñas diferencias en esa suma mueven mucho la matriz de impacto. Las restricciones de largo plazo son las más exigentes con los datos de los tres esquemas de este capítulo.
+El panel izquierdo reproduce la forma de la figura del artículo. El choque de oferta lleva el nivel del producto a un máximo de `{python} f["s_peak"]` % a los `{python} f["s_peak_h"]` trimestres y lo deja permanentemente `{python} f["s_lr"]` puntos por encima; el de demanda produce una joroba de `{python} f["d_peak"]` % a los `{python} f["d_peak_h"]` trimestres, que se agota y vuelve a cero, como exige la restricción. El panel derecho muestra el resultado incómodo: tras un choque de oferta favorable el desempleo sube, hasta `{python} f["u_s_max"]` puntos, y sólo cae por debajo de cero desde el trimestre `{python} f["u_turn"]`.
+
+La crítica seria a este esquema no es la aritmética sino la estadística: $A^{-1}$ depende de la suma de todos los coeficientes, que en muestras cortas se estima con poca precisión, y pequeñas diferencias en esa suma mueven mucho la matriz de impacto. @faust1997 muestran que, sin supuestos adicionales sobre la dinámica, las restricciones de largo plazo pueden dar inferencia poco confiable aun con muestras grandes. Son las más exigentes con los datos de los tres esquemas de este capítulo.
 
 ## Restricciones de signo {#sec-svar-signo}
 
@@ -579,9 +746,24 @@ charts.legend_outside(axes[1], ncol=3)
 plt.show()
 ```
 
-El resultado reproduce el hallazgo de @uhlig2005 con los datos de @stock2001: una vez que se deja libre la respuesta de la variable real, el conjunto de modelos admisibles no se pone de acuerdo sobre su signo. A dos años, sólo el 46 % de los modelos aceptados implica un aumento del desempleo, y el rango va de $-0.12$ a $+0.10$ puntos. La identificación recursiva daba un aumento nítido de dos décimas. La diferencia entre ambos resultados no está en los datos, que son los mismos, sino en cuánta información extra se estuvo dispuesto a imponer.
+```{python}
+#| include: false
+u8 = set_irf[:, 8, 1, 2]
+q05_u8, q95_u8 = np.quantile(u8, [0.05, 0.95])
+pi_down = (set_irf[:, 2:9, 0, 2] < 0).mean(axis=0) * 100
+# the recursive model is not in the set: zero, then a rise
+assert theta_sd[0, 0, 2] == 0 and theta_sd[1, 0, 2] > 0
+assert 30 < share < 70 and q05_u8 < 0 < q95_u8
+assert theta_sd[8, 1, 2] > q95_u8 and pi_down.min() > 90
+f.update({"share": f"{share:.0f}", "q05_u8": num(q05_u8),
+          "q95_u8": num(q95_u8),
+          "rec_u8": num(theta_sd[8, 1, 2]),
+          "pi_down": f"{pi_down.min():.0f}"})
+```
 
-Conviene mirar también el panel izquierdo. La inflación baja durante los dos trimestres en que se le impuso bajar y se recupera apenas se suelta la restricción. Las restricciones de signo no arreglan el *price puzzle*: lo desplazan al primer horizonte no restringido. Imponerlas por más períodos lo empujaría más lejos, a costa de un supuesto cada vez más fuerte.
+El resultado reproduce el hallazgo de @uhlig2005 con los datos de @stock2001: una vez que se deja libre la respuesta de la variable real, el conjunto de modelos admisibles no se pone de acuerdo sobre su signo. A dos años, el `{python} f["share"]` % de los modelos aceptados implica un aumento del desempleo, y el rango del 5 al 95 % va de `{python} f["q05_u8"]` a `{python} f["q95_u8"]` puntos. La respuesta recursiva, de `{python} f["rec_u8"]` puntos para el mismo choque de una desviación estándar, queda fuera de ese rango, y no por azar: el modelo recursivo no pertenece al conjunto, porque deja la inflación en cero al impacto y la sube al trimestre siguiente, justo lo que las restricciones prohíben. La diferencia entre ambos resultados no está en los datos, que son los mismos, sino en qué información extra se estuvo dispuesto a imponer.
+
+El panel izquierdo pide la lectura opuesta. La inflación sigue por debajo de cero mucho después de los dos trimestres restringidos: entre los trimestres 2 y 8 lo hace en al menos el `{python} f["pi_down"]` % de los modelos aceptados. Sería un error leer eso como evidencia de que la política baja la inflación. El conjunto se eligió entre modelos en que la inflación cae al principio, y la persistencia del sistema prolonga la caída. Con restricciones de signo, lo que se concluye sobre las variables restringidas está en buena parte impuesto; lo informativo es lo que pasa con las libres.
 
 Una advertencia de escala: el tamaño del choque no es comparable entre esquemas. Cada matriz aceptada implica un impacto distinto sobre la tasa, de modo que la figura usa desviaciones estándar y no puntos porcentuales. Lo que sí es comparable, y lo que importa, es el signo y la fracción del conjunto que lo sostiene.
 
@@ -603,7 +785,7 @@ $$ y_{i,t+h} = \alpha_{i,h} + \beta_{i,h}\, \hat{\varepsilon}_{kt} + \gamma_{i,h
 con $\mathbf{w}_t$ un vector de controles, típicamente los rezagos del sistema. Se estima una regresión por cada horizonte y los errores estándar se corrigen por autocorrelación.
 :::
 
-Las dos estrategias estiman el mismo objeto poblacional: con los mismos controles y sin restricciones, VAR y proyecciones locales tienen el mismo límite [@plagborg2021]. Difieren en muestras finitas, y la diferencia es un intercambio conocido. El VAR impone la estructura dinámica en todos los horizontes, lo que lo hace eficiente si el modelo está bien especificado y sesgado si no lo está; la proyección local no extrapola, lo que la hace robusta a la mala especificación y bastante más ruidosa a horizontes largos.
+Las dos estrategias estiman el mismo objeto poblacional: en población y con rezagos suficientes, VAR y proyecciones locales dan la misma respuesta, y con $p$ rezagos en ambos coinciden al menos hasta el horizonte $p$ [@plagborg2021]. Difieren en muestras finitas, y la diferencia es un intercambio conocido. El VAR impone la estructura dinámica en todos los horizontes, lo que lo hace eficiente si el modelo está bien especificado y sesgado si no lo está; la proyección local no extrapola, lo que la hace robusta a la mala especificación y bastante más ruidosa a horizontes largos.
 
 ```{python}
 #| label: fig-svar-lp
@@ -634,7 +816,18 @@ charts.legend_outside(ax, ncol=3)
 plt.show()
 ```
 
-Las dos estimaciones coinciden en el signo y en el perfil: el desempleo no se mueve en el trimestre del choque, sube a lo largo de los dos años siguientes y después vuelve. Difieren en la magnitud del pico, que la proyección local sitúa en 0.40 puntos frente a 0.20 del VAR, y en la suavidad, porque la forma companion obliga a la respuesta del VAR a decaer de manera regular mientras que la proyección local no impone nada entre horizontes. Cuál de las dos creer depende de qué se esté dispuesto a suponer: la proyección local no extrapola y paga el precio en varianza, el VAR extrapola y cobra el precio en sesgo si la estructura que impone es falsa.
+```{python}
+#| include: false
+var_path = theta[grid, 1, 2]
+assert abs(point[0]) < 1e-8
+assert point.argmax() == var_path.argmax()
+assert point.max() > 1.5 * var_path.max()
+f.update({"lp_peak": num(point.max()),
+          "var_peak": num(var_path.max()),
+          "lp_h": f"{point.argmax()}"})
+```
+
+Las dos estimaciones coinciden en el signo y en el perfil: el desempleo sube a lo largo de los dos años siguientes al choque y después vuelve. En el trimestre del choque la respuesta es nula en ambas por construcción, porque el choque recursivo es ortogonal a la sorpresa de desempleo. Difieren en la magnitud del pico, que las dos alcanzan a los `{python} f["lp_h"]` trimestres y que la proyección local sitúa en `{python} f["lp_peak"]` puntos frente a `{python} f["var_peak"]` del VAR, y en la suavidad, porque la forma companion obliga a la respuesta del VAR a decaer de manera regular mientras que la proyección local no impone nada entre horizontes. Cuál de las dos creer depende de qué se esté dispuesto a suponer: la proyección local no extrapola y paga el precio en varianza, el VAR extrapola y cobra el precio en sesgo si la estructura que impone es falsa. La banda de la proyección local, además, trata al choque como un dato, cuando es una estimación del VAR de la primera etapa; su ancho no incluye esa incertidumbre.
 
 ## Otros esquemas y temas {#sec-svar-otros}
 
@@ -658,13 +851,13 @@ Todo lo anterior supone que los choques estructurales se pueden recuperar de los
 
 ### Tamaño del sistema y frecuencia
 
-Los supuestos contemporáneos son más creíbles cuanto más corto el período: una restricción de que la política no afecta a los precios dentro del trimestre es cómoda, dentro del mes es más fuerte. Y los sistemas grandes, que permitirían incluir los controles que evitarían el *price puzzle*, chocan con el conteo de parámetros del @sec-var. Esa tensión es la que resuelve el @sec-bvar.
+La frecuencia de los datos cambia la credibilidad de los ceros contemporáneos en las dos direcciones que discutió la @sec-svar-cholesky: que la política no afecte a los precios dentro del período es más fácil de aceptar en un mes que en un trimestre, y que el banco central reaccione a datos del mismo período, al revés. Y los sistemas grandes, que permitirían incluir los controles que evitarían el *price puzzle*, chocan con el conteo de parámetros del @sec-var. Esa tensión es la que resuelve el @sec-bvar.
 
 ## Ideas clave {.unnumbered}
 
 ::: {.ideas-clave}
 1. Los datos determinan $\Sigma$ y nada más: toda la variedad de matrices $S$ con $SS' = \Sigma$ ajusta igual de bien, así que la identificación es un supuesto económico que se declara, se defiende y se somete a sensibilidad.
-2. Faltan exactamente $n(n-1)/2$ restricciones. Los ceros contemporáneos las aportan con un orden, los ceros de largo plazo con la neutralidad de un choque y los signos con la dirección de un efecto.
+2. Faltan exactamente $n(n-1)/2$ restricciones. Los ceros contemporáneos las aportan con un orden y los ceros de largo plazo con la neutralidad de un choque. Los signos no las aportan: acotan el conjunto con la dirección de un efecto, y el resultado es un conjunto de modelos, no uno solo.
 3. Las tres lecturas del SVAR (respuestas, varianza, historia) se construyen con las mismas matrices $\Theta_j = \Psi_j S$ y responden preguntas distintas.
 4. Las bandas bootstrap cubren la incertidumbre de estimación, no la de identificación. Las restricciones de signo hacen lo contrario: describen la incertidumbre de identificación con los parámetros fijos.
 5. Proyecciones locales y VAR estiman la misma respuesta poblacional; la elección entre ambos es un intercambio entre eficiencia y robustez a la mala especificación.
@@ -703,15 +896,15 @@ Verifique numéricamente la @prp-conteo: genere cien matrices ortonormales $Q$, 
 :::
 
 ::: {#exr-svar-3}
-La banda bootstrap del @alg-bootstrap usa el diseño recursivo. Implemente la variante equivocada que remuestrea los residuos sobre los valores ajustados sin iterar el modelo, y compare la persistencia de las respuestas medianas con la del diseño correcto. ¿En qué dirección se sesga?
+La banda bootstrap del @alg-bootstrap usa el diseño recursivo. Implemente el atajo de la @sec-svar-bandas, que suma los residuos remuestreados a los valores ajustados y reestima con los rezagos de la serie artificial, y compare la persistencia de las respuestas medianas con la del diseño recursivo. ¿En qué dirección se sesga? Repita con el diseño fijo, que reutiliza los rezagos originales, y explique la diferencia.
 :::
 
 ::: {#exr-svar-4}
-Agregue un índice de precios de materias primas al sistema, ordenado en primer lugar, y repita la identificación recursiva. ¿Desaparece el *price puzzle*? Discuta si el resultado justifica el supuesto de que ese índice no responde contemporáneamente a nada.
+Agregue un índice de precios de materias primas al sistema, ordenado en primer lugar, y repita la identificación recursiva. Sirve el índice de precios al productor de todas las materias primas de FRED (`PPIACO`), descargado como en el @sec-datos y transformado en tasa de variación trimestral anualizada. ¿Desaparece el *price puzzle*? Discuta si el resultado justifica el supuesto de que ese índice no responde contemporáneamente a nada.
 :::
 
 ::: {#exr-svar-5}
-Repita el capítulo con los datos peruanos del @sec-var, tomando actividad, inflación y tasa de referencia entre 2003Q4 y 2017Q4 con dos rezagos. Compare la respuesta del producto al choque de política con la del desempleo estadounidense y discuta qué diferencias vienen de los datos y cuáles del tamaño de la muestra.
+Repita el capítulo con los datos peruanos del @exr-var-7, agregando la actividad (columna `gdp` del mismo archivo) a la inflación y la tasa de referencia, entre 2003T4 y 2017T4 con dos rezagos. Compare la respuesta del producto al choque de política con la del desempleo estadounidense y discuta qué diferencias vienen de los datos y cuáles del tamaño de la muestra.
 :::
 
 ::: {#exr-svar-6}
@@ -720,4 +913,8 @@ En el ejercicio de restricciones de signo, agregue la exigencia de que el desemp
 
 ::: {#exr-svar-7}
 Calcule la descomposición histórica del desempleo y localice el trimestre en que el choque de política hizo su mayor aporte. ¿Coincide con la recesión de 1981-1982?
+:::
+
+::: {#exr-svar-8}
+Implemente el bootstrap con corrección de sesgo de @kilian1998. Un primer bootstrap estima el sesgo de $\hat{B}$ como la diferencia entre el promedio de las $\hat{B}^{*}$ y $\hat{B}$; se descuenta de $\hat{B}$, reduciendo la corrección si el sistema corregido deja de ser estable, y el segundo bootstrap genera las muestras con la $\hat{B}$ corregida y corrige cada $\hat{B}^{*}$ de la misma manera. Compare la respuesta del desempleo al choque de política y su banda con las de la @fig-svar-irf. ¿Qué cambia más, el pico o la vuelta a cero?
 :::

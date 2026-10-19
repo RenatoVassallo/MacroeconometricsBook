@@ -203,11 +203,15 @@ quarterly real GDP SA) and seasonally adjusts Peru's quarterly GDP (BCRP
 `PN02538AQ`, NSA) and US GDP NSA (`ND000334Q`, only from 2002) with X-13;
 chapter 2 uses US real GDP growth (`GDPC1`) and PCE inflation (`PCEPI`),
 quarterly, estimated on 1960Q1-2019Q4, with 2020-2023 held out (it also holds the
-AR(1) Gibbs sampler moved from chapter 0); chapter 3 uses
-Peruvian data (BCRP); chapters 4 and 5 replicate the classic US
-datasets shipped with Stock and Watson (2001) and Blanchard and Quah (1989), so
-that the structural and Bayesian results can be checked against published
-numbers. `code/python/build_us_data.py` rebuilds the US CSVs (the replication
+AR(1) Gibbs sampler moved from chapter 0); chapters 3, 4 and 5 share the
+Stock and Watson (2001) system (inflation, unemployment and fed funds,
+1960Q1-2000Q4, four lags; chapter 3 refits it to 1998Q4 to forecast 1999-2000)
+and chapter 4 adds Blanchard and Quah (1989), so that the reduced-form,
+structural and Bayesian results can be checked against published numbers. The
+Peruvian VAR (BCRP inflation and policy rate, 2003Q4-2017Q4) is exercise 3.7,
+and chapter 4 extends it with activity in its own exercise. Prose writes
+quarters as 1960T1; code keeps pandas' 1960Q1. `code/python/build_us_data.py`
+rebuilds the US CSVs (the replication
 samples and the FRED files) and `code/python/build_peru_data.py` the Peruvian ones,
 always from `data/raw/`. The Uhlig (2005) sample is kept in `data/raw/` for the
 sign-restriction replication; no chapter reads it yet.
