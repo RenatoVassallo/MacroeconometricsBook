@@ -68,7 +68,7 @@ $$ n^2 - \frac{n(n+1)}{2} = \frac{n(n-1)}{2} $$
 restricciones adicionales para que la solución sea única, y esas restricciones no pueden venir de los datos: cualquier $\tilde{S} = S Q$ con $Q$ ortonormal reproduce exactamente la misma $\Sigma$ y, por lo tanto, la misma verosimilitud.
 :::
 
-Con dos variables falta una restricción; con tres, como en el sistema de este capítulo, faltan tres; con siete variables, veintiuna. El último punto de la @prp-conteo es el que conviene grabar: el conjunto de matrices de impacto compatibles con los datos no es pequeño ni raro, es una variedad continua del mismo tamaño que el grupo ortogonal, y todos sus elementos ajustan los datos igual de bien. Ninguna prueba estadística puede escoger entre ellos.
+Con dos variables, como en el sistema con el que empieza este capítulo, falta una restricción; con tres, como en el de Stock y Watson, faltan tres; con siete variables, veintiuna. El último punto de la @prp-conteo es el que conviene grabar: el conjunto de matrices de impacto compatibles con los datos no es pequeño ni raro, es una variedad continua del mismo tamaño que el grupo ortogonal, y todos sus elementos ajustan los datos igual de bien. Ninguna prueba estadística puede escoger entre ellos.
 
 ::: {.cuidado}
 Que dos modelos ajusten igual no significa que digan lo mismo. Dos matrices de impacto distintas compatibles con la misma $\Sigma$ pueden implicar que la política monetaria contrae el producto o que lo expande. La elección entre ellas es un supuesto económico que el investigador declara y defiende, no un resultado que los datos entreguen. Por eso un SVAR se reporta siempre junto con su esquema de identificación, y por eso la sensibilidad a ese esquema es parte del resultado.
@@ -76,9 +76,9 @@ Que dos modelos ajusten igual no significa que digan lo mismo. Dos matrices de i
 
 Las secciones siguientes recorren los tres esquemas más usados: restricciones de cero contemporáneas, restricciones de cero de largo plazo y restricciones de signo. Cada uno aporta la información que falta de una manera distinta, y cada uno cuesta algo.
 
-### El sistema de trabajo
+### Un sistema de dos variables
 
-El sistema es el del @sec-var, el ejemplo de @stock2001: inflación, desempleo y tasa de fondos federales de Estados Unidos, datos trimestrales de 1960T1 a 2000T4, cuatro rezagos. Mantenerlo tiene una ventaja para el análisis estructural: cada resultado se puede contrastar con una cifra publicada. El @exr-svar-5 lleva el análisis a los datos peruanos del @exr-var-7.
+El capítulo usa los datos de @stock2001 del @sec-var: inflación, desempleo y tasa de fondos federales de Estados Unidos, trimestrales de 1960T1 a 2000T4 (@fig-series). Para ver la identificación con el álgebra a la vista conviene empezar con dos de las tres series, la inflación y la tasa, y un VAR(2): un choque de la economía, uno de la política y una sola restricción por imponer. La @sec-svar-irf agrega el desempleo y vuelve al sistema de Stock y Watson, que tiene una ventaja para el análisis estructural: cada resultado se puede contrastar con una cifra publicada. El @exr-svar-5 lleva el análisis a los datos peruanos del @exr-var-7.
 
 ```{python}
 #| label: svar-setup
@@ -91,17 +91,16 @@ csv = data_path("sw2001.csv")
 data = pd.read_csv(csv, index_col="date")
 data.index = pd.PeriodIndex(data.index, freq="Q")
 
-order = ["infl", "unemp", "ff"]
-sample = data[order]
-dates = sample.index.to_timestamp(how="end")
-y = sample.to_numpy()
-n, p = len(order), 4
+order2 = ["infl", "ff"]          # the two-variable system
+y2 = data[order2].to_numpy()
+p2 = 2
 
-fit = var.ols(y, p)
-max_root = np.abs(var.roots(fit["B"], n, p)).max()
-print("muestra:", sample.index[0], "a", sample.index[-1])
-print("observaciones:", len(sample))
-print("módulo máximo de las raíces:", max_root.round(3))
+fit2 = var.ols(y2, p2)
+root2 = np.abs(var.roots(fit2["B"], 2, p2)).max()
+corr2 = np.corrcoef(fit2["residuals"].T)[0, 1]
+print("muestra:", data.index[0], "a", data.index[-1])
+print("módulo máximo de las raíces:", root2.round(3))
+print("correlación de las innovaciones:", corr2.round(2))
 ```
 
 ```{python}
@@ -110,72 +109,31 @@ def num(x, d=2):
     """Format x with a real minus sign for the prose."""
     return f"{x:.{d}f}".replace("-", "−")
 
-assert 0.9 < max_root < 1
-f = {"max_root": num(max_root)}
+assert root2 < 1 and corr2 > 0
+f = {"root2": num(root2), "corr2": num(corr2)}
 ```
 
-```{python}
-#| label: fig-svar-datos
-#| fig-cap: "Las tres series del sistema de Stock y Watson (2001), 1960T1 a 2000T4."
-import matplotlib.pyplot as plt
-
-from macrobook import use_style, figsize, PALETTE, charts
-
-use_style()
-
-labels = ["inflación (%)", "desempleo (%)",
-          "fondos federales (%)"]
-names = ["inflación", "desempleo", "tasa"]
-
-size = figsize(0.72)
-fig, axes = plt.subplots(3, 1, sharex=True, figsize=size)
-for ax, column, label in zip(axes, order, labels):
-    ax.plot(dates, sample[column], color=PALETTE["ink"], lw=1.0)
-    ax.set_ylabel(label)
-plt.show()
-```
-
-La muestra cubre la Gran Inflación de los años setenta, la desinflación de Volcker y la larga expansión de los noventa. El módulo máximo de las raíces, `{python} f["max_root"]`, avisa de entrada que el sistema es muy persistente: las respuestas van a decaer despacio y las bandas a horizontes largos serán anchas.
-
-La matriz de covarianzas de los residuos vuelve a ser el objeto central. Conviene mirarla en correlaciones, que se leen más rápido.
-
-```{python}
-#| label: svar-correlaciones
-corr = np.corrcoef(fit["residuals"].T)
-pd.DataFrame(corr.round(2), index=order, columns=order)
-```
-
-```{python}
-#| include: false
-off = {(0, 1): corr[0, 1], (0, 2): corr[0, 2],
-       (1, 2): corr[1, 2]}
-assert max(off, key=lambda ij: abs(off[ij])) == (1, 2)
-assert corr[1, 2] < 0
-f["rho_uR"] = num(corr[1, 2])
-```
-
-La correlación relevante es la de `{python} f["rho_uR"]` entre la sorpresa de desempleo y la sorpresa de tasa: cuando el desempleo sorprende al alza, la tasa sorprende a la baja. Eso es exactamente lo que se espera de una regla de política que reacciona al ciclo, y es también la razón por la que esa correlación no se puede leer como el efecto de la política sobre el desempleo.
+El sistema es estable, con un módulo máximo de `{python} f["root2"]`. Las innovaciones de la inflación y de la tasa tienen una correlación de `{python} f["corr2"]`: cuando la inflación sorprende al alza, la tasa también lo hace dentro del mismo trimestre. Es lo que se espera de un banco central que reacciona a los precios, y es también la razón por la que esa correlación no mide el efecto de la política sobre la inflación.
 
 ## Identificación recursiva {#sec-svar-cholesky}
 
 El esquema más antiguo y todavía el más usado impone ceros en la matriz de impacto [@sims1980; @christiano1999]. La idea es ordenar las variables de la más lenta a la más rápida en reaccionar dentro del período, y suponer que cada variable no responde contemporáneamente a los choques de las que vienen después.
 
-Con el orden $(\pi_t, u_t, R_t)$ de @stock2001 la matriz de impacto es triangular inferior:
+Con el orden $(\pi_t, R_t)$ la matriz de impacto del sistema bivariado es triangular inferior:
 
 $$
-\begin{bmatrix} u_{\pi,t} \\ u_{u,t} \\ u_{R,t} \end{bmatrix}
+\begin{bmatrix} u_{\pi,t} \\ u_{R,t} \end{bmatrix}
 =
 \begin{bmatrix}
- s_{11} & 0 & 0 \\
- s_{21} & s_{22} & 0 \\
- s_{31} & s_{32} & s_{33}
+ s_{11} & 0 \\
+ s_{21} & s_{22}
 \end{bmatrix}
-\begin{bmatrix} \varepsilon_{1,t} \\ \varepsilon_{2,t} \\ \varepsilon_{3,t}^{\,\text{pol}} \end{bmatrix}.
+\begin{bmatrix} \varepsilon_{1,t} \\ \varepsilon_{2,t}^{\,\text{pol}} \end{bmatrix}.
 $$ {#eq-svar-cholesky}
 
-Los tres ceros son exactamente las $n(n-1)/2 = 3$ restricciones que faltaban, y dicen dos cosas distintas. Hacia abajo: la tasa de fondos federales responde dentro del trimestre a la inflación y al desempleo, que es lo que hace un banco central que mira los datos al decidir. Hacia arriba: el choque de política no mueve la inflación ni el desempleo dentro del mismo trimestre, porque los precios y las decisiones de gasto y contratación tardan en reaccionar.
+El cero es la $n(n-1)/2 = 1$ restricción que faltaba. Dice que el choque de política no mueve la inflación dentro del mismo trimestre, porque los precios tardan en reaccionar. A cambio deja libre $s_{21}$, de modo que la tasa sí responde dentro del trimestre a la inflación, que es lo que hace un banco central que mira los datos al decidir. El orden contrario, $(R_t, \pi_t)$, diría lo opuesto: un banco central que no ve la inflación del trimestre y una inflación que reacciona de inmediato a la tasa.
 
-Las dos mitades le piden cosas opuestas a la frecuencia de los datos. La segunda es más creíble cuanto más corto el período: que la política no toque los precios durante un mes es más fácil de aceptar que durante tres. La primera funciona al revés: dentro de un mes el banco central todavía no conoce la inflación ni el desempleo de ese mes, y dentro de un trimestre ya conoce buena parte. Con datos trimestrales, como aquí, la mitad que hay que defender es la segunda.
+Las dos mitades del supuesto le piden cosas opuestas a la frecuencia de los datos. Que la política no toque los precios es más creíble cuanto más corto el período: durante un mes es más fácil de aceptar que durante tres. Que el banco central reaccione a la inflación del período funciona al revés: dentro de un mes todavía no la conoce, y dentro de un trimestre ya conoce buena parte. Con datos trimestrales, como aquí, la mitad que hay que defender es la primera.
 
 ::: {#prp-cholesky}
 ## Identificación recursiva
@@ -198,27 +156,28 @@ Resolviendo en cadena, $s_{11} = 2$, $s_{21} = 1$ y $s_{22} = 3$. Tres ecuacione
 
 ```{python}
 #| label: cholesky-manual
-S = np.linalg.cholesky(fit["Sigma"])
-shocks = ["inflación", "desempleo", "política"]
-pd.DataFrame(S.round(3), index=order, columns=shocks)
+S2 = np.linalg.cholesky(fit2["Sigma"])
+pd.DataFrame(S2.round(3), index=order2,
+             columns=["inflación", "política"])
 ```
 
 #### macrobook
 
 ```{python}
 #| label: cholesky-package
-S_package = svar.cholesky_impact(fit["Sigma"])
-np.allclose(S, S_package)
+S2_package = svar.cholesky_impact(fit2["Sigma"])
+np.allclose(S2, S2_package)
 ```
 :::
 
 ```{python}
 #| include: false
-assert S[2, 1] < 0
-f.update({"s33": num(S[2, 2]), "s32": num(S[2, 1])})
+assert S2[1, 0] > 0
+f.update({"s11_2": num(S2[0, 0]), "s21_2": num(S2[1, 0]),
+          "s22_2": num(S2[1, 1])})
 ```
 
-La tercera columna es el choque de política: eleva la tasa de fondos federales en `{python} f["s33"]` puntos porcentuales en el trimestre del choque y, por construcción, no toca a la inflación ni al desempleo en ese momento. El elemento $s_{32}$, igual a `{python} f["s32"]`, es el que da contenido al orden: ante un choque de desempleo de una desviación estándar, la tasa baja dentro del mismo trimestre, como lo haría siguiendo una regla. Los dos primeros choques llevan el nombre de la variable que encabezan, no el de una interpretación económica, y conviene que sea así: el orden elegido identifica con un argumento defendible el choque de política, y deja a los otros dos como las combinaciones que quedan. Ponerles nombre de choque de oferta o de demanda exigiría un argumento adicional que este esquema no aporta.
+La segunda columna es el choque de política: eleva la tasa de fondos federales en `{python} f["s22_2"]` puntos porcentuales en el trimestre del choque y, por construcción, no toca la inflación en ese momento. El elemento $s_{21}$ es el que da contenido al orden: un choque de inflación de una desviación estándar, que sube la inflación `{python} f["s11_2"]` puntos, sube la tasa `{python} f["s21_2"]` dentro del mismo trimestre, como lo haría una regla que reacciona a los precios. El primer choque lleva el nombre de la variable que encabeza, no el de una interpretación económica, y conviene que sea así: el orden identifica con un argumento defendible el choque de política y deja al otro como lo que queda. Ponerle nombre de choque de oferta o de demanda exigiría un argumento adicional que este esquema no aporta.
 
 ::: {.cuidado}
 El orden de las variables es una restricción económica, no una convención de programación. Cambiarlo cambia los choques y puede cambiar las conclusiones. La práctica mínima es reportar el orden elegido, justificarlo y mostrar qué pasa con otro orden razonable. Cuando el resultado depende del orden, lo que hay que reportar es esa dependencia, no el orden más favorable.
@@ -258,23 +217,131 @@ La escala del choque es una convención más. Un choque de una desviación está
 ```{python}
 #| label: irf-manual
 def responses(B, S, n, p, h):
-    """Theta_j = Psi_j S para j = 0, ..., h."""
+    """Theta_j = Psi_j S for j = 0, ..., h."""
     return var.ma_weights(B, n, p, h) @ S
 
-S_unit = S / np.diag(S)     # un choque de un punto porcentual
-theta = responses(fit["B"], S_unit, n, p, 24)
-pd.DataFrame(theta[:5, :, 2].round(3), columns=order)
+S2_unit = S2 / np.diag(S2)      # shocks of one point
+theta2 = responses(fit2["B"], S2_unit, 2, p2, 24)
+pd.DataFrame(theta2[:5, :, 1].round(3), columns=order2)
 ```
 
 #### macrobook
 
 ```{python}
 #| label: irf-package
-theta_package = svar.responses(fit["B"], svar.unit_scale(S),
-                               n, p, 24)
-np.allclose(theta, theta_package)
+theta2_package = svar.responses(fit2["B"], svar.unit_scale(S2),
+                                2, p2, 24)
+np.allclose(theta2, theta2_package)
 ```
 :::
+
+```{python}
+#| label: fig-svar-irf2
+#| fig-cap: "Sistema bivariado: respuestas de la inflación y de la tasa a un choque de política de un punto porcentual."
+import matplotlib.pyplot as plt
+
+from macrobook import use_style, figsize, PALETTE, charts
+
+use_style()
+
+steps = np.arange(theta2.shape[0])
+titles = ["inflación", "fondos federales"]
+fig, axes = plt.subplots(1, 2, figsize=figsize(0.38))
+for i, (ax, title) in enumerate(zip(axes, titles)):
+    ax.plot(steps, theta2[:, i, 1], lw=1.2,
+            color=PALETTE["accent_dark"])
+    charts.zero_line(ax)
+    ax.set_title(title, fontsize=8.5)
+    ax.set_xlabel("trimestres")
+axes[0].set_ylabel("puntos porcentuales")
+plt.show()
+```
+
+```{python}
+#| include: false
+pi2 = theta2[:, 0, 1]
+years2 = int(np.argmax(pi2[1:] <= 0)) // 4
+assert (pi2[1:21] > 0).all() and years2 >= 5
+f.update({"pi2_h1": num(pi2[1]), "years2": f"{years2}"})
+```
+
+La tasa sube un punto y vuelve despacio. La inflación sube `{python} f["pi2_h1"]` puntos en el trimestre siguiente y se queda por encima de cero durante `{python} f["years2"]` años. Tomado al pie de la letra, el sistema bivariado dice que subir la tasa sube la inflación: es el *price puzzle* de la @sec-var-sigma en su forma más cruda. La explicación más probable es una variable omitida. El banco central sube la tasa cuando ve una economía recalentada que anuncia más inflación, y un sistema sin ninguna variable de actividad no puede distinguir esa reacción de un choque de política: le atribuye al choque la inflación que el ciclo ya traía [@sims1992].
+
+### El sistema de Stock y Watson
+
+@stock2001 agregan el desempleo, ordenado entre la inflación y la tasa, y usan cuatro rezagos. La matriz de impacto pasa a ser
+
+$$
+\begin{bmatrix} u_{\pi,t} \\ u_{u,t} \\ u_{R,t} \end{bmatrix}
+=
+\begin{bmatrix}
+ s_{11} & 0 & 0 \\
+ s_{21} & s_{22} & 0 \\
+ s_{31} & s_{32} & s_{33}
+\end{bmatrix}
+\begin{bmatrix} \varepsilon_{1,t} \\ \varepsilon_{2,t} \\ \varepsilon_{3,t}^{\,\text{pol}} \end{bmatrix},
+$$ {#eq-svar-cholesky-sw}
+
+con las $n(n-1)/2 = 3$ restricciones que ahora faltan. Repiten la lógica del caso bivariado: la tasa responde dentro del trimestre a la inflación y al desempleo, y el choque de política no mueve a ninguno de los dos en ese trimestre. El desempleo, en el medio, responde dentro del trimestre a la inflación pero no a la tasa.
+
+```{python}
+#| label: svar-sw
+order = ["infl", "unemp", "ff"]
+sample = data[order]
+dates = sample.index.to_timestamp(how="end")
+y = sample.to_numpy()
+n, p = len(order), 4
+names = ["inflación", "desempleo", "tasa"]
+labels = ["inflación (%)", "desempleo (%)",
+          "fondos federales (%)"]
+
+fit = var.ols(y, p)
+max_root = np.abs(var.roots(fit["B"], n, p)).max()
+print("módulo máximo de las raíces:", max_root.round(3))
+```
+
+```{python}
+#| include: false
+assert root2 < max_root < 1
+f["max_root"] = num(max_root)
+```
+
+La muestra cubre la Gran Inflación de los años setenta, la desinflación de Volcker y la larga expansión de los noventa. El módulo máximo de las raíces, `{python} f["max_root"]`, más alto que el del sistema bivariado, avisa de entrada que el sistema es muy persistente: las respuestas van a decaer despacio y las bandas a horizontes largos serán anchas.
+
+La matriz de covarianzas de los residuos vuelve a ser el objeto central. Conviene mirarla en correlaciones, que se leen más rápido.
+
+```{python}
+#| label: svar-correlaciones
+corr = np.corrcoef(fit["residuals"].T)
+pd.DataFrame(corr.round(2), index=order, columns=order)
+```
+
+```{python}
+#| include: false
+off = {(0, 1): corr[0, 1], (0, 2): corr[0, 2],
+       (1, 2): corr[1, 2]}
+assert max(off, key=lambda ij: abs(off[ij])) == (1, 2)
+assert corr[1, 2] < 0
+f["rho_uR"] = num(corr[1, 2])
+```
+
+La correlación más fuerte es la de `{python} f["rho_uR"]` entre la sorpresa de desempleo y la sorpresa de tasa: cuando el desempleo sorprende al alza, la tasa sorprende a la baja. Es lo que se espera de una regla de política que reacciona al ciclo, y es justamente la información que le faltaba al sistema bivariado.
+
+```{python}
+#| label: cholesky-sw
+S = np.linalg.cholesky(fit["Sigma"])
+shocks = ["inflación", "desempleo", "política"]
+theta = svar.responses(fit["B"], svar.unit_scale(S), n, p, 24)
+pd.DataFrame(S.round(3), index=order, columns=shocks)
+```
+
+```{python}
+#| include: false
+assert S[2, 1] < 0
+f.update({"s33": num(S[2, 2]), "s32": num(S[2, 1])})
+```
+
+La tercera columna es el choque de política: eleva la tasa de fondos federales en `{python} f["s33"]` puntos porcentuales en el trimestre del choque y no toca a la inflación ni al desempleo en ese momento. El elemento $s_{32}$, igual a `{python} f["s32"]`, dice que ante un choque de desempleo de una desviación estándar la tasa baja dentro del mismo trimestre, como lo haría siguiendo una regla. La última línea calcula las respuestas a choques unitarios, `theta`, con las que trabaja el resto del capítulo.
 
 ## Bandas de confianza {#sec-svar-bandas}
 
@@ -343,11 +410,21 @@ below = upper68[:, 0, 2] < 0
 h68 = int(np.argmax(below))
 assert below.any() and below[h68:].all()
 f["pi_h68"] = f"{h68}"
+
+# the same three variables with two lags, to compare with the
+# two-variable system lag for lag
+fit_p2 = var.ols(y, p2)
+S_p2 = svar.unit_scale(np.linalg.cholesky(fit_p2["Sigma"]))
+pi3 = svar.responses(fit_p2["B"], S_p2, n, p2, 24)[:, 0, 2]
+neg2, neg3 = int(np.argmax(pi2 < 0)), int(np.argmax(pi3 < 0))
+assert 0 < pi3[1] < pi2[1] and 0 < neg3 < neg2
+f.update({"pi3_h1": num(pi3[1]), "neg2": f"{neg2}",
+          "neg3": f"{neg3}"})
 ```
 
 La fila del desempleo, en la columna de la derecha, reproduce el resultado central de @stock2001. Un aumento de un punto porcentual en la tasa de fondos federales eleva el desempleo, que alcanza un máximo de `{python} f["u_peak"]` puntos a los `{python} f["u_peak_h"]` trimestres, con una banda de `{python} f["u_lo"]` a `{python} f["u_hi"]`, y vuelve a cero en el `{python} f["u_back_year"]` año. El signo, la forma de joroba y el rezago de dos años son los hechos estilizados que la literatura de política monetaria reporta desde entonces.
 
-La respuesta de la inflación es el punto incómodo: sube `{python} f["pi_h1"]` puntos en el trimestre siguiente al choque, se vuelve negativa desde el trimestre `{python} f["pi_neg"]` y se estabiliza alrededor de `{python} f["pi_min"]`, pero su banda al 95 % contiene al cero en todos los horizontes. Es el *price puzzle* de la @sec-var-sigma, que aparece aquí a pesar de haber identificado. La lectura estándar es que el banco central reacciona a información sobre precios futuros que el sistema no contiene, de modo que parte de lo que el esquema llama choque de política es en realidad la respuesta a una presión inflacionaria que el VAR no ve [@sims1992; @christiano1999]. El remedio usual es ampliar el sistema con un índice de precios de materias primas, que actúa como indicador adelantado de la inflación.
+La respuesta de la inflación es el punto incómodo: sube `{python} f["pi_h1"]` puntos en el trimestre siguiente al choque, se vuelve negativa desde el trimestre `{python} f["pi_neg"]` y se estabiliza alrededor de `{python} f["pi_min"]`, pero su banda al 95 % contiene al cero en todos los horizontes. Es el *price puzzle* del sistema bivariado (@fig-svar-irf2), más débil pero no resuelto. Parte de la mejora viene del desempleo y parte de los rezagos: con dos rezagos en los dos sistemas, agregar el desempleo reduce la subida inicial de `{python} f["pi2_h1"]` a `{python} f["pi3_h1"]` puntos y adelanta el cambio de signo del trimestre `{python} f["neg2"]` al `{python} f["neg3"]`. Lo que queda tiene la lectura estándar: el banco central reacciona a información sobre precios futuros que el sistema no contiene, de modo que parte de lo que el esquema llama choque de política es en realidad la respuesta a una presión inflacionaria que el VAR no ve [@sims1992; @christiano1999]. El remedio usual es ampliar el sistema con un índice de precios de materias primas, que actúa como indicador adelantado de la inflación.
 
 El nivel de la banda decide aquí la lectura. @stock2001 trazan un error estándar a cada lado, cerca de un 68 % de cobertura; con la banda bootstrap al 68 %, la de la inflación queda entera por debajo de cero desde el trimestre `{python} f["pi_h68"]`, y al 95 % no lo hace en ningún horizonte. Por eso el nivel se declara siempre, como se discutió en la @sec-var-pronostico.
 
@@ -370,6 +447,36 @@ $$ \operatorname{FEVD}_{i,k}(h) = \frac{\sum_{j=0}^{h-1} \theta_{ik,j}^2}{\sum_{
 :::
 
 A un período, $h = 1$, sólo entra el impacto $\Theta_0 = S$: con la identificación recursiva la primera variable se explica entera por su propio choque. En el código, la suma acumulada hasta la fila $j$ corresponde al horizonte $h = j + 1$.
+
+::: {#exm-fevd}
+## Descomposición de varianza con dos variables
+
+Con las matrices del @exm-irf, las dos primeras respuestas son $\Theta_0 = \hat{S}$ y $\Theta_1 = \hat{\Phi}\hat{S}$:
+
+$$ \Theta_0 = \begin{bmatrix} 2 & 0 \\ 1 & 3 \end{bmatrix}, \qquad \Theta_1 = \begin{bmatrix} 1.1 & 0.3 \\ 0.8 & 1.2 \end{bmatrix}. $$
+
+El error de pronóstico a dos períodos de la primera variable suma los choques de $t+2$, que entran con $\Theta_0$, y los de $t+1$, que entran con $\Theta_1$:
+
+$$ y_{1,t+2} - \mathbb{E}_t[y_{1,t+2}] = 2\,\varepsilon_{1,t+2} + 0\,\varepsilon_{2,t+2} + 1.1\,\varepsilon_{1,t+1} + 0.3\,\varepsilon_{2,t+1} . $$
+
+Los cuatro choques son independientes y de varianza uno, así que la varianza es la suma de los cuadrados de los coeficientes, $4 + 0 + 1.21 + 0.09 = 5.30$, y cada choque se queda con los suyos: el primero aporta $4 + 1.21 = 5.21$, el 98.3 %, y el segundo $0.09$, el 1.7 %. A un período el primer choque explicaba el 100 %, porque $\theta_{12,0} = 0$; el segundo entra recién en el horizonte 2, a través de la dinámica. Para la segunda variable las cuentas son $1 + 0.64 = 1.64$ contra $9 + 1.44 = 10.44$: el 13.6 % y el 86.4 % a dos períodos, frente al 10 % y el 90 % a uno.
+:::
+
+```{python}
+#| include: false
+# check the arithmetic of the two-variable examples
+Phi_x = np.array([[0.5, 0.1], [0.2, 0.4]])
+S_x = np.array([[2.0, 0.0], [1.0, 3.0]])
+Th_x = [S_x, Phi_x @ S_x, Phi_x @ Phi_x @ S_x]
+fe_x = np.cumsum(np.array(Th_x[:2]) ** 2, axis=0)
+fe_x = fe_x / fe_x.sum(axis=2, keepdims=True) * 100
+assert np.allclose(Th_x[1], [[1.1, 0.3], [0.8, 1.2]])
+shares_x = fe_x[1].round(1)
+assert np.allclose(shares_x, [[98.3, 1.7], [13.6, 86.4]])
+y_x = Th_x[2] @ [1, 0] + Th_x[1] @ [0, 1]
+assert np.allclose(Th_x[2], [[0.63, 0.27], [0.54, 0.54]])
+assert np.allclose(y_x, [0.93, 1.74])
+```
 
 ::: {.panel-tabset}
 #### Desde cero (NumPy)
@@ -477,6 +584,16 @@ Usando la representación de Wold estructural, cada observación se escribe como
 $$ \mathbf{y}_t = \underbrace{\text{base}_t}_{\text{media e inicio}} + \sum_{k=1}^{n} \underbrace{\sum_{j=0}^{t-1} \theta_{\cdot k, j}\, \varepsilon_{k,t-j}}_{\text{aporte del choque } k} . $$ {#eq-hd}
 
 Los choques se recuperan invirtiendo la matriz de impacto sobre los residuos estimados, $\hat{\varepsilon}_t = S^{-1}\hat{\mathbf{u}}_t$.
+:::
+
+::: {#exm-hd}
+## Descomposición histórica con dos variables
+
+Con las mismas matrices, sin constante y con $\mathbf{y}_0 = 0$, la economía recibe un choque del primer tipo en $t = 1$, $\varepsilon_1 = (1, 0)'$, uno del segundo en $t = 2$, $\varepsilon_2 = (0, 1)'$, y ninguno en $t = 3$. Iterando $\mathbf{y}_t = \hat{\Phi}\mathbf{y}_{t-1} + \hat{S}\varepsilon_t$ se llega a
+
+$$ \mathbf{y}_3 = \Theta_2\,\varepsilon_1 + \Theta_1\,\varepsilon_2 + \Theta_0\,\varepsilon_3 = \begin{bmatrix} 0.63 \\ 0.54 \end{bmatrix} + \begin{bmatrix} 0.3 \\ 1.2 \end{bmatrix} + \begin{bmatrix} 0 \\ 0 \end{bmatrix} = \begin{bmatrix} 0.93 \\ 1.74 \end{bmatrix}, $$
+
+con $\Theta_2 = \hat{\Phi}^2\hat{S}$. El primer sumando es la primera columna de $\Theta_2$ y es todo el aporte del choque 1; el segundo es la segunda columna de $\Theta_1$ y es todo el aporte del choque 2. En $t = 3$ la primera variable está 0.93 por encima de su base: 0.63 por el choque de hace dos períodos y 0.30 por el de hace uno. Con $\mathbf{y}_0 \neq 0$ la base sumaría $\hat{\Phi}^3 \mathbf{y}_0$, la huella de la condición inicial, y con constante también la media. La @eq-hd hace estas mismas cuentas para cada $t$, con los choques estimados.
 :::
 
 ::: {.panel-tabset}
@@ -706,8 +823,8 @@ Identificación por restricciones de signo
 ```{python}
 #| label: signos
 signs = np.zeros((n, n))
-signs[0, 2] = -1   # la inflación baja
-signs[2, 2] = +1   # la tasa sube
+signs[0, 2] = -1   # inflation falls
+signs[2, 2] = +1   # the rate rises
 
 accepted = svar.sign_restricted_impacts(
     fit["Sigma"], fit["B"], n, p, signs,
@@ -755,15 +872,76 @@ pi_down = (set_irf[:, 2:9, 0, 2] < 0).mean(axis=0) * 100
 assert theta_sd[0, 0, 2] == 0 and theta_sd[1, 0, 2] > 0
 assert 30 < share < 70 and q05_u8 < 0 < q95_u8
 assert theta_sd[8, 1, 2] > q95_u8 and pi_down.min() > 90
+med_pi0, med_R0 = median[0, 0, 2], median[0, 2, 2]
+R_below = median[:, 2, 2] < 0
+R_neg = int(np.argmax(R_below))
+u_below = int((median[:, 1, 2] < 0).sum())
+assert -med_pi0 > med_R0 > 0 and R_below[R_neg:].all()
+assert u_below >= 20
 f.update({"share": f"{share:.0f}", "q05_u8": num(q05_u8),
           "q95_u8": num(q95_u8),
           "rec_u8": num(theta_sd[8, 1, 2]),
-          "pi_down": f"{pi_down.min():.0f}"})
+          "pi_down": f"{pi_down.min():.0f}",
+          "med_pi0": num(-med_pi0), "med_R0": num(med_R0),
+          "R_neg": f"{R_neg}",
+          "u_below": "en todos los horizontes" if u_below == 25
+          else f"en {u_below} de los 25 horizontes"})
 ```
 
-El resultado reproduce el hallazgo de @uhlig2005 con los datos de @stock2001: una vez que se deja libre la respuesta de la variable real, el conjunto de modelos admisibles no se pone de acuerdo sobre su signo. A dos años, el `{python} f["share"]` % de los modelos aceptados implica un aumento del desempleo, y el rango del 5 al 95 % va de `{python} f["q05_u8"]` a `{python} f["q95_u8"]` puntos. La respuesta recursiva, de `{python} f["rec_u8"]` puntos para el mismo choque de una desviación estándar, queda fuera de ese rango, y no por azar: el modelo recursivo no pertenece al conjunto, porque deja la inflación en cero al impacto y la sube al trimestre siguiente, justo lo que las restricciones prohíben. La diferencia entre ambos resultados no está en los datos, que son los mismos, sino en qué información extra se estuvo dispuesto a imponer.
+El resultado se parece al hallazgo de @uhlig2005: una vez que se deja libre la respuesta de la variable real, el conjunto de modelos admisibles no se pone de acuerdo sobre su signo. A dos años, el `{python} f["share"]` % de los modelos aceptados implica un aumento del desempleo, y el rango del 5 al 95 % va de `{python} f["q05_u8"]` a `{python} f["q95_u8"]` puntos. La respuesta recursiva, de `{python} f["rec_u8"]` puntos para el mismo choque de una desviación estándar, queda fuera de ese rango, y no por azar: el modelo recursivo no pertenece al conjunto, porque deja la inflación en cero al impacto y la sube al trimestre siguiente, justo lo que las restricciones prohíben.
 
-El panel izquierdo pide la lectura opuesta. La inflación sigue por debajo de cero mucho después de los dos trimestres restringidos: entre los trimestres 2 y 8 lo hace en al menos el `{python} f["pi_down"]` % de los modelos aceptados. Sería un error leer eso como evidencia de que la política baja la inflación. El conjunto se eligió entre modelos en que la inflación cae al principio, y la persistencia del sistema prolonga la caída. Con restricciones de signo, lo que se concluye sobre las variables restringidas está en buena parte impuesto; lo informativo es lo que pasa con las libres.
+La figura tiene además tres rasgos raros para una política contractiva. Al impacto, la mediana de la inflación cae `{python} f["med_pi0"]` puntos mientras la tasa sube apenas `{python} f["med_R0"]`; la tasa queda por debajo de cero desde el trimestre `{python} f["R_neg"]`; y la mediana del desempleo está por debajo de cero `{python} f["u_below"]`. No es un error de cálculo: cada matriz aceptada reproduce $\hat{\Sigma}$ y cumple los signos, y un muestreo independiente sobre la esfera unitaria da los mismos cuantiles. Lo que explica la figura es qué hay dentro del conjunto. Como $\tilde{S} = PQ$, la columna del choque de política es $P\mathbf{q}$, con $\mathbf{q}$ la tercera columna de $Q$, de modo que el choque identificado es una combinación de los tres choques recursivos de la @sec-svar-irf con pesos $\mathbf{q}$, que cumplen $\mathbf{q}'\mathbf{q} = 1$. La celda siguiente recupera esos pesos.
+
+```{python}
+#| label: signos-pesos
+P = np.linalg.cholesky(fit["Sigma"])
+mix = np.array([np.linalg.solve(P, Si[:, 2])
+                for Si in accepted])      # weights q
+quantiles = np.quantile(mix, [0.05, 0.5, 0.95], axis=0)
+pd.DataFrame(quantiles.round(2), columns=shocks,
+             index=["5 %", "mediana", "95 %"])
+```
+
+```{python}
+#| include: false
+med_q = np.median(mix, axis=0)
+heavier = (np.abs(mix[:, 0]) > np.abs(mix[:, 2])).mean() * 100
+easing = (mix[:, 2] < 0).mean() * 100
+assert easing > 5
+assert (mix[:, 0] < 0).all() and med_q[0] < 0 < med_q[2]
+# the recursive inflation shock lifts the rate and unemployment
+assert (theta_sd[:, 2, 0] > 0).all()
+assert (theta_sd[2:, 1, 0] > 0).all()
+f.update({"q_pi": num(med_q[0]), "q_u": num(med_q[1]),
+          "q_pol": num(med_q[2]), "heavier": f"{heavier:.0f}",
+          "easing": f"{easing:.0f}"})
+
+# the sampler passes three checks: Sigma, the signs, and an
+# independent draw of q on the unit sphere
+psi = var.ma_weights(fit["B"], n, p, 24)
+assert all(np.allclose(Si @ Si.T, fit["Sigma"])
+           for Si in accepted)
+assert all((psi[h] @ Si)[0, 2] < 0 < (psi[h] @ Si)[2, 2]
+           for Si in accepted for h in (0, 1))
+rng = np.random.default_rng(11)
+sphere = []
+while len(sphere) < 4000:
+    q = rng.standard_normal(n)
+    for s in (q, -q):
+        r = psi @ (P @ s) / np.linalg.norm(q)
+        if r[0, 0] < 0 < r[0, 2] and r[1, 0] < 0 < r[1, 2]:
+            sphere.append(r)
+sphere = np.array(sphere)
+for i in range(n):
+    probs = [0.05, 0.5, 0.95]
+    a = np.quantile(sphere[:, :, i], probs, axis=0)
+    b = np.quantile(set_irf[:, :, i, 2], probs, axis=0)
+    assert np.abs(a - b).max() < 0.06
+```
+
+Como $P$ es triangular, el impacto del choque sobre la inflación es $p_{11} q_1$, y exigir que la inflación baje obliga a $q_1 < 0$: todos los modelos del conjunto contienen un choque recursivo de inflación negativo. En la mediana pesa `{python} f["q_pi"]`, contra `{python} f["q_pol"]` del choque recursivo de política, y en el `{python} f["heavier"]` % de los modelos pesa más que este. En el `{python} f["easing"]` % el peso del choque recursivo de política es incluso negativo: el choque que el conjunto llama contractivo contiene allí una relajación recursiva, compensada por los otros dos componentes. Ese componente explica los tres rasgos: baja la inflación de inmediato y por mucho tiempo; baja la tasa, que en el sistema recursivo sube con la inflación en todos los horizontes; y baja el desempleo, que sube tras un choque de inflación. Lo que las restricciones identifican no es sólo política monetaria, sino también una caída de la inflación que no viene de la política y que cumple los mismos signos. Es el problema de los choques disfrazados de @wolf2020, que con esta lógica reinterpreta el hallazgo de @uhlig2005: parte de la ambigüedad sobre la actividad viene de la mezcla, no sólo de lo poco que se impuso. La salida es imponer más estructura, sea identificando también los otros choques o restringiendo la regla de política, como hacen @arias2019; el @exr-svar-9 prueba las dos.
+
+Por la misma razón, la inflación sigue por debajo de cero mucho después de los dos trimestres restringidos: entre los trimestres 2 y 8 lo hace en al menos el `{python} f["pi_down"]` % de los modelos aceptados. Sería un error leer eso como evidencia de que la política baja la inflación. El conjunto se eligió entre modelos en que la inflación cae al principio, y el componente de inflación, muy persistente, prolonga la caída. Con restricciones de signo, lo que se concluye sobre las variables restringidas está en buena parte impuesto; lo informativo es lo que pasa con las libres, y aun eso depende de qué choques se cuelan en el conjunto.
 
 Una advertencia de escala: el tamaño del choque no es comparable entre esquemas. Cada matriz aceptada implica un impacto distinto sobre la tasa, de modo que la figura usa desviaciones estándar y no puntos porcentuales. Lo que sí es comparable, y lo que importa, es el signo y la fracción del conjunto que lo sostiene.
 
@@ -790,7 +968,7 @@ Las dos estrategias estiman el mismo objeto poblacional: en población y con rez
 ```{python}
 #| label: fig-svar-lp
 #| fig-cap: "Respuesta del desempleo a un choque de política de un punto porcentual: VAR estructural y proyección local con intervalo al 95 %."
-policy = eps[:, 2] * S[2, 2]   # en puntos porcentuales
+policy = eps[:, 2] * S[2, 2]   # in percentage points
 shock_series = np.r_[np.full(p, np.nan), policy]
 grid = np.arange(0, 17)
 lp = np.array([svar.local_projection(y, shock_series, h,
@@ -859,7 +1037,7 @@ La frecuencia de los datos cambia la credibilidad de los ceros contemporáneos e
 1. Los datos determinan $\Sigma$ y nada más: toda la variedad de matrices $S$ con $SS' = \Sigma$ ajusta igual de bien, así que la identificación es un supuesto económico que se declara, se defiende y se somete a sensibilidad.
 2. Faltan exactamente $n(n-1)/2$ restricciones. Los ceros contemporáneos las aportan con un orden y los ceros de largo plazo con la neutralidad de un choque. Los signos no las aportan: acotan el conjunto con la dirección de un efecto, y el resultado es un conjunto de modelos, no uno solo.
 3. Las tres lecturas del SVAR (respuestas, varianza, historia) se construyen con las mismas matrices $\Theta_j = \Psi_j S$ y responden preguntas distintas.
-4. Las bandas bootstrap cubren la incertidumbre de estimación, no la de identificación. Las restricciones de signo hacen lo contrario: describen la incertidumbre de identificación con los parámetros fijos.
+4. Las bandas bootstrap cubren la incertidumbre de estimación, no la de identificación. Las restricciones de signo hacen lo contrario: describen la incertidumbre de identificación con los parámetros fijos, y el conjunto que entregan puede mezclar el choque buscado con otros que cumplen los mismos signos.
 5. Proyecciones locales y VAR estiman la misma respuesta poblacional; la elección entre ambos es un intercambio entre eficiencia y robustez a la mala especificación.
 :::
 
@@ -883,9 +1061,16 @@ Ramey (2016)
 
 Plagborg-Møller y Wolf (2021)
 :   proyecciones locales y VAR estiman la misma respuesta poblacional.
+
+Wolf (2020)
+:   por qué las restricciones de signo pueden confundir la política monetaria con otros choques.
 :::
 
 ## Ejercicios {.unnumbered}
+
+::: {#exr-svar-rezagos}
+En el sistema bivariado de la @sec-svar-cholesky, elija el número de rezagos con AIC, HQ y BIC, como en la @sec-var-otros, y repita la @fig-svar-irf2 con cada elección. ¿Sobrevive el *price puzzle* a todos los criterios? ¿Qué parte de la mejora de la @sec-svar-bandas se debe entonces a los rezagos y cuál al desempleo?
+:::
 
 ::: {#exr-svar-1}
 Reestime el SVAR recursivo con los seis órdenes posibles de las tres variables y grafique las seis respuestas del desempleo al choque que eleva la tasa. ¿Qué conclusiones sobreviven a todos los órdenes y cuáles dependen de uno en particular?
@@ -917,4 +1102,8 @@ Calcule la descomposición histórica del desempleo y localice el trimestre en q
 
 ::: {#exr-svar-8}
 Implemente el bootstrap con corrección de sesgo de @kilian1998. Un primer bootstrap estima el sesgo de $\hat{B}$ como la diferencia entre el promedio de las $\hat{B}^{*}$ y $\hat{B}$; se descuenta de $\hat{B}$, reduciendo la corrección si el sistema corregido deja de ser estable, y el segundo bootstrap genera las muestras con la $\hat{B}$ corregida y corrige cada $\hat{B}^{*}$ de la misma manera. Compare la respuesta del desempleo al choque de política y su banda con las de la @fig-svar-irf. ¿Qué cambia más, el pico o la vuelta a cero?
+:::
+
+::: {#exr-svar-9}
+Repita la identificación por signos de la @sec-svar-signo de dos maneras más exigentes. Primero, identifique también un choque de oferta (inflación y desempleo suben) y uno de demanda (inflación y tasa suben, desempleo baja) en los dos primeros trimestres. Segundo, en lugar de los signos de las respuestas, restrinja la regla de política como @arias2019: con $A_0 = \tilde{S}^{-1}$, la fila del choque de política escribe $R_t$ en función de $\pi_t$ y $u_t$; exija que la tasa suba con la inflación y baje con el desempleo. En cada caso, ¿cuánto pesa el choque recursivo de inflación en el choque identificado y qué fracción de los modelos implica un aumento del desempleo a dos años? ¿Alcanza alguna de las dos para que el conjunto deje de mezclar choques?
 :::
